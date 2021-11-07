@@ -1,0 +1,2 @@
+openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout LocalhostCA.key -out LocalhostCA.pem -subj "/C=CS/CN=Localhost-CA"
+openssl x509 -outform pem -in LocalhostCA.pem -out LocalhostCA.crt

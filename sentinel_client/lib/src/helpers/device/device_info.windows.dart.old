@@ -1,0 +1,268 @@
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
+import 'package:win32/win32.dart';
+
+class WindowsDeviceInfo {
+  bool _isInitialized = false;
+  bool _isConnected = false;
+
+  late IWbemServices _pSvc;
+  late IWbemLocator _pLoc;
+
+  void _initialize() {
+    var hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hr)) {
+      throw COMException(hr);
+    }
+
+    hr = CoInitializeSecurity(
+        nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOLE_AUTHENTICATION_CAPABILITIES.EOAC_NONE, nullptr);
+
+    if (FAILED(hr)) {
+      if (hr != RPC_E_TOO_LATE) {
+        final exception = COMException(hr);
+        print(exception.toString());
+        close();
+        throw exception;
+      }
+    }
+
+    _isInitialized = true;
+  }
+
+  void _connect() {
+    if (!_isInitialized) {
+      _initialize();
+    }
+
+    _pLoc = WbemLocator.createInstance();
+
+    final proxy = calloc<IntPtr>();
+
+    var hr = _pLoc.ConnectServer(TEXT('ROOT\\CIMV2'), nullptr, nullptr, nullptr, NULL, nullptr, nullptr, proxy.cast());
+
+    if (FAILED(hr)) {
+      final exception = COMException(hr);
+      print(exception.toString());
+      _disconnect();
+      close();
+      throw exception;
+    }
+
+    _pSvc = IWbemServices(proxy.cast());
+
+    hr = CoSetProxyBlanket(Pointer.fromAddress(proxy.value), RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE,
+        nullptr, EOLE_AUTHENTICATION_CAPABILITIES.EOAC_NONE);
+
+    if (FAILED(hr)) {
+      final exception = COMException(hr);
+      print(exception.toString());
+      _pSvc.Release();
+      _disconnect();
+      close();
+      throw exception;
+    }
+
+    _isConnected = true;
+  }
+
+  void _disconnect() {
+    _pLoc.Release();
+
+    _isConnected = false;
+  }
+
+  void close() {
+    CoUninitialize();
+
+    _isInitialized = false;
+  }
+
+  String _getProperty(IWbemClassObject clsObj, String key) {
+    final vtProp = calloc<VARIANT>();
+    final keyPtr = key.toNativeUtf16();
+
+    try {
+      final hr = clsObj.Get(keyPtr, 0, vtProp, nullptr, nullptr);
+
+      if (SUCCEEDED(hr)) {
+        return vtProp.ref.bstrVal.toDartString();
+      } else {
+        return '';
+      }
+    } finally {
+      VariantClear(vtProp);
+      free(keyPtr);
+    }
+  }
+
+  String getComputerName() {
+    String finalComputerName = 'Unknown';
+
+    if (!_isConnected) {
+      _connect();
+    }
+
+    final pEnumerator = calloc<Pointer<COMObject>>();
+    IEnumWbemClassObject enumerator;
+
+    var hr = _pSvc.ExecQuery(TEXT('WQL'), TEXT('SELECT * FROM Win32_ComputerSystem'),
+        WBEM_GENERIC_FLAG_TYPE.WBEM_FLAG_FORWARD_ONLY | WBEM_GENERIC_FLAG_TYPE.WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, pEnumerator);
+
+    // TODO
+    if (FAILED(hr)) {
+      final exception = COMException(hr);
+      print(exception.toString());
+      _pSvc.Release();
+      _disconnect();
+      close();
+      throw exception;
+    } else {
+      //   enumerator = IEnumWbemClassObject(pEnumerator.cast());
+
+      //   final uReturn = calloc<Uint32>();
+
+      //   var idx = 0;
+      //   while (enumerator.ptr.address > 0) {
+      //     final pClsObj = calloc<Pointer<COMObject>>();
+
+      //     hr = enumerator.Next(WBEM_TIMEOUT_TYPE.WBEM_INFINITE, 1, pClsObj, uReturn);
+
+      //     // Break out of the while loop if we've run out of processes to inspect
+      //     if (uReturn.value == 0) break;
+
+      //     idx++;
+
+      //     final clsObj = IWbemClassObject(pClsObj.cast());
+
+      // // Name || DNSHostName || PSComputerName
+      //     final computerName = _getProperty(clsObj, 'Name');
+      //     if (computerName.isNotEmpty) {
+      //       finalComputerName = computerName;
+      //     }
+
+      //     clsObj.Release();
+      //   }
+      //   print('$idx usernames found.');
+    }
+
+    _pSvc.Release();
+    _disconnect();
+    // enumerator.Release();
+
+    return finalComputerName;
+  }
+
+  String getUserName() {
+    String finalUserName = 'Unknown';
+
+    if (!_isConnected) {
+      _connect();
+    }
+
+    final pEnumerator = calloc<Pointer<COMObject>>();
+    IEnumWbemClassObject enumerator;
+
+    var hr = _pSvc.ExecQuery(TEXT('WQL'), TEXT('SELECT * FROM Win32_ComputerSystem'),
+        WBEM_GENERIC_FLAG_TYPE.WBEM_FLAG_FORWARD_ONLY | WBEM_GENERIC_FLAG_TYPE.WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, pEnumerator);
+
+    // TODO
+    if (FAILED(hr)) {
+      final exception = COMException(hr);
+      print(exception.toString());
+      _pSvc.Release();
+      _disconnect();
+      close();
+      throw exception;
+    } else {
+      //   enumerator = IEnumWbemClassObject(pEnumerator.cast());
+
+      //   final uReturn = calloc<Uint32>();
+
+      //   var idx = 0;
+      //   while (enumerator.ptr.address > 0) {
+      //     final pClsObj = calloc<Pointer<COMObject>>();
+
+      //     hr = enumerator.Next(WBEM_TIMEOUT_TYPE.WBEM_INFINITE, 1, pClsObj, uReturn);
+
+      //     // Break out of the while loop if we've run out of processes to inspect
+      //     if (uReturn.value == 0) break;
+
+      //     idx++;
+
+      //     final clsObj = IWbemClassObject(pClsObj.cast());
+
+      //     final userName = _getProperty(clsObj, 'UserName');
+      //     if (userName.isNotEmpty) {
+      //       finalUserName = userName;
+      //     }
+
+      //     clsObj.Release();
+      //   }
+      //   print('$idx usernames found.');
+    }
+
+    _pSvc.Release();
+    _disconnect();
+    // enumerator.Release();
+
+    return finalUserName;
+  }
+
+  // String getDomain() {
+  //   String finalUserName = 'Unknown';
+
+  //   if (!_isConnected) {
+  //     _connect();
+  //   }
+
+  //   final pEnumerator = calloc<Pointer<COMObject>>();
+  //   IEnumWbemClassObject enumerator;
+
+  //   var hr = _pSvc.ExecQuery(TEXT('WQL'), TEXT('SELECT * FROM Win32_ComputerSystem'),
+  //       WBEM_GENERIC_FLAG_TYPE.WBEM_FLAG_FORWARD_ONLY | WBEM_GENERIC_FLAG_TYPE.WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, pEnumerator);
+
+  //   // TODO
+  //   if (FAILED(hr)) {
+  //     final exception = COMException(hr);
+  //     print(exception.toString());
+  //     _pSvc.Release();
+  //     _disconnect();
+  //     close();
+  //     throw exception;
+  //   } else {
+  //     //   enumerator = IEnumWbemClassObject(pEnumerator.cast());
+
+  //     //   final uReturn = calloc<Uint32>();
+
+  //     //   var idx = 0;
+  //     //   while (enumerator.ptr.address > 0) {
+  //     //     final pClsObj = calloc<Pointer<COMObject>>();
+
+  //     //     hr = enumerator.Next(WBEM_TIMEOUT_TYPE.WBEM_INFINITE, 1, pClsObj, uReturn);
+
+  //     //     // Break out of the while loop if we've run out of processes to inspect
+  //     //     if (uReturn.value == 0) break;
+
+  //     //     idx++;
+
+  //     //     final clsObj = IWbemClassObject(pClsObj.cast());
+
+  //     //     final userName = _getProperty(clsObj, 'UserName');
+  //     //     if (userName.isNotEmpty) {
+  //     //       finalUserName = userName;
+  //     //     }
+
+  //     //     clsObj.Release();
+  //     //   }
+  //     //   print('$idx usernames found.');
+  //   }
+
+  //   _pSvc.Release();
+  //   _disconnect();
+  //   // enumerator.Release();
+
+  //   return finalUserName;
+  // }
+
+}
