@@ -1,11 +1,16 @@
-<h1 align="center">
+<!-- <h1 align="center">
   <br/>Sentinel
   <br/>&nbsp;
 </h1>
 <p align="center">
-  <img src="./docs/readme_logo.png" alt="Logo"/>
-</p>
+  <img src="./docs/images/readme_logo.png" alt="Logo"/>
+</p> -->
 
+<h1 align="center">
+  <img src="./docs/images/readme_logo.png" alt="Logo"/>
+</h1>
+
+&nbsp;
 <p align="center">
   Project Description
 </p>
@@ -53,22 +58,22 @@
 &nbsp;
 
 ## Configuration - Application variables
-```yml
+```
   Description of application variables
 ```
 
 ## Configuration - Docker
-```yml
+```
   Description of docker / docker-compose configuration
 ```
 
 ## Installing application
-```json
+```
   XXX
 ```
 
 ## Running application
-```json
+```
   On Windows machine:
     npm install                                           // install application modules
     npm start                                             // start app ...
