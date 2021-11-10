@@ -1,38 +1,7 @@
-<!-- <h1 align="center">
-  <br/>Sentinel
-  <br/>&nbsp;
-</h1>
-<p align="center">
-  <img src="./docs/images/readme_logo.png" alt="Logo"/>
-</p> -->
-
 <h1 align="center">
   <img src="./docs/images/readme_logo.png" alt="Logo"/>
 </h1>
-
 &nbsp;
-<p align="center">
-  Project Description
-</p>
-<p align="center">
-    XXX
-</p>
-&nbsp;
-<p align="center">
-  Prerequisite
-</p>
-<p align="center">
-    XXX
-</p>
-&nbsp;
-<p align="center">
-  &nbsp;
-  <img height="25" src="https://img.shields.io/badge/FLUTTER-2.5.3-blue.svg?style=for-the-badge" alt="flutter"/>
-  &nbsp;
-  <img height="25" src="https://img.shields.io/badge/NODE_JS-14.17.3-blue.svg?style=for-the-badge" alt="nodejs"/>
-  &nbsp;
-  <img height="25" src="https://img.shields.io/badge/VS_CODE-1.62.1-blue.svg?style=for-the-badge" alt="vscode"/>
-</p>
 <p align="center">
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/amd64-yes-blue.svg?style=for-the-badge" alt="amd64"/>
@@ -41,57 +10,87 @@
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/armv7-yes-blue.svg?style=for-the-badge" alt="armv7"/>
 </p>
+&nbsp;
+<h2 align="center">
+  Management and security system for small and midsize businesses
+</h2>
+&nbsp;
+<h3 align="center">
+  Prerequisites
+</h3>
+<p align="center">
+  Depends on use case, in general one linux server is needed to run backend services.
+  <br>
+  Windows server can be used aswell, but installation is not automated.
+</p>
+&nbsp;
+<h3 align="center">
+  Client App Supported Systems
+</h3>
+&nbsp;
 <p align="center">
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/WEB-YES-darkgreen.svg?style=for-the-badge" alt="web"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/MACOS-YES-darkgreen.svg?style=for-the-badge" alt="macos"/>
-  &nbsp;
   <img height="25" src="https://img.shields.io/badge/WINDOWS-YES-darkgreen.svg?style=for-the-badge" alt="windows"/>
-  <!-- &nbsp;
-  <img height="20" src="https://img.shields.io/badge/LINUX-YES-green.svg?style=for-the-badge" alt="linux"/> -->
-  <!-- &nbsp;
-  <img height="20" src="https://img.shields.io/badge/IOS-YES-green.svg?style=for-the-badge" alt="ios"/> -->
-  <!-- &nbsp;
-  <img height="20" src="https://img.shields.io/badge/ANDROID-YES-green.svg?style=for-the-badge" alt="android"/> -->
+  &nbsp;
+  <img height="25" src="https://img.shields.io/badge/MACOS-NO-red.svg?style=for-the-badge" alt="macos"/>
+  &nbsp;
+  <img height="25" src="https://img.shields.io/badge/LINUX-NO-red.svg?style=for-the-badge" alt="linux"/>
+  &nbsp;
+  <img height="25" src="https://img.shields.io/badge/IOS-NO-red.svg?style=for-the-badge" alt="ios"/>
+  &nbsp;
+  <img height="25" src="https://img.shields.io/badge/ANDROID-NO-red.svg?style=for-the-badge" alt="android"/>
 </p>
 &nbsp;
 
-## Configuration - Application variables
+## Project Structure
 ```
-  Description of application variables
+- scripts                             -- installation scripts for linux systems
+- sentinel_client                     -- client app flutter project source code
+- sentinel_server                     -- client app flutter project source code
+  - certificates                      -- folder to put your https certificates in
+  - client                            -- client web application root folder
+  - files
+    - network_share                   -- network SMB share root folder
+    - web_share                       -- web share root folder
+  - logs                              -- server logs root folder
+  - server                            -- server app nodejs source code
+- sentinel_units                      -- sub folders for each unit module
+  - sentinel_access_unit              -- access unit nodejs project
+  - sentinel_attendance_unit          -- attendance unit nodejs project
 ```
 
-## Configuration - Docker
+## Server installation process (linux - recommended way)
 ```
-  Description of docker / docker-compose configuration
+! Raspbian Lite is recommended - ARM CPUs
+! Debian Server is recommended - x64 CPUs
+! Installation scripts are provided
+
+XXX
+```
+## Server installation process (windows - alternative way)
+```
+! Windows Server 2019 and above is recommended
+! MongoDB Database Server is need to be installed
+! NodeJS need to be installed
+! Installation scripts are not provided
+
+XXX
+```
+## Unit modules installation process
+```
+! Raspbian Lite running on Raspberry Pi (or other similar board)
+! Installation scripts are provided
+
+XXX
 ```
 
-## Installing application
-```
-  XXX
-```
-
-## Running application
-```
-  On Windows machine:
-    npm install                                           // install application modules
-    npm start                                             // start app ...
-    .
-    .
-
-  On Linux based machine:
-    npm install                                           // install application modules
-    npm start                                             // start app ...
-    .
-    .
-
-  Docker-compose:
-    docker-compose up --build                             // build docker-compose container
-    docker-compose start                                  // start docker-compose container app
-    docker-compose stop                                   // stop docker-compose container app
-    docker-compose down -v --rmi all --remove-orphans     // cleanup everything
-```
+<br>.
+<br>.
+<br>.
+<br>.
+<br>.
 
 &nbsp;
 <p align="center">
