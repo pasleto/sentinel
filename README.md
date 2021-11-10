@@ -12,9 +12,7 @@
 </p>
 &nbsp;
 <h3 align="center">
-  Sentinel
-  <br>
-  management and security system for small and midsize businesses
+  Management and security system for small and midsize businesses
 </h3>
 &nbsp;
 <h3 align="center">
