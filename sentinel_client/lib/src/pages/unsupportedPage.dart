@@ -13,17 +13,17 @@ class UnsupportedPage extends StatelessWidget {
             Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 48.0),
-                  child: Image.asset('assets/icons/cms_icon_256.png', width: 72, height: 72, filterQuality: FilterQuality.high),
+                  padding: const EdgeInsets.only(right: 32.0),
+                  child: Image.asset('assets/logo/logo_64.png', scale: 1, filterQuality: FilterQuality.high),
                 ),
-                Image.asset('assets/images/cms_title.png', scale: 2.0, filterQuality: FilterQuality.high),
+                Image.asset('assets/logo/title_118.png', scale: 2.25, filterQuality: FilterQuality.high),
               ],
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 48.0, top: 16.0, left: 16.0, right: 16.0),
+              padding: const EdgeInsets.only(bottom: 48.0, top: 32.0, left: 16.0, right: 16.0),
               child: Text(
                 'This platform is not supported!',
                 textAlign: TextAlign.center,

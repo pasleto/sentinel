@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 
+
 NTP_SERVERS="tik.cesnet.cz tak.cesnet.cz"
 NEW_TIMEZONE="Europe/Prague"
 NEW_LOCALE="cs_CZ.UTF-8"

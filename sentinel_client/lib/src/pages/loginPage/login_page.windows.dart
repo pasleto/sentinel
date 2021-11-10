@@ -40,11 +40,11 @@ class _WindowsLoginAppBar extends StatelessWidget implements PreferredSizeWidget
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0, right: 10.0),
-                      child: Image.asset('assets/icons/cms_icon_header.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/logo_32.png', filterQuality: FilterQuality.high),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-                      child: Image.asset('assets/images/cms_header.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/title_32.png', filterQuality: FilterQuality.high),
                     ),
                   ],
                 ),
@@ -116,7 +116,7 @@ class _WindowsLoginPageState extends State<WindowsLoginPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 32.0),
-                      child: Image.asset('assets/icons/cms_icon_256.png', width: 96, height: 96, filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/logo_256.png', width: 96, height: 96, filterQuality: FilterQuality.high),
                     ),
                     Container(
                       height: 55,

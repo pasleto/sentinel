@@ -31,7 +31,7 @@ class _WindowsHomePageState extends State<WindowsHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Image.asset('assets/icons/cms_icon_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
+                      Image.asset('assets/logo/logo_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
                       Text('Module Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -47,7 +47,7 @@ class _WindowsHomePageState extends State<WindowsHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Image.asset('assets/icons/cms_icon_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
+                      Image.asset('assets/logo/logo_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
                       Text('Module Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -63,7 +63,7 @@ class _WindowsHomePageState extends State<WindowsHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Image.asset('assets/icons/cms_icon_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
+                      Image.asset('assets/logo/logo_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
                       Text('Module Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -85,7 +85,7 @@ class _WindowsHomePageState extends State<WindowsHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Image.asset('assets/icons/cms_icon_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
+                      Image.asset('assets/logo/logo_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
                       Text('Module Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -101,7 +101,7 @@ class _WindowsHomePageState extends State<WindowsHomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Image.asset('assets/icons/cms_icon_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
+                      Image.asset('assets/logo/logo_256.png', filterQuality: FilterQuality.high, width: 75, height: 75),
                       Text('Module Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ],
                   ),

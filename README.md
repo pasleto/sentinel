@@ -31,7 +31,7 @@
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/NODE_JS-14.17.3-blue.svg?style=for-the-badge" alt="nodejs"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/VS_CODE-1.62.0-blue.svg?style=for-the-badge" alt="vscode"/>
+  <img height="25" src="https://img.shields.io/badge/VS_CODE-1.62.1-blue.svg?style=for-the-badge" alt="vscode"/>
 </p>
 <p align="center">
   &nbsp;
