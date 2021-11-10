@@ -11,9 +11,11 @@
   <img height="25" src="https://img.shields.io/badge/armv7-yes-blue.svg?style=for-the-badge" alt="armv7"/>
 </p>
 &nbsp;
-<h2 align="center">
-  Management and security system for small and midsize businesses
-</h2>
+<h3 align="center">
+  Sentinel
+  <br>
+  management and security system for small and midsize businesses
+</h3>
 &nbsp;
 <h3 align="center">
   Prerequisites
