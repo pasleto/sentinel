@@ -1,0 +1,82 @@
+([adsi]"LDAP://$(whoami /fqdn)").displayName
+
+([adsi]"LDAP://$(whoami /fqdn)") | fl *
+
+
+
+
+
+$user = whoami
+Get-WMIObject Win32_UserAccount | where caption -eq $user | select FullName
+
+
+
+
+
+PS> [adsisearcher].FullName
+System.DirectoryServices.DirectorySearcher
+
+PS> $searcher = [adsisearcher]"(objectClass=user)"
+PS> $searcher
+
+CacheResults             : True
+ClientTimeout            : -00:00:01
+PropertyNamesOnly        : False
+Filter                   : (objectClass=user)
+PageSize                 : 0
+PropertiesToLoad         : {}
+ReferralChasing          : External
+SearchScope              : Subtree
+ServerPageTimeLimit      : -00:00:01
+ServerTimeLimit          : -00:00:01
+SizeLimit                : 0
+SearchRoot               :
+Sort                     : System.DirectoryServices.SortOption
+Asynchronous             : False
+Tombstone                : False
+AttributeScopeQuery      :
+DerefAlias               : Never
+SecurityMasks            : None
+ExtendedDN               : None
+DirectorySynchronization :
+VirtualListView          :
+Site                     :
+Container                :
+
+PS> $searcher = [adsisearcher]"(samaccountname=$env:USERNAME)"
+PS> $searcher.FindOne().Properties.mail
+
+
+
+
+([adsi]"WinNT://$env:USERDOMAIN/$env:USERNAME,user").Properties["mail"]
+
+
+
+
+
+Get-WmiObject Win32_ComputerSystem | Select-Object UserName
+Get-WMIObject Win32_ComputerSystem | select username
+Get-WMIObject Win32_ComputerSystem | select *
+Get-WmiObject Win32_ComputerSystem | Select-Object -ExpandProperty UserName
+whoami
+https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-powershell-1.0/ff730963(v=technet.10)?redirectedfrom=MSDN
+
+
+
+
+
+
+
+Get-WMIObject Win32_ComputerSystem | select Name, Domain, UserName
+
+
+
+
+Get-ChildItem Env:
+
+%computername%
+%username%
+%userdomain%
+%userdnsdomain%
+

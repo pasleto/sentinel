@@ -40,11 +40,11 @@ class _WindowsLoginAppBar extends StatelessWidget implements PreferredSizeWidget
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0, right: 10.0),
-                      child: Image.asset('assets/logo/logo_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Black_32.png', filterQuality: FilterQuality.high),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-                      child: Image.asset('assets/logo/title_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Text_Black_16.png', filterQuality: FilterQuality.high, height: 12),
                     ),
                   ],
                 ),
@@ -116,7 +116,7 @@ class _WindowsLoginPageState extends State<WindowsLoginPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 32.0),
-                      child: Image.asset('assets/logo/logo_256.png', width: 96, height: 96, filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_128.png', width: 96, height: 96, filterQuality: FilterQuality.high),
                     ),
                     Container(
                       height: 55,
@@ -135,7 +135,7 @@ class _WindowsLoginPageState extends State<WindowsLoginPage> {
                             // fillColor: Color(0x40FAFAFA),
                             prefixIcon: Padding(
                               padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 15),
-                              child: Image.asset('assets/icons/user_icon_filled_60.png', width: 25, height: 25, filterQuality: FilterQuality.high),
+                              child: Image.asset('assets/icons/user_25.png', width: 25, height: 25, filterQuality: FilterQuality.high),
                             ),
                             // suffixText: loginPageWords.contiwanDomain,
                             // icon: Padding(
@@ -166,7 +166,7 @@ class _WindowsLoginPageState extends State<WindowsLoginPage> {
                             filled: true,
                             prefixIcon: Padding(
                               padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 15),
-                              child: Image.asset('assets/icons/lock_icon_filled_60.png', width: 25, height: 25, filterQuality: FilterQuality.high),
+                              child: Image.asset('assets/icons/lock_25.png', width: 25, height: 25, filterQuality: FilterQuality.high),
                             ),
                             // hintText: 'Password',
                             // hintStyle: TextStyle(color: Colors.black26),

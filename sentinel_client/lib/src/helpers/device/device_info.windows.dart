@@ -10,8 +10,16 @@ String? userAppData = envVars['appdata'];
 String? userLocalAppData = envVars['localappdata'];
 String? userProfile = envVars['userprofile'];
 
-String getWindowsDomainLogonName() {
+String getWindowsUserLogonName() {
   return userDomain.toString() + '\\' + userName.toString();
+}
+
+String getWindowsDomainLogonName() {
+  if (userDnsDomain == null) {
+    return userName.toString();
+  } else {
+    return userDomain.toString() + '\\' + userName.toString();
+  }
 }
 
 String getWindowsDomainUserName() {

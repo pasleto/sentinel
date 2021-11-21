@@ -42,11 +42,11 @@ class _WindowsAuthAppBar extends StatelessWidget implements PreferredSizeWidget 
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0, right: 10.0),
-                      child: Image.asset('assets/logo/logo_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Black_32.png', filterQuality: FilterQuality.high),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-                      child: Image.asset('assets/logo/title_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Text_Black_16.png', filterQuality: FilterQuality.high, height: 12),
                     ),
                   ],
                 ),
@@ -83,6 +83,7 @@ class _WindowsAuthPageState extends State<WindowsAuthPage> {
     print('UserAppData: ' + getWindowsUserAppData());
     print('UserLocalAppData: ' + getWindowsUserLocalAppData());
     print('UserProfile: ' + getWindowsUserProfile());
+    print('UserDomainLogonName: ' + getWindowsUserLogonName());
     print('DomainLogonName: ' + getWindowsDomainLogonName());
     print('DomainUserName: ' + getWindowsDomainUserName());
   }
@@ -106,7 +107,7 @@ class _WindowsAuthPageState extends State<WindowsAuthPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Image.asset('assets/logo/logo_256.png', width: 96, height: 96, filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_128.png', width: 96, height: 96, filterQuality: FilterQuality.high),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(16.0),

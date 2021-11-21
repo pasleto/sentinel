@@ -29,7 +29,6 @@ const departmentSchema = new Schema({ // TODO
     type: mongoose.Types.ObjectId,
     ref: 'Employee',
   }],
-
   is_root: {
     type: Boolean,
     required: true,

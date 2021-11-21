@@ -10,28 +10,13 @@ class UnsupportedPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 32.0),
-                  child: Image.asset('assets/logo/logo_64.png', scale: 1, filterQuality: FilterQuality.high),
-                ),
-                Image.asset('assets/logo/title_118.png', scale: 2.25, filterQuality: FilterQuality.high),
-              ],
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-            ),
+            Image.asset('assets/logo/Logo_Horizontal_128.png', scale: 1.7, filterQuality: FilterQuality.high),
             Padding(
-              padding: const EdgeInsets.only(bottom: 48.0, top: 32.0, left: 16.0, right: 16.0),
+              padding: const EdgeInsets.only(bottom: 64.0, top: 96.0, left: 16.0, right: 16.0),
               child: Text(
                 'This platform is not supported!',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
             Padding(
@@ -43,11 +28,7 @@ class UnsupportedPage extends StatelessWidget {
                   child: Text(
                     'EXIT',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red),
                   ),
                 ),
                 style: TextButton.styleFrom(
@@ -56,7 +37,7 @@ class UnsupportedPage extends StatelessWidget {
                   backgroundColor: Colors.grey[300],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -56,11 +56,11 @@ class WindowsAppBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0, right: 10.0),
-                      child: Image.asset('assets/logo/logo_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Black_32.png', filterQuality: FilterQuality.high),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-                      child: Image.asset('assets/logo/title_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Text_Black_16.png', filterQuality: FilterQuality.high, height: 12),
                     ),
                   ],
                 ),

@@ -10,15 +10,31 @@ const cardSchema = new Schema({ // TODO
     required: true,
     unique: true,
   },
-  uid_dec: {
-    type: Number,
+  // uid_dec: {
+  //   type: Number,
+  //   trim: true,
+  //   unique: true,
+  // },
+  description: {
+    type: String,
     trim: true,
-    unique: true,
+    default: '',
   },
   employee: {
     type: mongoose.Types.ObjectId,
     ref: 'Employee',
     default: null,
+  },
+  has_limited_validity: {
+    type: Boolean,
+    required: true,
+    default: false, // TODO - can specifiy if card is valid from date to date
+  },
+  valid_since: {
+    type: Date,
+  },
+  valid_until: {
+    type: Date,
   },
   is_active: {
     type: Boolean,
@@ -51,9 +67,9 @@ const cardSchema = new Schema({ // TODO
 //   return parseInt(hex, 16);
 // }
 
-cardSchema.pre('save', function(next) {
-  this.uid_dec = parseInt(this.uid_hex, 16);
-  next();
-});
+// cardSchema.pre('save', function(next) {
+//   this.uid_dec = parseInt(this.uid_hex, 16);
+//   next();
+// });
 
 module.exports = mongoose.model('Card', cardSchema);
