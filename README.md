@@ -50,24 +50,33 @@
 
 ## Project Structure
 ```
-- scripts                               -- installation scripts for linux systems
-- sentinel_client                       -- client application
-- sentinel_gateway                      -- server application
-  - certificates                        -- folder to put your https certificates in
-  - client                              -- client web application root folder
-  - files                               -- files hosting
-    - network_share                     -- network SMB share root folder
-    - web_share                         -- web share root folder
-  - logs                                -- server logs root folder
-  - server                              -- server app nodejs source files
-- sentinel_units                        -- sentinel units projects
-  - sentinel_access_unit                -- access control unit
-  - sentinel_attendance_unit            -- attendance unit
-  - sentinel_bus_client                 -- bus commuting unit
-  - sentinel_car_unit                   -- car gps monitoring unit
-  - sentinel_signage_display_unit       -- signage display unit
-  - sentinel_environment_unit           -- environment monitoring unit
-  - sentinel_meeting_room_unit          -- meeting room display unit
+.
+├── scripts                               # installation scripts for linux systems
+├── sentinel_client                       # client application
+├── sentinel_gateway                      # server application
+│   ├── certificates                      # folder to put your https certificates in
+│   ├── client                            # client web application root folder
+│   ├── files                             
+│   │   ├── network_share                 # network SMB share root folder
+│   │   │   ├── ...
+│   │   │   └── ...
+│   │   ├── web_share                     # web share root folder
+│   │   │   ├── ...
+│   │   │   └── ...
+│   │   └── ...
+│   ├── logs                              # server logs root folder
+│   ├── server                            # server app nodejs source files
+│   └── ...
+├── sentinel_units                        # sentinel units projects
+│   ├── sentinel_access_unit              # access control unit
+│   ├── sentinel_attendance_unit          # attendance unit
+│   ├── sentinel_bus_client               # bus commuting unit
+│   ├── sentinel_car_unit                 # car gps monitoring unit
+│   ├── sentinel_signage_display_unit     # signage display unit
+│   ├── sentinel_environment_unit         # environment monitoring unit
+│   ├── sentinel_meeting_room_unit        # meeting room display unit
+│   └── ...
+└── ...
 ```
 
 ## Gateway installation process (linux - recommended way)
