@@ -33,64 +33,89 @@
   <img height="25" src="https://img.shields.io/badge/WEB-YES-darkgreen.svg?style=for-the-badge" alt="web"/>
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/WINDOWS-YES-darkgreen.svg?style=for-the-badge" alt="windows"/>
+</p>
+<p align="center">
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/MACOS-NO-red.svg?style=for-the-badge" alt="macos"/>
+  <img height="25" src="https://img.shields.io/badge/MACOS-NOT_YET-red.svg?style=for-the-badge" alt="macos"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/LINUX-NO-red.svg?style=for-the-badge" alt="linux"/>
+  <img height="25" src="https://img.shields.io/badge/LINUX-NOT_YET-red.svg?style=for-the-badge" alt="linux"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/IOS-NO-red.svg?style=for-the-badge" alt="ios"/>
+  <img height="25" src="https://img.shields.io/badge/IOS-NOT_YET-red.svg?style=for-the-badge" alt="ios"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/ANDROID-NO-red.svg?style=for-the-badge" alt="android"/>
+  <img height="25" src="https://img.shields.io/badge/ANDROID-NOT_YET-red.svg?style=for-the-badge" alt="android"/>
 </p>
 &nbsp;
 
 ## Project Structure
 ```
-- scripts                             -- installation scripts for linux systems
-- sentinel_client                     -- client app flutter project source code
-- sentinel_server                     -- client app flutter project source code
-  - certificates                      -- folder to put your https certificates in
-  - client                            -- client web application root folder
-  - files
-    - network_share                   -- network SMB share root folder
-    - web_share                       -- web share root folder
-  - logs                              -- server logs root folder
-  - server                            -- server app nodejs source code
-- sentinel_units                      -- sub folders for each unit module
-  - sentinel_access_unit              -- access unit nodejs project
-  - sentinel_attendance_unit          -- attendance unit nodejs project
+- scripts                               -- installation scripts for linux systems
+- sentinel_client                       -- client application
+- sentinel_gateway                      -- server application
+  - certificates                        -- folder to put your https certificates in
+  - client                              -- client web application root folder
+  - files                               -- files hosting
+    - network_share                     -- network SMB share root folder
+    - web_share                         -- web share root folder
+  - logs                                -- server logs root folder
+  - server                              -- server app nodejs source files
+- sentinel_units                        -- sentinel units projects
+  - sentinel_access_unit                -- access control unit
+  - sentinel_attendance_unit            -- attendance unit
+  - sentinel_bus_client                 -- bus commuting unit
+  - sentinel_car_unit                   -- car gps monitoring unit
+  - sentinel_signage_display_unit       -- signage display unit
+  - sentinel_environment_unit           -- environment monitoring unit
+  - sentinel_meeting_room_unit          -- meeting room display unit
 ```
 
-## Server installation process (linux - recommended way)
+## Gateway installation process (linux - recommended way)
 ```
 ! Raspbian Lite is recommended - ARM CPUs
-! Debian Server is recommended - x64 CPUs
+! Debian 11 Server is recommended - x64 CPUs
 ! Installation scripts are provided
 
-XXX
+ - TODO
 ```
-## Server installation process (windows - alternative way)
+## Gateway installation process (windows - alternative way)
 ```
 ! Windows Server 2019 and above is recommended
 ! MongoDB Database Server is need to be installed
 ! NodeJS need to be installed
 ! Installation scripts are not provided
 
-XXX
+ - TODO
 ```
-## Unit modules installation process
+## ESP based units installation process
 ```
-! Raspbian Lite running on Raspberry Pi (or other similar board)
+! Parts list is provided
+! Build instructions are provided
+! Firmware builds are provided
+
+ - TODO
+```
+## Raspberry Pi based units installation process
+```
+! Raspbian Lite is recommended
+! Parts list is provided
+! Build instructions are provided
 ! Installation scripts are provided
 
-XXX
+ - TODO
+```
+## Android based units installation process
+```
+! Android 7 and above is recommended
+! Parts list is provided
+! Instructions are provided
+! Android application builds are provided
+
+ - TODO
 ```
 
-<br>.
-<br>.
-<br>.
-<br>.
-<br>.
+&nbsp;
+<p align="center">
+. . . . . TODO . . . . .
+</p>
 
 &nbsp;
 <p align="center">
@@ -101,7 +126,7 @@ XXX
 </p>
 &nbsp;
 <p align="center">
-  Copyright &copy; 2021 Tomáš Pásler
+  Copyright &copy; 2022 Tomáš Pásler
 </p>
 <p align="center">
   <a href="https://github.com/pasleto" target="_blank" rel="noopener noreferrer">Github</a> &nbsp; | &nbsp; <a href="https://linkedin.com/in/tomas-pasler" target="_blank" rel="noopener noreferrer">Linkedin</a> &nbsp; | &nbsp; <a href="https://pasleto.eu" target="_blank" rel="noopener noreferrer">Website</a>

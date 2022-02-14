@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:sentinel_client/src/pages/unsupportedPage.dart';
+// import 'package:sentinel_client/src/pages/unsupportedPage.dart';
+
+import 'package:sentinel_client/src/pages/authPage/auth_page.web.dart';
+// import 'package:sentinel_client/src/pages/pageWrapper/page_wrapper.web.dart';
+// import 'package:sentinel_client/src/pages/loginPage/login_page.web.dart';
+// import 'package:sentinel_client/src/pages/homePage/home_page.web.dart';
 
 class WebApp extends StatefulWidget {
   @override
@@ -8,14 +13,22 @@ class WebApp extends StatefulWidget {
 }
 
 class _WebAppState extends State<WebApp> {
+  // void initState() {
+  //   super.initState();
+  // }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // title: 'Flutter Demo - Web',
-      // home: HomePage(title: 'Flutter Demo Home Page - Web'),
       title: 'Sentinel',
-      home: UnsupportedPage(),
+      // home: UnsupportedPage(),
+      initialRoute: '/auth',
+      routes: {
+        '/auth': (context) => WebAuthPage(),
+        // '/': (context) => WebPageWrapper(page: WebHomePage()),
+        // '/login': (context) => WebLoginPage(),
+      },
     );
   }
 }

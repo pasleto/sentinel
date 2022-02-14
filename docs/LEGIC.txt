@@ -1,4 +1,15 @@
+NFC:
 ISO 14443-4
 IsoDep, NfcA
 16:38:04:A1:40:84:3D
+
+Mifare Reader:  163804A140843D
+Legic Reader:   3DA14084
+
+Mifare to Legic format:
+byte1 - byte3 -> omit
+byte7   3D
+byte4   A1
+byte5   40
+byte6   84
 

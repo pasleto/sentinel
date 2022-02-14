@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 
+// import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:sentinel_client/src/helpers/device/device_info.windows.dart';
 
 class WindowsAuthPage extends StatefulWidget {
@@ -42,11 +44,14 @@ class _WindowsAuthAppBar extends StatelessWidget implements PreferredSizeWidget 
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0, right: 10.0),
-                      child: Image.asset('assets/logo/Logo_Black_32.png', filterQuality: FilterQuality.high),
+                      child: Image.asset('assets/logo/Logo_Black_32.png', filterQuality: FilterQuality.high, height: 18),
+                      // child: SvgPicture.asset('assets/logo/Logo_Black.svg', height: 18),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
                       child: Image.asset('assets/logo/Logo_Text_Black_16.png', filterQuality: FilterQuality.high, height: 12),
+                      // child: Text('Sentinel', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black)),
+                      // child: SvgPicture.asset('assets/logo/Text_Black.svg', height: 12),
                     ),
                   ],
                 ),

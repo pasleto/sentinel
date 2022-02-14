@@ -21,7 +21,7 @@ class _WindowsAppState extends State<WindowsApp> {
       debugShowCheckedModeBanner: false,
       title: 'Sentinel',
       // initialRoute: '/auth',
-      initialRoute: '/',
+      initialRoute: '/auth',
       routes: {
         '/auth': (context) => WindowsAuthPage(),
         '/': (context) => WindowsPageWrapper(page: WindowsHomePage()),
