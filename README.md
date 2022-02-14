@@ -37,8 +37,8 @@
   <!-- <img height="25" src="https://img.shields.io/badge/WINDOWS-YES-darkgreen.svg?style=for-the-badge" alt="windows"/> -->
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/MACOS-NOT_YET-red.svg?style=for-the-badge" alt="macos"/>
-<!-- </p>
-<p align="center"> -->
+</p>
+<p align="center">
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/LINUX-NOT_YET-red.svg?style=for-the-badge" alt="linux"/>
   &nbsp;
