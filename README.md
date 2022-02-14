@@ -79,8 +79,8 @@
 ## Gateway installation process (windows - alternative way)
 ```
 ! Windows Server 2019 and above is recommended
-! MongoDB Database Server is need to be installed
-! NodeJS need to be installed
+! MongoDB is need to be installed
+! NodeJS is need to be installed
 ! Installation scripts are not provided
 
  - TODO
