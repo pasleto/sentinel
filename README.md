@@ -124,7 +124,7 @@
   &nbsp;
   <img src="https://img.shields.io/badge/Developed_By-Tomas_Pasler-blue.svg?style=for-the-badge" alt="pasleto"/>
   &nbsp;
-  <img src="https://img.shields.io/badge/Developed_For-Personal_Use-ffa500.svg?style=for-the-badge" alt="usage"/>
+  <img src="https://img.shields.io/badge/Developed_For-Personal_Use-blue.svg?style=for-the-badge" alt="usage"/>
 </p>
 &nbsp;
 <p align="center">
