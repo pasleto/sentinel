@@ -30,13 +30,15 @@
 &nbsp;
 <p align="center">
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/WEB-YES-darkgreen.svg?style=for-the-badge" alt="web"/>
+  <img height="25" src="https://img.shields.io/badge/WEB-NOT_YET-red.svg?style=for-the-badge" alt="web"/>
+  <!-- <img height="25" src="https://img.shields.io/badge/WEB-YES-darkgreen.svg?style=for-the-badge" alt="web"/> -->
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/WINDOWS-YES-darkgreen.svg?style=for-the-badge" alt="windows"/>
-</p>
-<p align="center">
+  <img height="25" src="https://img.shields.io/badge/WINDOWS-NOT_YET-red.svg?style=for-the-badge" alt="windows"/>
+  <!-- <img height="25" src="https://img.shields.io/badge/WINDOWS-YES-darkgreen.svg?style=for-the-badge" alt="windows"/> -->
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/MACOS-NOT_YET-red.svg?style=for-the-badge" alt="macos"/>
+<!-- </p>
+<p align="center"> -->
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/LINUX-NOT_YET-red.svg?style=for-the-badge" alt="linux"/>
   &nbsp;
