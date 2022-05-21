@@ -1,0 +1,163 @@
+https://icons8.com/
+
+
+linux download from endora ftp share
+=================================================================================================================
+curl -u files:Files123 'ftp://ftp.pasleto.eu/cms/current/test.zip' -o test.zip
+curl -u files:Files123 -sLOJ 'ftp://ftp.pasleto.eu/cms/current/test.zip' 
+
+
+linux download from endora web file server
+=================================================================================================================
+-- $allow_direct_link = false
+curl -sLOJ 'https://files.pasleto.eu/index.php?do=download&file=cms%2Fcurrent%2Ftest.zip'
+curl -sLOJ 'https://files.pasleto.eu/?do=download&file=cms%2Fcurrent%2Ftest.zip'
+curl -sLOJ 'https://files.pasleto.eu/index.php?do=download&file=cms/current/test.zip'
+curl -sLOJ 'https://files.pasleto.eu/?do=download&file=cms/current/test.zip'
+
+-- $allow_direct_link = true
+curl -sLOJ 'https://files.pasleto.eu/cms/current/test.zip'
+curl -sLO 'https://files.pasleto.eu/cms/current/test.zip'
+curl -O 'https://files.pasleto.eu/cms/current/test.zip'
+
+
+linux unzip downloaded file
+=================================================================================================================
+unzip test.zip
+rm test.zip
+
+
+curl -sLO 'https://files.pasleto.eu/cms/current/test.zip' && unzip test.zip && rm test.zip
+
+curl -sLO 'https://files.pasleto.eu/cms/current/test.zip'
+unzip test.zip && rm test.zip
+
+
+
+
+
+/opt/sentinel
+  - sentinel-install-scripts.zip
+  - /install [created after unzip sentinel-install-scripts.zip]
+    - /images
+      - /splash.png
+      - /background.png
+    - /all_pre_install.sh
+       .
+       .
+       .
+  - /application [created by install script based on unit type]
+	   .
+     .
+     .
+
+
+-----------------------------------------------------------------------------------------------------------------
+### for production
+
+sudo curl -sL 'https://files.pasleto.eu/sentinel/deploy/sentinel-units/linux/sentinel-install-scripts/sentinel_init.txt' -o sentinel_init.sh
+sudo chmod u+x sentinel_init.sh
+sudo ./sentinel_init.sh
+
+sudo /opt/sentinel/install/all_pre_install.sh
+sudo /opt/sentinel/install/unit_storage_terminal.sh
+
+
+          sudo mkdir /opt/sentinel && cd /opt/sentinel 
+          sudo curl -sLO 'https://files.pasleto.eu/sentinel/deploy/sentinel-units/linux/sentinel-install-scripts/sentinel-install-scripts.zip'
+          sudo unzip sentinel-install-scripts.zip && cd install
+          sudo ./all_pre_install.sh
+
+
+### for testing
+
+sudo curl -sL 'https://files.pasleto.eu/sentinel/deploy/scripts/all_init.txt' -o all_init.sh
+sudo chmod +x all_init.sh
+sudo ./all_init.sh
+
+
+
+          sudo mkdir -p /opt/sentinel/install && cd /opt/sentinel/install
+          sudo curl -sLO 'https://files.pasleto.eu/sentinel/deploy/scripts/splash.png'
+          sudo curl -sLO 'https://files.pasleto.eu/sentinel/deploy/scripts/background.jpg'
+          sudo mkdir images
+          sudo mv splash.png ./images/splash.png
+          sudo mv background.jpg ./images/background.jpg
+          sudo curl -sL 'https://files.pasleto.eu/sentinel/deploy/scripts/all_pre_install.txt' -o all_pre_install.sh
+          sudo chmod u+x all_pre_install.sh
+          sudo ./all_pre_install.sh
+
+
+
+
+=================================================
+
+sudo nano /etc/xdg/autostart/sentinel.desktop
+[Desktop Entry]
+Name=Sentinel
+Exec=firefox -kiosk https://google.com
+
+=================================================
+
+
+install flutter-pi
+Switch to console mode: System Options -> Boot / Auto Login and select Console or Console (Autologin)
+Configure the GPU memory Performance Options -> GPU Memory and enter 64
+usermod -aG render pi
+usermod -aG render sentinel
+
+
+==========================
+nano /usr/bin/raspi-config
+==========================
+
+
+
+
+
+
+
+all
+------
+//! wifi is still enabled
+//	sudo nano /boot/config.txt
+//	dtoverlay=disable-wifi
+//	dtoverlay=disable-bt
+! change download folder to anything else then home directory
+enable i2c
+enable spi
+enable 1-wire
+
+//sudo nano /boot/cmdline.txt
+//add consoleblank=0 (disable console blanking)
+
+gui pi
+------
+//autologin sentinel user 
+//	sudo sed -i -- "s/autologin-user=pi/autologin-user=sentinel/" /etc/lightdm/lightdm.conf
+//
+//	sudo nano /etc/lightdm/lightdm.conf
+//	change autologin-user=pi for autologin-user=sentinel
+
+//hide desktop icons and change wallpaper
+//	sudo sed -i -- "s/show_trash=1/show_trash=0/" /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+//	sudo sed -i -- "s/show_mounts=1/show_mounts=0/" /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+//	sudo sed -i -- "s/wallpaper=/usr/share/rpd-wallpaper/clouds.jpg/wallpaper=/home/sentinel/background.jpg/" /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+//
+//	sudo nano /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+//	change show_trash=1 for show_trash=0
+//	change show_mounts=1 for show_mounts=0
+//	change wallpaper=/usr/share/rpd-wallpaper/clouds.jpg for wallpaper=/home/sentinel/background.jpg
+
+//disable display sleep (screen blanking) and hide cursor 
+//	sudo sed -i -- "s/#xserver-command=X/xserver-command=X -s 0 -p 0 -dpms -nocursor/" /etc/lightdm/lightdm.conf
+//
+//	sudo nano /etc/lightdm/lightdm.conf
+//	change #xserver-command=X for xserver-command=X -s 0 -p 0 -dpms -nocursor (xserver-command=X -s 0 dpms)
+
+//hide status bar 
+//	sudo sed -i -- "s/@lxpanel --profile LXDE-pi/#@lxpanel --profile LXDE-pi/" /etc/xdg/lxsession/LXDE-pi/autostart
+//
+//	sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
+//	comment out @lxpanel --profile LXDE-pi (permanent hide status bar)
+

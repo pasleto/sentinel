@@ -25,13 +25,14 @@ if(process.env.USE_SSL == 'true') {
   server.use(client.frontendHostingHandler); // Frontend Hosting - failover route
 
   module.exports = {
-    server,
+    server, // this will be https
   };
 } else {
   backend.use(cors());
   backend.use(express.json());
   backend.use(helmet()); // Server Security
   backend.use('/api', require('./routes/api')); // Backend /api routes
+  // TODO - handle / route
   
   frontend.use(cors());
   frontend.use(express.json());
@@ -45,8 +46,8 @@ if(process.env.USE_SSL == 'true') {
   frontend.use(client.frontendHostingHandler); // Frontend Hosting - failover route
   
   module.exports = {
-    backend,
-    frontend,
+    backend, // this will be https
+    frontend, // this will be http
   };
 }
 

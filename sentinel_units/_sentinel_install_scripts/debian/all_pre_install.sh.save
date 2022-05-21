@@ -1,0 +1,259 @@
+#!/usr/bin/env bash
+
+
+
+NTP_SERVERS="tik.cesnet.cz tak.cesnet.cz" # TODO - make as prompt
+NEW_TIMEZONE="Europe/Prague"
+
+
+
+# ================================================================
+# Sentinel Prerequisites Install Script
+# ================================================================
+
+# ARCH=$(uname -m)
+# ARCH=$(dpkg --print-architecture)
+CURRENT_HOSTNAME=$(cat /etc/hostname | tr -d ' \t\n\r')
+CURRENT_USERNAME=$(logname)
+SENTINEL_USERNAME=sentinel
+SENTINEL_PASSWORD=password
+HOSTNAME_PREFIX="SENTINEL-UNIT"
+MAC_ADDRESS=$(cat /sys/class/net/eth0/address | sed 's/://g' | tr [:lower:] [:upper:])
+NEW_HOSTNAME="${HOSTNAME_PREFIX}-${MAC_ADDRESS}"
+
+function info { echo -e "\e[32m[info] $*\e[39m"; }
+function warn  { echo -e "\e[33m[warn] $*\e[39m"; }
+function error { echo -e "\e[31m[error] $*\e[39m"; exit 1; }
+
+info "------------------------------------------------------------"
+info "Sentinel - Prerequisites Install Script"
+info "------------------------------------------------------------"
+if [ $(id -u) -ne 0 ]; then
+  error "Please run this script with root permissions"
+fi
+warn "If you want to abort, hit ctrl+c within 10 seconds..."
+sleep 10
+
+echo -e ""
+info "Starting Prerequisites Install Script"
+
+info "Running apt-get update ..."
+apt-get update -y 1>/dev/null
+sleep 5
+
+info "Running apt-get upgrade ..."
+apt-get upgrade -y 1>/dev/null
+sleep 5
+
+info "Running apt-get autoremove ..."
+apt-get autoremove -y 1>/dev/null
+sleep 5
+
+info "Changing default user password ..."
+echo ${CURRENT_USERNAME}:${SENTINEL_PASSWORD} | chpasswd
+sleep 5
+
+info "Removing MOTD ..."
+rm /etc/motd
+sleep 5
+
+info "Changing timezone ..."
+timedatectl set-timezone ${NEW_TIMEZONE}
+sleep 5
+
+info "Changing RTC into UTC zone ..."
+timedatectl set-local-rtc 0 # timedatectl set-local-rtc 1
+sleep 5
+
+info "Setting up new NTP configuration ..."
+rm /etc/systemd/timesyncd.conf
+touch /etc/systemd/timesyncd.conf
+chown ${CURRENT_USERNAME}:${CURRENT_USERNAME} /etc/systemd/timesyncd.conf
+{
+echo '[Time]'
+echo 'NTP='${NTP_SERVERS}
+echo 'FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org'
+echo 'RootDistanceMaxSec=5'
+echo 'PollIntervalMinSec=32'
+echo 'PollIntervalMaxSec=2048'
+} >> /etc/systemd/timesyncd.conf
+chown root:root /etc/systemd/timesyncd.conf
+timedatectl set-ntp true
+systemctl daemon-reload
+systemctl restart systemd-timesyncd
+sleep 5
+
+info "Creating user sentinel ..."
+egrep "^${SENTINEL_USERNAME}" /etc/passwd >/dev/null
+if [ $? -eq 0 ]; then
+  warn "User ${SENTINEL_USERNAME} already exists"
+else
+  useradd -u 1111 -m ${SENTINEL_USERNAME}
+  info "Changing user sentinel password ..."
+  echo ${SENTINEL_USERNAME}:${SENTINEL_PASSWORD} | chpasswd
+fi
+sleep 5
+
+info "Setting login dashboard for user sentinel ..."
+echo '' >> /home/${SENTINEL_USERNAME}/.profile
+echo 'echo "' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Date..................:$(tput setaf 1) `date +"%A, %d. %B %Y, %T %Z"`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)System................:$(tput setaf 1) `uname -srmo`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Uptime................:$(tput setaf 1) `printf "%d days, %02dh %02dm %02ds" "$(($(cut -d. -f1 /proc/uptime)/86400))" "$(($(cut -d. -f1 /proc/uptime)/3600%24))" "$(($(cut -d. -f1 /proc/uptime)/60%60))" "$(($(cut -d. -f1 /proc/uptime)%60))"`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Memory................:$(tput setaf 1) Total: `free -m | grep Mem | awk '\''{print $2}'\''`MB | Used: `free -m | grep Mem | awk '\''{print $3}'\''`MB | Free: `free -m | grep Mem | awk '\''{print $4}'\''`MB' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Disk Usage............:$(tput setaf 1) Total: `df -h ~ | grep /dev/root | awk '\''{print $2}'\''`B | Used: `df -h ~ | grep /dev/root | awk '\''{print $3}'\''`B | Free: `df -h ~ | grep /dev/root | awk '\''{print $4}'\''`B | Usage: `df -h ~ | grep /dev/root | awk '\''{print $5}'\''`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Load Averages.........:$(tput setaf 1) `cut -c "1-4" /proc/loadavg` (1 min) | `cut -c "6-9" /proc/loadavg` (5 min) | `cut -c "11-14" /proc/loadavg` (15 min)' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Running Processes.....:$(tput setaf 1) `ps ax | wc -l | tr -d " "`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)IP Address............:$(tput setaf 1) `hostname -I | cut -d " " -f1`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Default Gateway.......:$(tput setaf 1) `/sbin/ip route | awk '\''/default/ {print $3}'\''`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)DNS Servers...........:$(tput setaf 1) `cat /etc/resolv.conf | grep '\''nameserver'\'' | awk '\''{ print $2 }'\'' ORS='\'' '\''`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)MAC Address...........:$(tput setaf 1) `cat /sys/class/net/eth0/address | sed '\''s/:/-/g'\'' | tr [:lower:] [:upper:]`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Hostname..............:$(tput setaf 1) `hostname`' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput setaf 2)Temperature...........:$(tput setaf 1) `/usr/bin/vcgencmd measure_temp | cut -c "6-9"`ºC' >> /home/${SENTINEL_USERNAME}/.profile
+echo '$(tput sgr0)"' >> /home/${SENTINEL_USERNAME}/.profile
+echo '' >> /home/${SENTINEL_USERNAME}/.profile
+sleep 5
+
+if [ -f "/etc/rpi-issue" ]; then # this is raspberry pi os
+
+  info "Changing /boot/config.txt ..."
+  echo "dtoverlay=disable-wifi" >> /boot/config.txt
+  echo "dtoverlay=disable-bt" >> /boot/config.txt
+  echo "disable_splash=1" >> /boot/config.txt
+  # TODO - enable i2c and spi
+
+  if [ -f "/usr/share/plymouth/themes/pix/splash.png" ]; then # and has gui
+
+    info "Changing /boot/cmdline.txt ..."
+    sed -i 's/tty1/tty3/g' /boot/cmdline.txt
+    echo " logo.nologo vt.global_cursor_default=0 consoleblank=0" >> /boot/cmdline.txt # difference -> quiet splash plymouth.ignore-serial-consoles
+
+    info "Setting autologin for user sentinel ..."
+    sed -i "s/autologin-user=${CURRENT_USERNAME}/autologin-user=${SENTINEL_USERNAME}/" /etc/lightdm/lightdm.conf
+
+    info "Hiding desktop icons ..."
+    sed -i "s/show_trash=1/show_trash=0/" /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+    sed -i "s/show_mounts=1/show_mounts=0/" /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+
+    info "Disabling screen blanking and hiding mouse cursor ..."
+    sed -i "s/#xserver-command=X/xserver-command=X -s 0 -p 0 -dpms -nocursor/" /etc/lightdm/lightdm.conf
+
+    info "Hiding desktop status bar ..."
+    sed -i "s/@lxpanel --profile LXDE-pi/#@lxpanel --profile LXDE-pi/" /etc/xdg/lxsession/LXDE-pi/autostart
+
+    info "Disabling screensave ..."
+    sed -i "s/@xscreensaver -no-splash/#@xscreensaver -no-splash/" /etc/xdg/lxsession/LXDE-pi/autostart
+
+    info "Setting permissions for user sentinel ..."
+    usermod -aG adm,dialout,cdrom,sudo,audio,video,plugdev,users,input,netdev,spi,i2c,gpio,render,lpadmin ${SENTINEL_USERNAME}
+
+    if [ -f "/opt/sentinel/install/images/splash.png" ]; then
+      info "Changing splash screen image ..."
+      mv /usr/share/plymouth/themes/pix/splash.png /usr/share/plymouth/themes/pix/splash.png.bk
+      cp /opt/sentinel/install/images/splash.png /usr/share/plymouth/themes/pix/splash.png
+    fi
+
+
+
+    if [ -f "/opt/sentinel/install/images/background.jpg" ]; then # TODO - greb original wallpaper= to replace into variable
+      info "Changing desktop wallpaper ..."
+      # mv /usr/share/rpd-wallpaper/clouds.jpg /usr/share/rpd-wallpaper/clouds.jpg.bk
+      # cp /opt/sentinel/install/images/background.jpg /usr/share/rpd-wallpaper/clouds.jpg
+      cp /opt/sentinel/install/images/background.jpg /usr/share/rpd-wallpaper/sentinel.jpg
+      sed -i "s~wallpaper=/usr/share/rpd-wallpaper/clouds.jpg~wallpaper=/usr/share/rpd-wallpaper/sentinel.jpg~" /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+      sed -i "s~wallpaper=/usr/share/rpd-wallpaper/clouds.jpg~wallpaper=/usr/share/rpd-wallpaper/sentinel.jpg~" /etc/lightdm/pi-greeter.conf
+    fi
+
+    if [ -f "/opt/sentinel/install/images/icon.png" ]; then # TODO - greb original default-user-image= to replace into variable
+      info "Changing icon image ..."
+      # mv /usr/share/raspberrypi-artwork/raspberry-pi-logo.png /usr/share/raspberrypi-artwork/raspberry-pi-logo.png.bk
+      cp /opt/sentinel/install/images/icon.png /usr/share/raspberrypi-artwork/sentinel.png
+      sed -i "s~default-user-image=/usr/share/raspberrypi-artwork/raspberry-pi-logo.png~default-user-image=/usr/share/raspberrypi-artwork/sentinel.png~" /etc/lightdm/pi-greeter.conf
+    fi
+
+
+
+  else # and has no gui
+
+    info "Changing /boot/cmdline.txt ..."
+    sed -i 's/tty1/tty3/g' /boot/cmdline.txt
+    echo " quiet logo.nologo vt.global_cursor_default=0 consoleblank=0" >> /boot/cmdline.txt
+
+    info "Setting permissions for user sentinel ..."
+    usermod -aG adm,dialout,cdrom,sudo,audio,video,plugdev,users,input,netdev,spi,i2c,gpio ${SENTINEL_USERNAME}
+
+  fi
+
+else # TODO - this is other linux distro
+
+  # TODO - check for Debian || Ubuntu
+
+  info "Setting permissions for user sentinel ..."
+  usermod -aG adm,dialout,cdrom,sudo,audio,video,plugdev,users,netdev,systemd-journal ${SENTINEL_USERNAME} # staff,shadow
+
+  info "Installing cockpit ..."
+  apt-get install cockpit -y 1>/dev/null
+  sleep 5
+
+fi
+
+info "Installing needed packages ..."
+apt-get install -y wget curl git 1>/dev/null
+apt-get install -y libffi-dev libssl-dev 1>/dev/null
+apt-get install -y python3-dev 1>/dev/null
+apt-get install -y python3 python3-pip 1>/dev/null
+apt-get install -y ca-certificates software-properties-common apt-transport-https gnupg lsb-release 1>/dev/null
+sleep 5
+
+info "Installing docker ..."
+curl -sL https://get.docker.com | sh &>/dev/null
+sleep 5
+
+info "Adding users into docker group ..."
+usermod -aG docker ${SENTINEL_USERNAME}
+sleep 5
+
+info "Installing nodejs ..."
+curl -sL https://deb.nodesource.com/setup_lts.x | bash - 1>/dev/null
+apt-get install -y nodejs 1>/dev/null
+sleep 5
+
+info "Installing docker compose ..."
+pip3 install docker-compose 1>/dev/null
+sleep 5
+
+info "Enabling docker service ..."
+systemctl -q enable docker
+sleep 5
+
+info "Running apt-get update ..."
+apt-get update -y 1>/dev/null
+sleep 5
+
+info "Running apt-get upgrade ..."
+apt-get upgrade -y 1>/dev/null
+sleep 5
+
+info "Running apt-get autoremove ..."
+apt-get autoremove -y 1>/dev/null
+sleep 5
+
+info "Setting new hostname ..."
+echo ${NEW_HOSTNAME} > /etc/hostname
+sed -i "s/127.0.1.1.*${CURRENT_HOSTNAME}/127.0.1.1\t${NEW_HOSTNAME}/g" /etc/hosts
+hostname ${NEW_HOSTNAME}
+sleep 5
+
+info "Disabling IPv6 ..."
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+sleep 5
+
+echo -e ""
+info "------------------------------------------------------------"
+info "Prerequisites Install Script Finished"
+info "New user credentials:  ${SENTINEL_USERNAME}  /  ${SENTINEL_PASSWORD}"
+info "Reboot is required!"
+info "Use newly created account!"
+info "Then continue with another script depending on unit"
+info "------------------------------------------------------------"
+echo -e ""

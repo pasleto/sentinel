@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="./docs/images/readme_logo.png" alt="Logo"/>
+  <img src="./documents/logos/readme_logo.png" alt="Logo"/>
 </h1>
 &nbsp;
 <p align="center">
@@ -9,6 +9,8 @@
   <img height="25" src="https://img.shields.io/badge/docker-yes-blue.svg?style=for-the-badge" alt="docker"/>
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/armv7-yes-blue.svg?style=for-the-badge" alt="armv7"/>
+  &nbsp;
+  <img height="25" src="https://img.shields.io/badge/armv8-yes-blue.svg?style=for-the-badge" alt="armv8"/>
 </p>
 &nbsp;
 <h3 align="center">
@@ -21,11 +23,11 @@
 <p align="center">
   Depends on use case, in general one linux server is needed to run backend services.
   <br>
-  Windows server can be used aswell, but installation is not automated.
+  Windows server can be used aswell, but installation is not automated (yet).
 </p>
 &nbsp;
 <h3 align="center">
-  Client App Supported Systems
+  Client Application Supported Systems
 </h3>
 &nbsp;
 <p align="center">
@@ -51,61 +53,27 @@
 ## Project Structure
 ```
 .
-├── scripts                               # installation scripts for linux systems
-│   ├── all_pre_install.sh
-│   ├── all_post_install.sh
-│   ├── server_gateway.sh
-│   ├── unit_attendance.sh
-│   ├── unit_meeting_room.sh
-│   ├── unit_signage_display.sh
-│   └── ...
-├── sentinel_client                       # client application
-│   ├── ...
-│   └── ...
-├── sentinel_gateway                      # server application
-│   ├── certificates                      # folder to put your https certificates in
-│   │   └── ...
-│   ├── client                            # client web application root folder
-│   │   ├── ...
-│   │   └── ...
+├── documents
+│   ├── logos                                       # provided images
+│   └── manuals                                     # provided documentation
+├── sentinel_client                                 # client application
+├── sentinel_gateway                                # server application
+│   ├── certificates                                # folder to put your https certificates in
+│   ├── client                                      # client web application root folder
 │   ├── files                             
-│   │   ├── network_share                 # network SMB share root folder
-│   │   │   ├── ...
-│   │   │   └── ...
-│   │   └── web_share                     # web share root folder
-│   │       ├── ...
-│   │       └── ...
-│   ├── logs                              # server logs root folder
-│   │   ├── ...
-│   │   └── ...
-│   ├── server                            # server app nodejs source files
-│   │   ├── ...
-│   │   └── ...
+│   │   ├── network_share                           # network SMB share root folder
+│   │   └── web_share                               # web share root folder
+│   ├── logs                                        # server logs root folder
+│   ├── server                                      # source files root folder
 │   └── ...
-├── sentinel_units                        # sentinel units projects
-│   ├── sentinel_access_unit              # access control unit
-│   │   ├── ...
-│   │   └── ...
-│   ├── sentinel_attendance_unit          # attendance unit
-│   │   ├── ...
-│   │   └── ...
-│   ├── sentinel_bus_client               # bus commuting unit
-│   │   ├── ...
-│   │   └── ...
-│   ├── sentinel_car_unit                 # car gps monitoring unit
-│   │   ├── ...
-│   │   └── ...
-│   ├── sentinel_signage_display_unit     # signage display unit
-│   │   ├── ...
-│   │   └── ...
-│   ├── sentinel_environment_unit         # environment monitoring unit
-│   │   ├── ...
-│   │   └── ...
-│   ├── sentinel_meeting_room_unit        # meeting room display unit
-│   │   ├── ...
-│   │   └── ...
+├── sentinel_units                                  # sentinel units
+│   ├── _sentinel_install_scripts                   # installation scripts
+│   ├── sentinel_access_lite                        # access control unit - lite version
+│   ├── sentinel_storage_terminal                   # storage terminal unit
+│   │   ├── sentinel_storage_terminal_backend
+│   │   └── sentinel_storage_terminal_frontend
 │   └── ...
-└── docs                                  # documentation and resources
+└── ...
 ```
 
 ## Gateway installation process (linux - recommended way)

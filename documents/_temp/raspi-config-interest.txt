@@ -1,0 +1,508 @@
+#!/bin/sh
+
+INTERACTIVE=True
+ASK_TO_REBOOT=0
+BLACKLIST=/etc/modprobe.d/raspi-blacklist.conf
+CONFIG=/boot/config.txt
+
+USER=${SUDO_USER:-$(who -m | awk '{ print $1 }')}
+
+is_pi () {
+  ARCH=$(dpkg --print-architecture)
+  if [ "$ARCH" = "armhf" ] || [ "$ARCH" = "arm64" ] ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+if is_pi ; then
+  CMDLINE=/boot/cmdline.txt
+else
+  CMDLINE=/proc/cmdline
+fi
+
+deb_ver () {
+  ver=`cat /etc/debian_version | cut -d . -f 1`
+  echo $ver
+}
+
+do_configure_keyboard() {
+  printf "Reloading keymap. This may take a short while\n"
+  if [ "$INTERACTIVE" = True ]; then
+    dpkg-reconfigure keyboard-configuration
+  else
+    local KEYMAP="$1"
+    sed -i /etc/default/keyboard -e "s/^XKBLAYOUT.*/XKBLAYOUT=\"$KEYMAP\"/"
+    dpkg-reconfigure -f noninteractive keyboard-configuration
+  fi
+  invoke-rc.d keyboard-setup start
+  setsid sh -c 'exec setupcon -k --force <> /dev/tty1 >&0 2>&1'
+  udevadm trigger --subsystem-match=input --action=change
+  return 0
+}
+
+do_change_locale() {
+  if [ "$INTERACTIVE" = True ]; then
+    dpkg-reconfigure locales
+  else
+    if ! LOCALE_LINE="$(grep -E "^$1( |$)" /usr/share/i18n/SUPPORTED)"; then
+      return 1
+    fi
+    export LC_ALL=C
+    export LANG=C
+    local LG="/etc/locale.gen"
+    local NEW_LANG="$(echo $LOCALE_LINE | cut -f1 -d " ")"
+    [ -L "$LG" ] && [ "$(readlink $LG)" = "/usr/share/i18n/SUPPORTED" ] && rm -f "$LG"
+    echo "$LOCALE_LINE" > /etc/locale.gen
+    update-locale --no-checks LANG
+    update-locale --no-checks "LANG=$NEW_LANG"
+    dpkg-reconfigure -f noninteractive locales
+  fi
+}
+
+do_change_timezone() {
+  if [ "$INTERACTIVE" = True ]; then
+    dpkg-reconfigure tzdata
+  else
+    local TIMEZONE="$1"
+    if [ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
+      return 1;
+    fi
+    rm /etc/localtime
+    echo "$TIMEZONE" > /etc/timezone
+    dpkg-reconfigure -f noninteractive tzdata
+  fi
+}
+
+get_wifi_country() {
+  CODE=${1:-0}
+  IFACE="$(list_wlan_interfaces | head -n 1)"
+  if [ -z "$IFACE" ]; then
+    if [ "$INTERACTIVE" = True ]; then
+      whiptail --msgbox "No wireless interface found" 20 60
+    fi
+    return 1
+  fi
+  if ! wpa_cli -i "$IFACE" status > /dev/null 2>&1; then
+    if [ "$INTERACTIVE" = True ]; then
+      whiptail --msgbox "Could not communicate with wpa_supplicant" 20 60
+    fi
+    return 1
+  fi
+  wpa_cli -i "$IFACE" save_config > /dev/null 2>&1
+  COUNTRY="$(wpa_cli -i "$IFACE" get country)"
+  if [ "$COUNTRY" = "FAIL" ]; then
+    return 1
+  fi
+  if [ $CODE = 0 ]; then
+    echo "$COUNTRY"
+  fi
+  return 0
+}
+
+do_wifi_country() {
+  IFACE="$(list_wlan_interfaces | head -n 1)"
+  if [ -z "$IFACE" ]; then
+    if [ "$INTERACTIVE" = True ]; then
+      whiptail --msgbox "No wireless interface found" 20 60
+    fi
+    return 1
+  fi
+
+  if ! wpa_cli -i "$IFACE" status > /dev/null 2>&1; then
+    if [ "$INTERACTIVE" = True ]; then
+      whiptail --msgbox "Could not communicate with wpa_supplicant" 20 60
+    fi
+    return 1
+  fi
+
+  oIFS="$IFS"
+  if [ "$INTERACTIVE" = True ]; then
+    value=$(cat /usr/share/zoneinfo/iso3166.tab | tail -n +26 | tr '\t' '/' | tr '\n' '/')
+    IFS="/"
+    COUNTRY=$(whiptail --menu "Select the country in which the Pi is to be used" 20 60 10 ${value} 3>&1 1>&2 2>&3)
+  else
+    COUNTRY=$1
+    true
+  fi
+  if [ $? -eq 0 ];then
+    wpa_cli -i "$IFACE" set country "$COUNTRY"
+    wpa_cli -i "$IFACE" save_config > /dev/null 2>&1
+    if iw reg set "$COUNTRY" 2> /dev/null; then
+      ASK_TO_REBOOT=1
+    fi
+    if hash rfkill 2> /dev/null; then
+      rfkill unblock wifi
+      if is_pi ; then
+        for filename in /var/lib/systemd/rfkill/*:wlan ; do
+          echo 0 > $filename
+        done
+      fi
+    fi
+    if [ "$INTERACTIVE" = True ]; then
+      whiptail --msgbox "Wireless LAN country set to $COUNTRY" 20 60 1
+    fi
+  fi
+  IFS=$oIFS
+}
+
+get_hostname() {
+  cat /etc/hostname | tr -d " \t\n\r"
+}
+
+do_hostname() {
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "\
+Please note: RFCs mandate that a hostname's labels \
+may contain only the ASCII letters 'a' through 'z' (case-insensitive), 
+the digits '0' through '9', and the hyphen.
+Hostname labels cannot begin or end with a hyphen. 
+No other symbols, punctuation characters, or blank spaces are permitted.\
+" 20 70 1
+  fi
+  CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
+  if [ "$INTERACTIVE" = True ]; then
+    NEW_HOSTNAME=$(whiptail --inputbox "Please enter a hostname" 20 60 "$CURRENT_HOSTNAME" 3>&1 1>&2 2>&3)
+  else
+    NEW_HOSTNAME=$1
+    true
+  fi
+  if [ $? -eq 0 ]; then
+    echo $NEW_HOSTNAME > /etc/hostname
+    sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+    ASK_TO_REBOOT=1
+  fi
+}
+
+get_vnc() {
+  if systemctl status vncserver-x11-serviced.service  | grep -q -w active; then
+    echo 0
+  else
+    echo 1
+  fi
+}
+
+do_vnc() {
+  DEFAULT=--defaultno
+  if [ $(get_vnc) -eq 0 ]; then
+    DEFAULT=
+  fi
+  APT_GET_FLAGS=""
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --yesno "Would you like the VNC Server to be enabled?" $DEFAULT 20 60 2
+    RET=$?
+  else
+    RET=$1
+    APT_GET_FLAGS="-y"
+  fi
+  if [ $RET -eq 0 ]; then
+    if is_installed realvnc-vnc-server || apt-get install "$APT_GET_FLAGS" realvnc-vnc-server; then
+      systemctl enable vncserver-x11-serviced.service &&
+      systemctl start vncserver-x11-serviced.service &&
+      STATUS=enabled
+    else
+      return 1
+    fi
+  elif [ $RET -eq 1 ]; then
+    if is_installed realvnc-vnc-server; then
+      systemctl disable vncserver-x11-serviced.service
+      systemctl stop vncserver-x11-serviced.service
+    fi
+    STATUS=disabled
+  else
+    return $RET
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "The VNC Server is $STATUS" 20 60 1
+  fi
+}
+
+get_spi() {
+  if grep -q -E "^(device_tree_param|dtparam)=([^,]*,)*spi(=(on|true|yes|1))?(,.*)?$" $CONFIG; then
+    echo 0
+  else
+    echo 1
+  fi
+}
+
+do_spi() {
+  DEFAULT=--defaultno
+  if [ $(get_spi) -eq 0 ]; then
+    DEFAULT=
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --yesno "Would you like the SPI interface to be enabled?" $DEFAULT 20 60 2
+    RET=$?
+  else
+    RET=$1
+  fi
+  if [ $RET -eq 0 ]; then
+    SETTING=on
+    STATUS=enabled
+  elif [ $RET -eq 1 ]; then
+    SETTING=off
+    STATUS=disabled
+  else
+    return $RET
+  fi
+
+  set_config_var dtparam=spi $SETTING $CONFIG &&
+  if ! [ -e $BLACKLIST ]; then
+    touch $BLACKLIST
+  fi
+  sed $BLACKLIST -i -e "s/^\(blacklist[[:space:]]*spi[-_]bcm2708\)/#\1/"
+  dtparam spi=$SETTING
+
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "The SPI interface is $STATUS" 20 60 1
+  fi
+}
+
+get_i2c() {
+  if grep -q -E "^(device_tree_param|dtparam)=([^,]*,)*i2c(_arm)?(=(on|true|yes|1))?(,.*)?$" $CONFIG; then
+    echo 0
+  else
+    echo 1
+  fi
+}
+
+do_i2c() {
+  DEFAULT=--defaultno
+  if [ $(get_i2c) -eq 0 ]; then
+    DEFAULT=
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --yesno "Would you like the ARM I2C interface to be enabled?" $DEFAULT 20 60 2
+    RET=$?
+  else
+    RET=$1
+  fi
+  if [ $RET -eq 0 ]; then
+    SETTING=on
+    STATUS=enabled
+  elif [ $RET -eq 1 ]; then
+    SETTING=off
+    STATUS=disabled
+  else
+    return $RET
+  fi
+
+  set_config_var dtparam=i2c_arm $SETTING $CONFIG &&
+  if ! [ -e $BLACKLIST ]; then
+    touch $BLACKLIST
+  fi
+  sed $BLACKLIST -i -e "s/^\(blacklist[[:space:]]*i2c[-_]bcm2708\)/#\1/"
+  sed /etc/modules -i -e "s/^#[[:space:]]*\(i2c[-_]dev\)/\1/"
+  if ! grep -q "^i2c[-_]dev" /etc/modules; then
+    printf "i2c-dev\n" >> /etc/modules
+  fi
+  dtparam i2c_arm=$SETTING
+  modprobe i2c-dev
+
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "The ARM I2C interface is $STATUS" 20 60 1
+  fi
+}
+
+get_autologin() {
+  if [ $(get_boot_cli) -eq 0 ]; then
+    # booting to CLI
+    # stretch or buster - is there an autologin conf file?
+    if [ -e /etc/systemd/system/getty@tty1.service.d/autologin.conf ] ; then
+      echo 0
+    else
+      # stretch or earlier - check the getty service symlink for autologin
+      if [ $(deb_ver) -le 9 ] && grep -q autologin /etc/systemd/system/getty.target.wants/getty@tty1.service ; then
+        echo 0
+      else
+        echo 1
+      fi
+    fi
+  else
+    # booting to desktop - check the autologin for lightdm
+    if grep -q "^autologin-user=" /etc/lightdm/lightdm.conf ; then
+      echo 0
+    else
+      echo 1
+    fi
+  fi
+}
+
+get_boot_splash() {
+  if is_pi ; then
+    if grep -q "splash" $CMDLINE ; then
+      echo 0
+    else
+      echo 1
+    fi
+  else
+    if grep -q "GRUB_CMDLINE_LINUX_DEFAULT.*splash" /etc/default/grub ; then
+      echo 0
+    else
+      echo 1
+    fi
+  fi
+}
+
+do_boot_splash() {
+  if [ ! -e /usr/share/plymouth/themes/pix/pix.script ]; then
+    if [ "$INTERACTIVE" = True ]; then
+      whiptail --msgbox "The splash screen is not installed so cannot be activated" 20 60 2
+    fi
+    return 1
+  fi
+  DEFAULT=--defaultno
+  if [ $(get_boot_splash) -eq 0 ]; then
+    DEFAULT=
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --yesno "Would you like to show the splash screen at boot?" $DEFAULT 20 60 2
+    RET=$?
+  else
+    RET=$1
+  fi
+  if [ $RET -eq 0 ]; then
+    if is_pi ; then
+      if ! grep -q "splash" $CMDLINE ; then
+        sed -i $CMDLINE -e "s/$/ quiet splash plymouth.ignore-serial-consoles/"
+      fi
+    else
+      sed -i /etc/default/grub -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 quiet splash plymouth.ignore-serial-consoles\"/"
+      sed -i /etc/default/grub -e "s/  \+/ /g"
+      sed -i /etc/default/grub -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\" /GRUB_CMDLINE_LINUX_DEFAULT=\"/"
+      update-grub
+    fi
+    STATUS=enabled
+  elif [ $RET -eq 1 ]; then
+    if is_pi ; then
+      if grep -q "splash" $CMDLINE ; then
+        sed -i $CMDLINE -e "s/ quiet//"
+        sed -i $CMDLINE -e "s/ splash//"
+        sed -i $CMDLINE -e "s/ plymouth.ignore-serial-consoles//"
+      fi
+    else
+      sed -i /etc/default/grub -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)quiet\(.*\)\"/GRUB_CMDLINE_LINUX_DEFAULT=\"\1\2\"/"
+      sed -i /etc/default/grub -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)splash\(.*\)\"/GRUB_CMDLINE_LINUX_DEFAULT=\"\1\2\"/"
+      sed -i /etc/default/grub -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)plymouth.ignore-serial-consoles\(.*\)\"/GRUB_CMDLINE_LINUX_DEFAULT=\"\1\2\"/"
+      sed -i /etc/default/grub -e "s/  \+/ /g"
+      sed -i /etc/default/grub -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\" /GRUB_CMDLINE_LINUX_DEFAULT=\"/"
+      update-grub
+    fi
+    STATUS=disabled
+  else
+    return $RET
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "Splash screen at boot is $STATUS" 20 60 1
+  fi
+}
+
+get_onewire() {
+  if grep -q -E "^dtoverlay=w1-gpio" $CONFIG; then
+    echo 0
+  else
+    echo 1
+  fi
+}
+
+do_onewire() {
+  DEFAULT=--defaultno
+  CURRENT=0
+  if [ $(get_onewire) -eq 0 ]; then
+    DEFAULT=
+    CURRENT=1
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --yesno "Would you like the one-wire interface to be enabled?" $DEFAULT 20 60 2
+    RET=$?
+  else
+    RET=$1
+  fi
+  if [ $RET -eq $CURRENT ]; then
+    ASK_TO_REBOOT=1
+  fi
+  if [ $RET -eq 0 ]; then
+    sed $CONFIG -i -e "s/^#dtoverlay=w1-gpio/dtoverlay=w1-gpio/"
+    if ! grep -q -E "^dtoverlay=w1-gpio" $CONFIG; then
+      printf "dtoverlay=w1-gpio\n" >> $CONFIG
+    fi
+    STATUS=enabled
+  elif [ $RET -eq 1 ]; then
+    sed $CONFIG -i -e "s/^dtoverlay=w1-gpio/#dtoverlay=w1-gpio/"
+    STATUS=disabled
+  else
+    return $RET
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "The one-wire interface is $STATUS" 20 60 1
+  fi
+}
+
+get_proxy() {
+  SCHEME="$1"
+  VAR_NAME="${SCHEME}_proxy"
+  if [ -f /etc/profile.d/proxy.sh ]; then
+    # shellcheck disable=SC1091
+    . /etc/profile.d/proxy.sh
+  fi
+  eval "echo \$$VAR_NAME"
+}
+
+do_proxy() {
+  SCHEMES="$1"
+  ADDRESS="$2"
+  if [ "$SCHEMES" = "all" ]; then
+    CURRENT="$(get_proxy http)"
+    SCHEMES="http https ftp rsync"
+  else
+    CURRENT="$(get_proxy "$SCHEMES")"
+  fi
+  if [ "$INTERACTIVE" = True ]; then
+    if [ "$SCHEMES" = "no" ]; then
+      STRING="Please enter a comma separated list of addresses that should be excluded from using proxy servers.\\nEg: localhost,127.0.0.1,localaddress,.localdomain.com"
+    else
+      STRING="Please enter proxy address.\\nEg: http://user:pass@proxy:8080"
+    fi
+    if ! ADDRESS="$(whiptail --inputbox "$STRING"  20 60 "$CURRENT" 3>&1 1>&2 2>&3)"; then
+      return 0
+    fi
+  fi
+  for SCHEME in $SCHEMES; do
+    unset "${SCHEME}_proxy"
+    CURRENT="$(get_proxy "$SCHEME")"
+    if [ "$CURRENT" != "$ADDRESS" ]; then
+      ASK_TO_REBOOT=1
+    fi
+    if [ -f /etc/profile.d/proxy.sh ]; then
+      sed -i "/^export ${SCHEME}_/Id" /etc/profile.d/proxy.sh
+    fi
+    if [ "${SCHEME#*http}" != "$SCHEME" ]; then
+      if [ -f /etc/apt/apt.conf.d/01proxy ]; then
+        sed -i "/::${SCHEME}::Proxy/d" /etc/apt/apt.conf.d/01proxy
+      fi
+    fi
+    if [ -z "$ADDRESS" ]; then
+      STATUS=cleared
+      continue
+    fi
+    STATUS=updated
+    SCHEME_UPPER="$(echo "$SCHEME" | tr '[:lower:]' '[:upper:]')"
+    echo "export ${SCHEME_UPPER}_PROXY=\"$ADDRESS\"" >> /etc/profile.d/proxy.sh
+    if [ "$SCHEME" != "rsync" ]; then
+      echo "export ${SCHEME}_proxy=\"$ADDRESS\"" >> /etc/profile.d/proxy.sh
+    fi
+    if [ "${SCHEME#*http}" != "$SCHEME" ]; then
+      echo "Acquire::$SCHEME::Proxy \"$ADDRESS\";"  >> /etc/apt/apt.conf.d/01proxy
+    fi
+  done
+  if [ "$INTERACTIVE" = True ]; then
+    whiptail --msgbox "Proxy settings $STATUS" 20 60 1
+  fi
+}
+
+# Everything else needs to be run as root
+if [ $(id -u) -ne 0 ]; then
+  printf "Script must be run as root. Try 'sudo raspi-config'\n"
+  exit 1
+fi

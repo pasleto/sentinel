@@ -1,2 +1,0 @@
-http://kamilslab.com/2017/03/13/how-to-perform-a-quiet-boot-on-the-raspberry-pi/
-

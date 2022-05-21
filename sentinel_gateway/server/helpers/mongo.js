@@ -70,7 +70,7 @@ async function _settingInit() {
     await ldapPassword.save();
   }
 
-  const LDAP_USER_ATTRIBUTES = await Setting.findOne({ name: 'ldap.user.attributes' });
+  const LDAP_USER_ATTRIBUTES = await Setting.findOne({ name: 'ldap.user.attributes' }); // ? hide this || make each entry possible to change to custom value
   if (!LDAP_USER_ATTRIBUTES) { 
     var ldapUserAttributes = new Setting({ 
       name: 'ldap.user.attributes', 
