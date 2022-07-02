@@ -1,0 +1,36 @@
+{
+  "name": "sentinel",
+  "version": "1.0.0",
+  "description": "Sentinel Storage Terminal Backend",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=production node ./index.js",
+    "dev": "cross-env NODE_ENV=development nodemon ./index.js"
+  },
+  "keywords": [
+    "nodejs",
+    "pasleto",
+    "sentinel",
+    "system"
+  ],
+  "author": {
+    "name": "Tomáš Pásler",
+    "email": "tomas.pasler@gmail.com",
+    "url": "https://pasler.org/"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "async": "^3.2.1",
+    "bcryptjs": "^2.4.3",
+    "cross-env": "^7.0.3",
+    "dotenv": "^10.0.0",
+    "getmac": "^5.20.0",
+    "log-symbols": "^4.1.0",
+    "socket.io-client": "^4.5.1",
+    "underscore": "^1.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
