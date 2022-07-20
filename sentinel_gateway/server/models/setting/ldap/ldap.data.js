@@ -52,7 +52,7 @@ const ldapData = [
     'name': 'password',
     'friendly_name': 'Administrator Account Password',
     'description': 'User password (default: password)',
-    'value': 'password', // TODO - this should be hashed
+    'value': 'password',
     'protected': false
   },
   {
@@ -84,9 +84,59 @@ const ldapData = [
     'name': 'basedn_users',
     'friendly_name': 'Users BaseDN',
     'description': 'Users container BaseDN (default: ou=users,dc=example,dc=com)',
-    'value': 'ou=users,dc=example,dc=com',
+    'value': 'cn=users,dc=example,dc=com',
+    'protected': false
+  },
+  {
+    'scope': 'ldap',
+    'name': 'attr_user_cn',
+    'friendly_name': 'User Attribute - cn',
+    'description': 'User Attribute Mapping - cn (default: cn)',
+    'value': 'cn',
+    'protected': false
+  },
+  {
+    'scope': 'ldap',
+    'name': 'attr_user_dn',
+    'friendly_name': 'User Attribute - dn',
+    'description': 'User Attribute Mapping - dn (default: dn)',
+    'value': 'dn',
+    'protected': false
+  },
+  {
+    'scope': 'ldap',
+    'name': 'attr_user_userprincipalname',
+    'friendly_name': 'User Attribute - userPrincipalName',
+    'description': 'User Attribute Mapping - userPrincipalName (default: userPrincipalName)',
+    'value': 'userPrincipalName',
+    'protected': false
+  },
+  {
+    'scope': 'ldap',
+    'name': 'attr_user_samaccountname',
+    'friendly_name': 'User Attribute - sAMAccountName',
+    'description': 'User Attribute Mapping - sAMAccountName (default: sAMAccountName)',
+    'value': 'sAMAccountName',
+    'protected': false
+  },
+  {
+    'scope': 'ldap',
+    'name': 'attr_user_description',
+    'friendly_name': 'User Attribute - description',
+    'description': 'User Attribute Mapping - description (default: description)',
+    'value': 'description',
     'protected': false
   }
+
+  // ,
+  // {
+  //   'scope': 'ldap',
+  //   'name': 'attr_XXX',
+  //   'friendly_name': 'XXX Attribute',
+  //   'description': 'XXX Attribute Mapping (default: XXX)',
+  //   'value': 'XXX',
+  //   'protected': false
+  // }
 ];
 
 export default ldapData;

@@ -20,6 +20,10 @@
 // ----------------------------------------------------------------------------------------------------------------
 /*
 
+TODO - change SSR to normal relay
+TODO - make NC and NO contacts available
+TODO - make some switch to be able to use relay as dry contact as well as 12v from module
+
 initiator_ids:
 1   -   rtc
 2   -   door sensor
@@ -39,8 +43,8 @@ event_ids:
 */
 // ----------------------------------------------------------------------------------------------------------------
 
-Wiegand wg_1_1; // lock 1 - reader 1
-Wiegand wg_1_2; // lock 1 - reader 2
+Wiegand wg_1_1;
+Wiegand wg_1_2;
 RTC_DS3231 rtc;
 sqlite3 *fs_db;
 SocketIOclient socketIO;
@@ -52,7 +56,7 @@ Adafruit_MCP23X17 mcp;
 bool is_setup_done = DEFAULT_IS_SETUP_DONE;
 String backend_server = DEFAULT_BACKEND_SERVER;
 int backend_port = DEFAULT_BACKEND_PORT;
-String wsio_namespace = DEFAULT_WSIO_NAMESPACE;
+// String wsio_namespace = WSIO_NAMESPACE;
 String ntp_server = DEFAULT_NTP_SERVER;
 String timezone = DEFAULT_TIMEZONE;
 bool use_secure_1 = DEFAULT_USE_SECURE_1;
@@ -64,9 +68,7 @@ int door_sensor_1 = DEFAULT_DOOR_SENSOR_1;
 // int lock_1_remote_timeout = DEFAULT_LOCK_1_REMOTE_TIMEOUT; // TODO
 // int lock_1_direction_invert = DEFAULT_LOCK_1_DIRECTION_INVERT; // ?
 
-String wsio_out_log_reader = WSIO_OUT_LOG_READER;
-String wsio_out_log_button = WSIO_OUT_LOG_BUTTON;
-String wsio_out_log_door = WSIO_OUT_LOG_DOOR;
+String wsio_out_log_path = WSIO_OUT_LOG_PATH;
 const int button_debounce_time = 500;
 const int door_sensor_debounce_time = 500;
 const int wg_error_timeout = 1500;
@@ -103,54 +105,6 @@ unsigned long button_1_2_press_last_time = 0;
 unsigned long button_1_2_last_time = 0;
 
 // ----------------------------------------------------------------------------------------------------------------
-
-void updateNtpTime() {
-  configTzTime(timezone.c_str(), ntp_server.c_str());
-  struct tm timeinfo;
-  if (getLocalTime(&timeinfo)){
-    Serial.print("[NTP] Received Time - ");
-    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-    rtc.adjust(DateTime(timeinfo.tm_year+1900, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
-    Serial.print("[RTC] Time Updated - ");
-    Serial.println(rtc.now().timestamp());
-    if (rtc.lostPower()) {
-      Serial.println("[RTC] Lost power");
-       // ? - socket event ?
-      String timestamp = rtc.now().timestamp();
-      if (openDb("/spiffs/database.db", &fs_db))
-        return;
-      String sql = "INSERT INTO events_log VALUES ('" + timestamp + "', NULL, 1, 1, NULL)";
-      int rc = dbExec(fs_db, sql.c_str());
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_close(fs_db);
-    }
-  }
-}
-
-void setupRtc() {
-  if (!rtc.begin()) {
-    Serial.println("[RTC] Error");
-    while (1);
-  }
-  Serial.println("[RTC] Success");
-  if (rtc.lostPower()) { // ?
-    Serial.println("[RTC] Lost power, setting default date (1/1/2000 00:00:00)");
-    // String timestamp = rtc.now().timestamp();
-    // if (openDb("/spiffs/database.db", &fs_db))
-    //   return;
-    // String sql = "INSERT INTO events_log VALUES ('" + timestamp + "', NULL, 1, 1, NULL)";
-    // int rc = dbExec(fs_db, sql.c_str());
-    // if (rc != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // sqlite3_close(fs_db);
-    rtc.adjust(DateTime(2000, 1, 1, 0, 0, 0)); // 1.1. 1970 00:00:00
-  }
-}
 
 int getInitiatorLockId(int initiator_id) {
   switch (initiator_id) {
@@ -687,24 +641,7 @@ void initDatabaseFile(const char *database_path, sqlite3 *database_instance) {
     return;
   }
 
-  // String config_wsio_out_log_reader_insert_query = "INSERT INTO config VALUES ('wsio_out_log_reader','" + String(DEFAULT_WSIO_OUT_LOG_READER) + "')";
-  // int rc_config_wsio_out_log_reader = dbExec(database_instance, config_wsio_out_log_reader_insert_query.c_str());
-  // if (rc_config_wsio_out_log_reader != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  // String config_wsio_out_log_button_insert_query = "INSERT INTO config VALUES ('wsio_out_log_button','" + String(DEFAULT_WSIO_OUT_LOG_BUTTON) + "')";
-  // int rc_config_wsio_out_log_button = dbExec(database_instance, config_wsio_out_log_button_insert_query.c_str());
-  // if (rc_config_wsio_out_log_button != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  // String config_wsio_out_log_door_insert_query = "INSERT INTO config VALUES ('wsio_out_log_door','" + String(DEFAULT_WSIO_OUT_LOG_DOOR) + "')";
-  // int rc_config_wsio_out_log_door = dbExec(database_instance, config_wsio_out_log_door_insert_query.c_str());
-  // if (rc_config_wsio_out_log_door != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
+
 
             // TODO - for test only
             String cards_insert_test_query_01 = "INSERT INTO cards_1 VALUES ('04C2B401', NULL)";
@@ -752,6 +689,54 @@ void setupFileSystem() {
   }
 }
 
+void updateNtpTime() { // ?
+  configTzTime(timezone.c_str(), ntp_server.c_str());
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)){
+    Serial.print("[NTP] Received Time - ");
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    rtc.adjust(DateTime(timeinfo.tm_year+1900, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+    Serial.print("[RTC] Time Updated - ");
+    Serial.println(rtc.now().timestamp());
+    if (rtc.lostPower()) {
+      Serial.println("[RTC] Lost power");
+       // ? - socket event ?
+      String timestamp = rtc.now().timestamp();
+      if (openDb("/spiffs/database.db", &fs_db))
+        return;
+      String sql = "INSERT INTO events_log VALUES ('" + timestamp + "', NULL, 1, 1, NULL)";
+      int rc = dbExec(fs_db, sql.c_str());
+      if (rc != SQLITE_OK) {
+        sqlite3_close(fs_db);
+        return;
+      }
+      sqlite3_close(fs_db);
+    }
+  }
+}
+
+void setupRtc() { // ?
+  if (!rtc.begin()) {
+    Serial.println("[RTC] Error");
+    while (1);
+  }
+  Serial.println("[RTC] Success");
+  if (rtc.lostPower()) { // ?
+    Serial.println("[RTC] Lost power, setting default date (1/1/2000 00:00:00)");
+    // String timestamp = rtc.now().timestamp();
+    // if (openDb("/spiffs/database.db", &fs_db))
+    //   return;
+    // String sql = "INSERT INTO events_log VALUES ('" + timestamp + "', NULL, 1, 1, NULL)";
+    // int rc = dbExec(fs_db, sql.c_str());
+    // if (rc != SQLITE_OK) {
+    //   sqlite3_close(fs_db);
+    //   return;
+    // }
+    // sqlite3_close(fs_db);
+    rtc.adjust(DateTime(2000, 1, 1, 0, 0, 0)); // 1.1. 1970 00:00:00
+  }
+}
+
 void handleWebServerRootGet() {
   DynamicJsonDocument json_doc(1024);
   json_doc["name"] = MODULE_NAME;
@@ -782,7 +767,6 @@ void handleWebServerRootPost() {
     JsonObject postObj = json_doc.as<JsonObject>();
     if (postObj.containsKey("backend_server")
       && postObj.containsKey("backend_port")
-      && postObj.containsKey("wsio_namespace")
       && postObj.containsKey("ntp_server")
       && postObj.containsKey("timezone")
       && postObj.containsKey("use_secure_1")
@@ -795,8 +779,6 @@ void handleWebServerRootPost() {
       String inc_backend_server = json_backend_server.as<String>();
       JsonVariant json_backend_port = postObj.getMember("backend_port");
       int inc_backend_port = json_backend_port.as<int>();
-      JsonVariant json_wsio_namespace = postObj.getMember("wsio_namespace");
-      String inc_wsio_namespace = json_wsio_namespace.as<String>();
       JsonVariant json_ntp_server = postObj.getMember("ntp_server");
       String inc_ntp_server = json_ntp_server.as<String>();
       JsonVariant json_timezone = postObj.getMember("timezone");
@@ -824,12 +806,6 @@ void handleWebServerRootPost() {
       String config_backend_port = "UPDATE config SET value = '" + String(inc_backend_port) + "' WHERE variable = 'backend_port'";
       int config_backend_port_rc = dbExec(fs_db, config_backend_port.c_str());
       if (config_backend_port_rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
-      String config_wsio_namespace = "UPDATE config SET value = '" + inc_wsio_namespace + "' WHERE variable = 'wsio_namespace'";
-      int config_wsio_namespace_rc = dbExec(fs_db, config_wsio_namespace.c_str());
-      if (config_wsio_namespace_rc != SQLITE_OK) {
         sqlite3_close(fs_db);
         return;
       }
@@ -1050,7 +1026,7 @@ void dbInsertCardLog(String hex_uid, String timestamp, int initiator_id, int loc
   if (wsio_connected) {
     DynamicJsonDocument json_doc(1024);
     JsonArray json_array = json_doc.to<JsonArray>();
-    json_array.add(wsio_out_log_reader);
+    json_array.add(wsio_out_log_path);
     JsonObject param_object = json_array.createNestedObject();
     param_object["initiator_id"] = initiator_id;
     param_object["unit_id"] = mac_address_nag;
@@ -1078,13 +1054,14 @@ void dbInsertButtonLog(int initiator_id, int lock_id, int event_id) {
   if(wsio_connected) { 
     DynamicJsonDocument json_doc(1024);
     JsonArray json_array = json_doc.to<JsonArray>();
-    json_array.add(wsio_out_log_button);
+    json_array.add(wsio_out_log_path);
     JsonObject param_object = json_array.createNestedObject();
     param_object["initiator_id"] = initiator_id;
-    param_object["timestamp"] = timestamp;
     param_object["unit_id"] = mac_address_nag;
     param_object["lock_id"] = lock_id;
+    param_object["timestamp"] = timestamp;
     param_object["event_id"] = event_id;
+    param_object["hex_uid"] = nullptr;
     String wsio_event_data;
     serializeJson(json_doc, wsio_event_data);
     socketIO.sendEVENT(wsio_event_data);
@@ -1106,13 +1083,14 @@ void dbInsertDoorLog(int initiator_id, int lock_id, int event_id) {
   if (wsio_connected) {
     DynamicJsonDocument json_doc(1024);
     JsonArray json_array = json_doc.to<JsonArray>();
-    json_array.add(wsio_out_log_door);
+    json_array.add(wsio_out_log_path);
     JsonObject param_object = json_array.createNestedObject();
     param_object["initiator_id"] = initiator_id;
-    param_object["timestamp"] = timestamp;
     param_object["unit_id"] = mac_address_nag;
     param_object["lock_id"] = lock_id;
+    param_object["timestamp"] = timestamp;
     param_object["event_id"] = event_id;
+    param_object["hex_uid"] = nullptr;
     String wsio_event_data;
     serializeJson(json_doc, wsio_event_data);
     socketIO.sendEVENT(wsio_event_data);

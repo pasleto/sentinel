@@ -6,25 +6,22 @@
 #define MODULE_FIRMWARE_VERSION                     "1.1.1"
 #define FORMAT_FS_IF_FAILED                         true
 #define WSIO_RECONNECT_INTERVAL                     60000
-#define WSIO_OUT_LOG_READER                         "access-control/log/reader"
-#define WSIO_OUT_LOG_BUTTON                         "access-control/log/button"
-#define WSIO_OUT_LOG_DOOR                           "access-control/log/door"
+#define WSIO_OUT_LOG_PATH                           "access-control/unit/log"
+// #define WSIO_NAMESPACE                              "/stl-ac" // ?
 // ----- Default Values for Variables
 #define DEFAULT_IS_SETUP_DONE                       false
 #define DEFAULT_BACKEND_SERVER                      "STL-GW"
 #define DEFAULT_BACKEND_PORT                        443
-#define DEFAULT_WSIO_NAMESPACE                      "/stl-ac"
 #define DEFAULT_NTP_SERVER                          "STL-GW"
 #define DEFAULT_TIMEZONE                            "UTC0" // CET-1CEST,M3.5.0,M10.5.0/3
 #define DEFAULT_USE_SECURE_1                        false
 #define DEFAULT_DATA_REVERSE_1                      false
 #define DEFAULT_SILENT_MODE_1                       false
-#define DEFAULT_LOCK_1_READER_TIMEOUT               3000
 #define DEFAULT_DOOR_SENSOR_1                       true
+#define DEFAULT_LOCK_1_READER_TIMEOUT               3000
 #define DEFAULT_LOCK_1_BUTTON_TIMEOUT               5000
 // #define DEFAULT_LOCK_1_REMOTE_TIMEOUT               5000 // TODO
 // #define DEFAULT_LOCK_1_DIRECTION_INVERT             false // ? - better to invert this on backend side
-// #define DEFAULT_WSIO_EVENT_XX                    ""
 // ----- Ethernet Pins
 #define ESP_ETH_PHY_ADDR                            1                                   //  OD/IE/WPU
 #define ESP_ETH_PHY_POWER                           16                                  //  OD/IE
@@ -49,7 +46,7 @@
 #define ESP_WG_1_2_D0                               4     // WG 1_2 Data 0 - GREEN (INPUT)  OD/IE/WPD
 #define ESP_WG_1_2_D1                               2     // WG 1_2 Data 1 - WHITE (INPUT)  OD/IE/WPD
 #define ESP_BUTTON_1_1                              12    // Button 1_1 (INPUT)             OD/IE/WPD - enabled by espfuse set to 3.3V
-
+// ----- MCP Pins
 #define MCP_WG_1_1_GREEN_LED                        0     // A0 - WG 1_1 Green LED for WG (OUTPUT)
 #define MCP_WG_1_1_RED_LED                          1     // A1 - WG 1_1 Red LED for WG (OUTPUT)
 #define MCP_WG_1_1_BUZZER                           2     // A2 - WG 1_1 Buzzer for WG (OUTPUT)
@@ -60,7 +57,7 @@
 // #define MCP_7                                      7     // A7 - 
 // #define MCP_BUTTON_1_1                              8     // B0 - Button 1_1 (INPUT)
 // #define MCP_BUTTON_1_2                              9     // B1 - Button 1_2 (INPUT)
-// #define MCP_WG_10                                  10    // B2 -
+// #define MCP_10                                     10    // B2 -
 // #define MCP_11                                     11    // B3 - 
 // #define MCP_12                                     12    // B4 - 
 // #define MCP_13                                     13    // B5 - 

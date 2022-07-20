@@ -23,15 +23,13 @@
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/Debian-✔️-666?style=for-the-badge" alt="Debian"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/Ubuntu-❌-666?style=for-the-badge" alt="Ubuntu"/>
+  <img height="25" src="https://img.shields.io/badge/Ubuntu-✔️-666?style=for-the-badge" alt="Ubuntu"/>
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/docker-❌-666?style=for-the-badge" alt="docker"/>
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/amd64-✔️-666?style=for-the-badge" alt="amd64"/>
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/armv7-✔️-666?style=for-the-badge" alt="armv7"/>
-  &nbsp;
-  <img height="25" src="https://img.shields.io/badge/armv8-✔️-666?style=for-the-badge" alt="armv8"/>
+  <img height="25" src="https://img.shields.io/badge/arm64-✔️-666?style=for-the-badge" alt="arm64"/>
 </p>
 &nbsp;
 <h3 align="center">
@@ -79,46 +77,36 @@
 ```
 .
 ├── documents
-│   ├── logos                                       # provided images
-│   └── manuals                                     # provided documentation
-├── install_scripts                                 # provided installation scripts
-│   ├── debian
-│   ├── ubuntu
+│   ├── logos                                    # provided images
+│   └── manuals                                  # provided documentation
+├── install_scripts                              # provided installation scripts
+│   ├── linux
 │   └── windows
-├── sentinel_client                                 # client application
-├── sentinel_gateway                                # server application
-│   ├── certificates                                # folder to put your https certificates in
-│   ├── client                                      # client web application root folder
-│   ├── files                             
-│   │   ├── network_share                           # network SMB share root folder
-│   │   └── web_share                               # web share root folder
-│   ├── logs                                        # server logs root folder
-│   ├── server                                      # source files root folder
-│   └── ...
-├── sentinel_units                                  # sentinel units
-│   ├── sentinel_access_control                     # access control unit
-│   ├── sentinel_storage_terminal                   # storage terminal unit
-│   │   ├── sentinel_storage_terminal_backend
-│   │   └── sentinel_storage_terminal_frontend
+├── sentinel_client                              # client application
+├── sentinel_gateway                             # server application
+├── sentinel_units                               # sentinel units
+│   ├── sentinel_access_control                  # access control unit
+│   ├── sentinel_storage_terminal                # storage terminal unit
 │   └── ...
 └── ...
 ```
 
-## Gateway installation process (linux - recommended way)
+## Gateway installation
 ```
-! Raspbian Lite is recommended - ARM CPUs
-! Debian 11 Server is recommended - x64 CPUs
-! Installation scripts are provided
+! Debian 10 / Debian 11 / Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
+! x86_64 / aarch64 (armv8.2-a or later)
 
- - TODO
+ curl -sL https://github.com/pasleto/sentinel/blob/main/install_scripts/linux/scripts/install_server_gateway.sh | sudo bash -
 ```
-## Gateway installation process (windows - alternative way)
+## Raspberry Pi based units installation process
 ```
-! Windows Server 2019 and above is recommended
-! MongoDB needs to be installed
-! NodeJS needs to be installed
-! Installation scripts are not provided
+! Debian 10 / Debian 11 / Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
+! Raspberry Pi 4B recommended
 
+• Storage Terminal Unit
+ curl -sL https://github.com/pasleto/sentinel/blob/main/install_scripts/linux/scripts/install_storage_terminal.sh | sudo bash -
+
+•
  - TODO
 ```
 ## ESP based units installation process
@@ -126,15 +114,6 @@
 ! Parts list is provided
 ! Build instructions are provided
 ! Firmware builds are provided
-
- - TODO
-```
-## Raspberry Pi based units installation process
-```
-! Raspbian Lite is recommended
-! Parts list is provided
-! Build instructions are provided
-! Installation scripts are provided
 
  - TODO
 ```

@@ -17,16 +17,10 @@ const settingSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
-  value: { // TODO - allow multiple data types
+  value: {
     type: String,
     trim: true,
     required: function () { return typeof this.value === 'string' ? false : true }, // allow empty string pass required
-    // cast: false, // disable autocasting type
-    // required: [
-    //   function () { return typeof this.value === 'string' ? false : true },
-    //   'your custom message here'
-    // ]
-    // required: isValueRequired
   },
   description: {
     type: String,

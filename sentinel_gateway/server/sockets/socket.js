@@ -1,6 +1,10 @@
 
 // import xxx
 
+// app.use((req, res, next) => {
+//   req.io = io;
+//   next();
+// });
 function socketApiHandler(io) {
   return (req, res, next) => {
     req.io = io;
@@ -28,24 +32,30 @@ function socketRoutesHandler(io) {
     });
 
 
-    socket.on("access-control/log/reader", (data) => {
-      console.log('access-control/log/reader');
+    socket.on("access-control/unit/log", (data) => {
+      console.log('access-control/unit/log');
       console.log(data);
     });
-    socket.on("access-control/log/button", (data) => {
-      console.log('access-control/log/button');
-      console.log(data);
-    });
-    socket.on("access-control/log/door", (data) => {
-      console.log('access-control/log/door');
-      console.log(data);
-    });
+
+
+    // socket.on("access-control/log/reader", (data) => {
+    //   console.log('access-control/log/reader');
+    //   console.log(data);
+    // });
+    // socket.on("access-control/log/button", (data) => {
+    //   console.log('access-control/log/button');
+    //   console.log(data);
+    // });
+    // socket.on("access-control/log/door", (data) => {
+    //   console.log('access-control/log/door');
+    //   console.log(data);
+    // });
 
   });
 
 };
 
-export { 
+export default { 
   socketApiHandler,
   socketRoutesHandler,
 };

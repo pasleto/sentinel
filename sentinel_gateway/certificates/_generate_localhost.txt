@@ -9,3 +9,10 @@ openssl x509 -req -sha256 -days 1024 -in xhost.csr -CA CA.pem -CAkey CA.key -CAc
 
 openssl pkcs12 -export -out xhost.pfx -inkey xhost.key -in xhost.crt
 
+
+
+
+
+
+
+openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 3650 -keyout privkey.pem -out fullchain.pem -subj "/CN=localhost"

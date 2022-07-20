@@ -13,7 +13,7 @@ const compressHandler = compression({ filter: shouldCompress, threshold: 0 });
 const frontendStaticFilesHandler = express.static(resolve('client'));
 const frontendHostingHandler = router.use('*', (req, res) => { res.sendFile(resolve('client/index.html')); });
 
-export {
+export default {
   compressHandler,
   frontendStaticFilesHandler,
   frontendHostingHandler
