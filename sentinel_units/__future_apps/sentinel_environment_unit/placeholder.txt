@@ -1,5 +1,0 @@
-esp8266 or esp32 device
-
-deep sleep + mqtt or api pushing temperature/humidity/fire/battery to server database
-
-captive portal with possibility to add device to network and set polling interval and option to factory reset

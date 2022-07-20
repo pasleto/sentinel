@@ -1,6 +1,0 @@
-
-
-/*
-  Access Zone
-*/
-
