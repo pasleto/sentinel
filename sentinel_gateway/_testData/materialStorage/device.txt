@@ -1,0 +1,15 @@
+name: "TOMAS-DESKTOP-TEST"
+device_id: "4CCC6AAEED88"
+hostname: "TOMAS-DESKTOP"
+description: "Test Device"
+mac_address: "4C-CC-6A-AE-ED-88"
+ip_address: "192.168.0.10"
+group: [XXX]
+
+name: ""
+device_id: ""
+hostname: ""
+description: ""
+mac_address: ""
+ip_address: ""
+group: [XXX]

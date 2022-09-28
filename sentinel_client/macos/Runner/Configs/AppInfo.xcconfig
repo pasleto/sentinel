@@ -8,7 +8,7 @@
 PRODUCT_NAME = sentinel_client
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = org.pasler.sentinel.sentinelClient
+PRODUCT_BUNDLE_IDENTIFIER = org.pasler.sentinel.client.sentinelClient
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2022 org.pasler.sentinel. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2022 org.pasler.sentinel.client. All rights reserved.

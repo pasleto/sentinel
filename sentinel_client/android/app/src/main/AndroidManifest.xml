@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.pasler.sentinel.sentinel_client">
+    package="org.pasler.sentinel.client.sentinel_client">
    <application
         android:label="sentinel_client"
         android:name="${applicationName}"

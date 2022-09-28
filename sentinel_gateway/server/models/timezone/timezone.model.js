@@ -23,20 +23,17 @@ const timezoneSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
-  is_active: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  protected: {
+  is_protected: {
     type: Boolean,
     required: true,
     default: true,
   }
 }, {
   timestamps: true,
+  toObject: { virtuals: true },
+  toJSON: { virtuals: true},
 });
 
-timezoneSchema.set('toJSON', { virtuals: true });
+// timezoneSchema.set('toJSON', { virtuals: true });
 
 export default mongoose.model('timezone', timezoneSchema);

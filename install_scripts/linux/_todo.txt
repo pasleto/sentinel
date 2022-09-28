@@ -1,0 +1,3 @@
+install domain ca trusted certificate
+use nvm to install nodejs
+use proxy for install ?

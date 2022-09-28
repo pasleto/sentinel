@@ -77,16 +77,16 @@
 ```
 .
 ├── documents
-│   ├── logos                                    # provided images
-│   └── manuals                                  # provided documentation
-├── install_scripts                              # provided installation scripts
+│   ├── logos                                  # provided images
+│   └── manuals                                # provided documentation
+├── install_scripts                            # provided installation scripts
 │   ├── linux
 │   └── windows
-├── sentinel_client                              # client application
-├── sentinel_gateway                             # server application
-├── sentinel_units                               # sentinel units
-│   ├── sentinel_access_control                  # access control unit
-│   ├── sentinel_storage_terminal                # storage terminal unit
+├── sentinel_client                            # client application
+├── sentinel_gateway                           # server application
+├── sentinel_units                             # sentinel units
+│   ├── sentinel_access_control                # access control unit
+│   ├── sentinel_storage_terminal              # storage terminal unit
 │   └── ...
 └── ...
 ```
@@ -96,24 +96,41 @@
 ! Debian 10 / Debian 11 / Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
 ! x86_64 / aarch64 (armv8.2-a or later)
 
- curl -sL https://github.com/pasleto/sentinel/blob/main/install_scripts/linux/scripts/install_server_gateway.sh | sudo bash -
+▸ curl -sL https://github.com/pasleto/sentinel/raw/main/install_scripts/linux/server_gateway.sh | sudo bash -
+
+! During the installation, you will be prompted to fill these information:
+
+  ● Hostname                                     # Hostname of server
+  ● Domain name                                  # Domain name of server
+    • Active Directory domain join               # Y/N - if server should be connected to Active Directory
+      · Administrator UPN                        # User principal name of Active Directory administrator
+      · Administrator password                   #  Password for Active Directory administrator
+      · Local admin logon group                  # Active Directory group name to enable logon to server
+    • Cloud deployment                           # Y/N - if SSl certificate should be generated
+      · List of domains                          # List of domains to generate SSL certificate for
+      · Email address                            # Email  address for Let's Encrypt
+
+! If deploying in local network only, default self signed certificate will be used. You need to provide your own certificate (fullchain.pem & privkey.pem) into /opt/sentinel/application/certificates directory.
 ```
 ## Raspberry Pi based units installation process
 ```
 ! Debian 10 / Debian 11 / Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
 ! Raspberry Pi 4B recommended
 
-• Storage Terminal Unit
- curl -sL https://github.com/pasleto/sentinel/blob/main/install_scripts/linux/scripts/install_storage_terminal.sh | sudo bash -
+● Storage Terminal Unit
+▸ curl -sL https://github.com/pasleto/sentinel/raw/main/install_scripts/linux/storage_terminal.sh | sudo bash -
 
-•
- - TODO
+●
+▸ TODO
 ```
 ## ESP based units installation process
 ```
 ! Parts list is provided
 ! Build instructions are provided
 ! Firmware builds are provided
+
+● Access Control Unit
+
 
  - TODO
 ```

@@ -1,0 +1,102 @@
+const cardTypeInitData = [
+  {
+    'name': 'Generic LF',
+    'description': 'CSN/UID Block',
+    'is_secure': false,
+    'frequency': 'LF (125 KHz)',
+    'is_protected': true,
+  },
+  {
+    'name': 'Generic LF',
+    'description': 'Secured Data Block',
+    'is_secure': true,
+    'frequency': 'LF (125 KHz)',
+    'is_protected': true,
+  },
+  {
+    'name': 'Generic HF',
+    'description': 'CSN/UID Block',
+    'is_secure': false,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': true,
+  },
+  {
+    'name': 'Generic HF',
+    'description': 'Secured Data Block',
+    'is_secure': true,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': true,
+  },
+  {
+    'name': 'MIFARE Classic S50',
+    'description': '32-bit CSN/UID',
+    'is_secure': false,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE Classic S50',
+    'description': 'Secured Block Data',
+    'is_secure': true,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE Classic S70',
+    'description': '56-bit CSN/UID',
+    'is_secure': false,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE Classic S70',
+    'description': 'Secured Block Data',
+    'is_secure': true,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE DESFire EV1',
+    'description': '56-bit CSN/UID',
+    'is_secure': false,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE DESFire EV1',
+    'description': 'Secured Block Data',
+    'is_secure': true,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE DESFire EV2',
+    'description': '56-bit CSN/UID',
+    'is_secure': false,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE DESFire EV2',
+    'description': 'Secured Block Data',
+    'is_secure': true,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE DESFire EV3',
+    'description': '56-bit CSN/UID',
+    'is_secure': false,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  },
+  {
+    'name': 'MIFARE DESFire EV3',
+    'description': 'Secured Block Data',
+    'is_secure': true,
+    'frequency': 'HF (13.56 MHz)',
+    'is_protected': false,
+  }
+];
+
+export default cardTypeInitData;

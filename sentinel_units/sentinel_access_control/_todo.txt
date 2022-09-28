@@ -1,0 +1,24 @@
+rsa keypair end-to-end encryption
+
+generate keypair on esp32
+
+on socket connection
+	receive server public key
+	send esp public key to server
+
+on data receive
+	decrypt data by esp private key
+
+on data send
+	encrypt data by server public key
+
+
+
+
+on staging esp to server
+
+on get request
+	send esp public key included in body
+
+on post request
+	decrypt data by esp private key

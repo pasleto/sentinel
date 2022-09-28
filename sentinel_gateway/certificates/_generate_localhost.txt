@@ -16,3 +16,18 @@ openssl pkcs12 -export -out xhost.pfx -inkey xhost.key -in xhost.crt
 
 
 openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 3650 -keyout privkey.pem -out fullchain.pem -subj "/CN=localhost"
+
+
+
+// https://gist.github.com/fntlnz/cf14feb5a46b2eda428e000157447309
+
+
+
+// make this into install script if no cloud setup (with correct paths) - remove everything from destination folder before
+
+openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 3650 -keyout ~/cert_test/self_privkey.pem -out ~/cert_test/self_fullchain.pem -subj "/CN=$(hostname -f)"
+
+openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 3650 -keyout ~/cert_test/self_privkey.pem -out ~/cert_test/self_fullchain.pem -subj "/CN=$(hostname -s)"
+
+
+openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 3650 -keyout ~/cert_test/self_privkey.pem -out ~/cert_test/self_fullchain.pem -subj "/CN=$(hostname -f)" -addext "subjectAltName=DNS:$(hostname -f),DNS:$(hostname -s)"

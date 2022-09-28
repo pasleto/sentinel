@@ -1,0 +1,19 @@
+user_number: 'sentinel_test_user_01',
+name: 'Test 01',
+surname: 'User',
+username: 'test01',
+is_admin: true,
+login_enabled: true,
+is_ldap_user: false,
+password: 'password',
+is_protected: false
+
+user_number: 'sentinel_test_user_02',
+name: 'Test 02',
+surname: 'User',
+username: 'test02',
+is_admin: false,
+login_enabled: false,
+is_ldap_user: false,
+password: '',
+is_protected: false

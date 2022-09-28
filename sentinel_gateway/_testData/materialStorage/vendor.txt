@@ -1,0 +1,31 @@
+vendor_code: "apple"
+name: "Apple"
+description: "Apple Inc."
+
+vendor_code: "cisco"
+name: "Cisco"
+description: "Cisco Systems"
+
+vendor_code: "datalogic"
+name: "Datalogic"
+description: "Datalogic S.p.A."
+
+vendor_code: "elatec"
+name: "Elatec"
+description: ""
+
+vendor_code: "datacom"
+name: "Datacom"
+description: "Datacom Group"
+
+vendor_code: ""
+name: ""
+description: ""
+
+vendor_code: ""
+name: ""
+description: ""
+
+vendor_code: ""
+name: ""
+description: ""

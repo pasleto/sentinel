@@ -20,7 +20,7 @@
 // ----------------------------------------------------------------------------------------------------------------
 /*
 
-TODO - change SSR to normal relay
+? - change SSR to normal relay
 TODO - make NC and NO contacts available
 TODO - make some switch to be able to use relay as dry contact as well as 12v from module
 
@@ -75,9 +75,9 @@ const int wg_error_timeout = 1500;
 const int wg_panic_timeout = 1500;
 bool wsio_connected = false;
 bool eth_connected = false;
-String eth_hostname;
-String mac_address_nag;
 String mac_address_raw;
+String mac_address_nag;
+String eth_hostname;
 IPAddress eth_ip_address;
 bool wg_1_1_connected = false;
 bool wg_1_1_halt = false;
@@ -106,6 +106,34 @@ unsigned long button_1_2_last_time = 0;
 
 // ----------------------------------------------------------------------------------------------------------------
 
+String mac2String(byte ar[]) {
+  String s;
+  for (byte i = 0; i < 6; ++i) {
+    char buf[3];
+    sprintf(buf, "%02X", ar[i]); // J-M-L: slight modification, added the 0 in the format for padding 
+    s += buf;
+    if (i < 5) s += ':';
+  }
+  return s;
+}
+
+String defaultHostname() {
+  uint64_t esp_id = ESP.getEfuseMac();
+  String mac_address = mac2String((byte*) &esp_id);
+  mac_address.replace(":", "");
+  String hostname = MODULE_TYPE + String('-') + mac_address;
+
+  return hostname;
+}
+
+void setupUnitVariables() {
+  uint64_t esp_id = ESP.getEfuseMac();
+  String mac_address = mac2String((byte*) &esp_id);
+  mac_address_raw = mac_address;
+  mac_address.replace(":", "");
+  mac_address_nag = mac_address;
+}
+
 int getInitiatorLockId(int initiator_id) {
   switch (initiator_id) {
     case 3: case 4: case 5: case 6:
@@ -117,22 +145,12 @@ int getInitiatorLockId(int initiator_id) {
   }
 }
 
-int getReaderInititatorLogId(int initiator_id) { // ? - if direction invert handle on device, implement here
+int getReaderInititatorLogId(int initiator_id) {
   switch (initiator_id) {
     case 3:
-      // if (lock_1_direction_invert) {
-      //   return 5;
-      // } else {
-      //   return 3;
-      // }
       return 3;
       break;
     case 5:
-      // if (lock_1_direction_invert) {
-      //   return 3;
-      // } else {
-      //   return 5;
-      // }
       return 5;
       break;
     default:
@@ -141,22 +159,12 @@ int getReaderInititatorLogId(int initiator_id) { // ? - if direction invert hand
   }
 }
 
-int getButtonInititatorLogId(int initiator_id) { // ? - if direction invert handle on device, implemet here
+int getButtonInititatorLogId(int initiator_id) {
   switch (initiator_id) {
     case 4:
-      // if (lock_1_direction_invert) {
-      //   return 6;
-      // } else {
-      //   return 4;
-      // }
       return 4;
       break;
     case 6:
-      // if (lock_1_direction_invert) {
-      //   return 4;
-      // } else {
-      //   return 6;
-      // }
       return 6;
       break;
     default:
@@ -283,6 +291,8 @@ void readerErrorStatus(int initiator_id) {
 }
 
 void readerPanicStatus(int initiator_id) {
+  Serial.print("PANIC: ");
+  Serial.println(initiator_id); // TODO
   switch (initiator_id) {
     case 3:
       wg_1_1_last_time = millis();
@@ -443,6 +453,8 @@ void setupMcpPins() {
   mcp.digitalWrite(MCP_WG_1_2_RED_LED, LOW); // ON
   mcp.pinMode(MCP_WG_1_2_BUZZER, OUTPUT);
   mcp.digitalWrite(MCP_WG_1_2_BUZZER, HIGH); // OFF
+  // mcp.pinMode(MCP_BUTTON_1_1, INPUT); // external input pull-up resistor // ? buttons working, but readers go to panic
+  // mcp.pinMode(MCP_BUTTON_1_2, INPUT); // external input pull-up resistor
   Serial.println("[MCP] Success");
 }
 
@@ -516,6 +528,7 @@ void loadConfig() {
     return;
   
   is_setup_done = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'is_setup_done'", DEFAULT_IS_SETUP_DONE);
+  eth_hostname = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'hostname'", defaultHostname());
   ntp_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'ntp_server'", DEFAULT_NTP_SERVER);
   timezone = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone'", DEFAULT_TIMEZONE);
   backend_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'backend_server'", DEFAULT_BACKEND_SERVER);
@@ -570,6 +583,14 @@ void initDatabaseFile(const char *database_path, sqlite3 *database_instance) {
     sqlite3_close(database_instance);
     return;
   }
+
+  String config_hostname_insert_query = "INSERT INTO config VALUES ('hostname','" + defaultHostname() + "')";
+  int rc_config_hostname = dbExec(database_instance, config_hostname_insert_query.c_str());
+  if (rc_config_hostname != SQLITE_OK) {
+    sqlite3_close(database_instance);
+    return;
+  }
+  eth_hostname = defaultHostname();
 
   String config_ntp_server_insert_query = "INSERT INTO config VALUES ('ntp_server','" + String(DEFAULT_NTP_SERVER) + "')";
   int rc_config_ntp_server = dbExec(database_instance, config_ntp_server_insert_query.c_str());
@@ -768,6 +789,7 @@ void handleWebServerRootPost() {
     if (postObj.containsKey("backend_server")
       && postObj.containsKey("backend_port")
       && postObj.containsKey("ntp_server")
+      && postObj.containsKey("hostname")
       && postObj.containsKey("timezone")
       && postObj.containsKey("use_secure_1")
       && postObj.containsKey("data_reverse_1")
@@ -781,6 +803,8 @@ void handleWebServerRootPost() {
       int inc_backend_port = json_backend_port.as<int>();
       JsonVariant json_ntp_server = postObj.getMember("ntp_server");
       String inc_ntp_server = json_ntp_server.as<String>();
+      JsonVariant json_hostname = postObj.getMember("hostname");
+      String inc_hostname = json_hostname.as<String>();
       JsonVariant json_timezone = postObj.getMember("timezone");
       String inc_timezone = json_timezone.as<String>();
       JsonVariant json_use_secure_1 = postObj.getMember("use_secure_1");
@@ -812,6 +836,12 @@ void handleWebServerRootPost() {
       String config_ntp_server = "UPDATE config SET value = '" + inc_ntp_server + "' WHERE variable = 'ntp_server'";
       int config_ntp_server_rc = dbExec(fs_db, config_ntp_server.c_str());
       if (config_ntp_server_rc != SQLITE_OK) {
+        sqlite3_close(fs_db);
+        return;
+      }
+      String config_hostname = "UPDATE config SET value = '" + inc_hostname + "' WHERE variable = 'hostname'";
+      int config_hostname_rc = dbExec(fs_db, config_hostname.c_str());
+      if (config_hostname_rc != SQLITE_OK) {
         sqlite3_close(fs_db);
         return;
       }
@@ -897,20 +927,14 @@ void setupWebServer() {
 }
 
 void handleEthernetStart() {
-  String mac_address = ETH.macAddress();
-  mac_address_raw = mac_address;
-  mac_address.replace(":", "");
-  String hostname = MODULE_TYPE + String('-') + mac_address;
   Serial.println("[ETH] Started");
-  ETH.setHostname(hostname.c_str());
-  eth_hostname = hostname;
-  mac_address_nag = mac_address;
-  if (MDNS.begin(hostname.c_str())) {
+  ETH.setHostname(eth_hostname.c_str());
+  if (MDNS.begin(eth_hostname.c_str())) {
     Serial.println("[MDNS] Started" );
   } else {
     Serial.println("[MDNS] Error" );
   }
-  if (NBNS.begin(hostname.c_str())) {
+  if (NBNS.begin(eth_hostname.c_str())) {
     Serial.println("[NBNS] Started" );
   } else {
     Serial.println("[NBNS] Error" );
@@ -922,7 +946,10 @@ void handleEthernetConnect() {
 }
 
 void handleEthernetDHCP() {
-  Serial.print("[ETH] DHCP - MAC: ");
+  Serial.print("[ETH] DHCP (");
+  Serial.print(ETH.getHostname());
+  Serial.print(") - MAC: ");
+  // Serial.print("[ETH] DHCP - MAC: ");
   Serial.print(ETH.macAddress());
   Serial.print(" | IPv4: ");
   Serial.print(ETH.localIP());
@@ -1167,9 +1194,9 @@ void wg_stateChanged(bool plugged, const char* initiator_id) {
         readerRedLedOff(initiator);
         Serial.println("[WG_1_1] Connected");
       } else {
-        wg_1_1_connected = false;
         readerGreenLedOn(initiator);
         readerRedLedOn(initiator);
+        wg_1_1_connected = false;
         Serial.println("[WG_1_1] Disconnected");
       }
       break;
@@ -1180,9 +1207,9 @@ void wg_stateChanged(bool plugged, const char* initiator_id) {
         readerRedLedOff(initiator);
         Serial.println("[WG_1_2] Connected");
       } else {
-        wg_1_2_connected = false;
         readerGreenLedOn(initiator);
         readerRedLedOn(initiator);
+        wg_1_2_connected = false;
         Serial.println("[WG_1_2] Disconnected");
       }
       break;
@@ -1200,7 +1227,7 @@ void wg_receivedData_Success(uint8_t* data, uint8_t bits, const char* initiator_
   int initiator = atoi(initiator_id);
   readerBuzzerOn(initiator);
   String timestamp = rtc.now().timestamp();
-  String incomingData;
+  String incomingData; // TODO - get rid off strings
   uint8_t bytes = (bits+7)/8;
   int lock_id = getInitiatorLockId(initiator);
 
@@ -1256,8 +1283,8 @@ void wg_1_2_Handler() {
 void wg_1_1_StateHandler() {
   if (wg_1_1_success && (millis() - wg_1_1_last_time >= lock_1_reader_timeout)) {
     closeLock(1);
-    readerGreenLedOff(3);
     readerGreenLedOff(5);
+    readerGreenLedOff(3);
     wg_1_1_success = false;
     wg_1_1_halt = false;
     wg_1_2_halt = false;
@@ -1280,8 +1307,8 @@ void wg_1_1_StateHandler() {
 void wg_1_2_StateHandler() {
   if (wg_1_2_success && (millis() - wg_1_2_last_time >= lock_1_reader_timeout)) {
     closeLock(1);
-    readerGreenLedOff(5);
     readerGreenLedOff(3);
+    readerGreenLedOff(5);
     wg_1_2_success = false;
     wg_1_2_halt = false;
     wg_1_1_halt = false;
@@ -1350,8 +1377,8 @@ void button_1_2_PressStateHandler() {
 void button_1_1_StateHandler() {
   if (button_1_1_success && (millis() - button_1_1_last_time >= lock_1_button_timeout)) {
     closeLock(1);
-    readerGreenLedOff(3);
     readerGreenLedOff(5);
+    readerGreenLedOff(3);
     button_1_1_success = false;
     button_1_1_halt = false;
     wg_1_1_halt = false;
@@ -1363,8 +1390,8 @@ void button_1_1_StateHandler() {
 void button_1_2_StateHandler() {
   if (button_1_2_success && (millis() - button_1_2_last_time >= lock_1_button_timeout)) {
     closeLock(1);
-    readerGreenLedOff(5);
     readerGreenLedOff(3);
+    readerGreenLedOff(5);
     button_1_2_success = false;
     button_1_2_halt = false;
     wg_1_1_halt = false;
@@ -1376,7 +1403,7 @@ void button_1_2_StateHandler() {
 void core0Task( void * parameter ) {
   Serial.print("[CORE_");
   Serial.print(xPortGetCoreID());
-  Serial.println("] Task Started - Core ");
+  Serial.println("] Task Started");
   for( ;; ){
     if (is_setup_done) {
       if (eth_connected) socketIO.loop();
@@ -1388,6 +1415,7 @@ void core0Task( void * parameter ) {
 
 void setup() {
   Serial.begin(9600);
+  Serial.setDebugOutput(true); // TODO
   Serial.println();
   Serial.println("----------------------------------------------------------------------------------------------------------------");
   Serial.println("[Module Unit Name] " + String(MODULE_NAME) + " (" + String(MODULE_TYPE) + ")");
@@ -1400,6 +1428,7 @@ void setup() {
   setupMcpPins();
   sqlite3_initialize();
   setupFileSystem();
+  setupUnitVariables();
   setupRtc();
   setupEthernet();
   setupWebsockets();

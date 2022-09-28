@@ -1,9 +1,9 @@
-#define WEBSOCKETS_NETWORK_TYPE                     NETWORK_ESP32_ETH
+// #define WEBSOCKETS_NETWORK_TYPE                     NETWORK_ESP32_ETH
 // ----- Generic Variables
 #define MODULE_NAME                                 "Sentinel Access Control"
 #define MODULE_TYPE                                 "STL-AC"
-#define MODULE_HARDWARE_VERSION                     "1.1.1"
-#define MODULE_FIRMWARE_VERSION                     "1.1.1"
+#define MODULE_HARDWARE_VERSION                     "1.1.2"
+#define MODULE_FIRMWARE_VERSION                     "1.1.2"
 #define FORMAT_FS_IF_FAILED                         true
 #define WSIO_RECONNECT_INTERVAL                     60000
 #define WSIO_OUT_LOG_PATH                           "access-control/unit/log"
@@ -21,7 +21,6 @@
 #define DEFAULT_LOCK_1_READER_TIMEOUT               3000
 #define DEFAULT_LOCK_1_BUTTON_TIMEOUT               5000
 // #define DEFAULT_LOCK_1_REMOTE_TIMEOUT               5000 // TODO
-// #define DEFAULT_LOCK_1_DIRECTION_INVERT             false // ? - better to invert this on backend side
 // ----- Ethernet Pins
 #define ESP_ETH_PHY_ADDR                            1                                   //  OD/IE/WPU
 #define ESP_ETH_PHY_POWER                           16                                  //  OD/IE
@@ -41,11 +40,11 @@
 #define ESP_WG_1_1_D0                               36    // WG 1_1 Data 0 - GREEN (INPUT)  OD/ID - ONLY INPUT PIN
 #define ESP_WG_1_1_D1                               39    // WG 1_1 Data 1 - WHITE (INPUT)  OD/ID - ONLY INPUT PIN
 #define ESP_DOOR_SENSOR_1                           35    // Lock Sensor (INPUT)            OD/ID - ONLY INPUT PIN
-#define ESP_LOCK_1_TRIGGER                          15    // Lock Trigger (OUTPUT)          OD/IE/WPU
+#define ESP_LOCK_1_TRIGGER                          15    // Lock Trigger (OUTPUT)          OD/IE/WPU | strapping pin (must be HIGH during boot)
 #define ESP_BUTTON_1_2                              14    // Button 1_2 (INPUT)             OD/IE/WPU
-#define ESP_WG_1_2_D0                               4     // WG 1_2 Data 0 - GREEN (INPUT)  OD/IE/WPD
-#define ESP_WG_1_2_D1                               2     // WG 1_2 Data 1 - WHITE (INPUT)  OD/IE/WPD
-#define ESP_BUTTON_1_1                              12    // Button 1_1 (INPUT)             OD/IE/WPD - enabled by espfuse set to 3.3V
+#define ESP_WG_1_2_D0                               4     // WG 1_2 Data 0 - GREEN (INPUT)  OD/IE/WPD | strapping pin
+#define ESP_WG_1_2_D1                               2     // WG 1_2 Data 1 - WHITE (INPUT)  OD/IE/WPD | strapping pin | !!!
+#define ESP_BUTTON_1_1                              12    // Button 1_1 (INPUT)             OD/IE/WPD - enabled by espfuse set to 3.3V | strapping pin (must be LOW during boot) | ! this is hacked
 // ----- MCP Pins
 #define MCP_WG_1_1_GREEN_LED                        0     // A0 - WG 1_1 Green LED for WG (OUTPUT)
 #define MCP_WG_1_1_RED_LED                          1     // A1 - WG 1_1 Red LED for WG (OUTPUT)

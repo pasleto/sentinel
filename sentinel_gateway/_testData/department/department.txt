@@ -1,0 +1,9 @@
+department_number: "1056"
+name: "IT"
+description: "IT Department"
+is_root: false
+can_have_child: true
+ldap_sync: true
+parent: 6304f979324c98f73bf8e552	// 00_sentinel_root_department
+is_protected: false
+

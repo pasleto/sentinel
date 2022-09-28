@@ -1,0 +1,79 @@
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""
+
+product_code: ""
+name: ""
+description: ""
+vendor: XXX
+amount: 
+measure_unit: XXX
+image: ""

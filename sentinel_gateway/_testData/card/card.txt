@@ -1,0 +1,32 @@
+value: "A4DCCC1D"
+type: "630d00241f04cfa4f60b6ac5"		// MIFARE Classic S50 32-bit CSN/UID
+has_validity: false
+is_enabled: true
+assigned_by: "630a510adb378feb8f989549"		// sentinel
+last_changed_by: "630a510adb378feb8f989549"	// sentinel
+user: "630a510adb378feb8f989549"		// sentinel
+
+value: "F4A4B501"
+type: "630d00241f04cfa4f60b6ac5"		// MIFARE Classic S50 32-bit CSN/UID
+has_validity: false
+is_enabled: true
+assigned_by: "630a510adb378feb8f989549"		// sentinel
+last_changed_by: "630a510adb378feb8f989549"	// sentinel
+user: "630a510adb378feb8f989549"		// sentinel
+
+value: "04C2B401"
+type: "630d00241f04cfa4f60b6ac5"		// MIFARE Classic S50 32-bit CSN/UID
+has_validity: false
+is_enabled: true
+assigned_by: "630a510adb378feb8f989549"		// sentinel
+last_changed_by: "630a510adb378feb8f989549"	// sentinel
+user: "6304ff6e26a4e4e03a67e06f"		// pasleto1
+
+value: "F4EE851D"
+type: "630d00241f04cfa4f60b6ac1"		// Generic HF CSN/UID Block
+has_validity: false
+is_enabled: true
+assigned_by: "630a510adb378feb8f989549"		// sentinel
+last_changed_by: "630a510adb378feb8f989549"	// sentinel
+user: "632610471df848711b0a108b"		// test02
+

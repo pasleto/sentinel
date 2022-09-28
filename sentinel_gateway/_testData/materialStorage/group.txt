@@ -1,0 +1,24 @@
+name: "Test 01"
+description: "Test Group 01"
+supply: [XXX]
+device: [XXX]
+
+name: "Test 02"
+description: "Test Group 02"
+supply: [XXX]
+device: [XXX]
+
+name: ""
+description: ""
+supply: [XXX]
+device: [XXX]
+
+name: ""
+description: ""
+supply: [XXX]
+device: [XXX]
+
+name: ""
+description: ""
+supply: [XXX]
+device: [XXX]

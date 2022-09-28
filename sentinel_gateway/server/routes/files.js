@@ -1,7 +1,7 @@
 import express from 'express';
 import serveIndex from 'serve-index';
 import { resolve } from 'path';
-import * as morgan from '../utils/morgan.js';
+import * as morgan from '../controllers/morgan.controller.js';
 
 const router = express.Router();
 

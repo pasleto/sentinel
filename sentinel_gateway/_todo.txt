@@ -1,0 +1,24 @@
+permission on each level
+	- each department list of users for read and modify
+	- each of unit list of users for read, modify, login
+
+
+when removing card, hook will remove reference from user
+when removing user, remove each card which user has assigned -> this will trigger the card remove hook -> how to solve this ?
+
+storage terminal
+-----------------
+on card swipe - send encoded card uid to server
+server will fetch who and from where is trying to login
+check in which area this terminal is assigned and if user has permission to this storage area
+if permission true, send back whole inventory (lazy loading ?)
+
+
+storage terminal
+-----------------
+on card swipe - send encoded card uid to server
+server will fetch who and from where is trying to login
+check which areas this terminal has assigned and if user has permission to any of thos storage areas
+if any permissions true, send back list of those storage areas, if only one area available return whole inventory immediatelly
+if more areas available return list of areas, on area choose, return whole inventory
+if no permissions return error

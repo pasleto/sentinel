@@ -1,0 +1,125 @@
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
+
+material_code: ""
+product: XXX
+supplier: XXX
+unit_price: 
+price_currency: XXX
