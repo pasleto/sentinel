@@ -1,34 +1,22 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../widgets/appbar.dart';
-import '../pages/login.dart';
 
-class LoginScreen extends StatefulWidget {
+import 'package:sentinel_client/widgets/appbar.dart';
+import 'package:sentinel_client/routes/pages/root.dart' as root_pages;
+
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final viewKey = GlobalKey();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
+  // @override
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: NavigationView(
-        key: viewKey,
+        key: GlobalKey(),
         appBar: appBarLogin(),
-        content: const LoginPage(),
+        transitionBuilder: (child, animation) {
+          return DrillInPageTransition(animation: animation, child: child);
+        },
+        content: const root_pages.LoginPage(),
       ),
     );
   }

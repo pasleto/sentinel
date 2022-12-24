@@ -31,17 +31,29 @@ async function exists(...params) { // TODO - findOne vs find ??
   return result;
 };
 
-async function get(...params) {
-  var result = await UserModel.find(...params);
+// async function get(...params) {
+//   var result = await UserModel.find(...params);
+//   if (!result) throw new Error('No users found in database!');
+//   return result;
+// };
+
+async function get(lean, populateParams, ...findParams) { // getLean
+  var result = await UserModel.find(...findParams).populate(populateParams).lean(lean);
   if (!result) throw new Error('No users found in database!');
   return result;
 };
 
-async function getOne(...params) {
-  var result = await UserModel.findOne(...params);
+async function getOne(lean, populateParams, findParams) {
+  var result = await UserModel.findOne(findParams).populate(populateParams).lean(lean);
   if (!result) throw new Error('User not found in database!');
   return result;
 };
+
+// async function getOne(...params) {
+//   var result = await UserModel.findOne(...params);
+//   if (!result) throw new Error('User not found in database!');
+//   return result;
+// };
 
 async function create(params) {
   var newItem = new UserModel(params);
@@ -58,6 +70,7 @@ export default {
   init,
   exists,
   get,
+  // getLean,
   getOne,
   create,
 };

@@ -51,8 +51,10 @@ function execPromise(command) { // TODO - try catch on usage
 // })();
 
 function stripAccents(text) {
-  var inChrs = 'àáâãäçèéêëěěìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝřŘšŠťŤďĎňŇĚÉžŽčČ';
-  var outChrs = 'aaaaaceeeeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUYrRsStTdDnNEEzZcC';
+  // var inChrs = 'àáâãäçèéêëěěìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝřŘšŠťŤďĎňŇĚÉžŽčČ';
+  // var outChrs = 'aaaaaceeeeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUYrRsStTdDnNEEzZcC';
+  var inChrs = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËĚèéêëěðČÇçčÐĎďÌÍÎÏìíîïĽľÙÚÛÜŮùúûüůŇÑñňŘřŠšŤťŸÝÿýŽž';
+  var outChrs = 'AAAAAAaaaaaaOOOOOOOooooooEEEEEeeeeeeCCccDDdIIIIiiiiLlUUUUUuuuuuNNnnRrSsTtYYyyZz';
   var charsRgx = new RegExp('[' + inChrs + ']', 'g');
   var transl = {};
   var i;

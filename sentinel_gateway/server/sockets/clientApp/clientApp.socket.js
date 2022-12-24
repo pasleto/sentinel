@@ -1,6 +1,7 @@
 import loginService from './login.service.js';
 import ldapService from './ldap.service.js';
 import userService from './user.service.js';
+import departmentService from './department.service.js';
 import materialstorageService from './materialstorage.service.js';
 
 function socketConnect(socketID) { // TODO - add timestamp - logout/remove socket after some time of disconnecting - need to be handled on frontend aswell
@@ -32,38 +33,38 @@ function getSocket(socketID) {
   }
 };
 
-function socketLogin(socketID, username, userID) {
-  for (const item of global.connectedClientApp) {
-    if (item.socket_id == socketID) {
-      item.username = username;
-      item.user_id = userID;
-      item.is_logged = true;
-      break;
-    }
-  }
-};
+// function socketLogin(socketID, username, userID) {
+//   for (const item of global.connectedClientApp) {
+//     if (item.socket_id == socketID) {
+//       item.username = username;
+//       item.user_id = userID;
+//       item.is_logged = true;
+//       break;
+//     }
+//   }
+// };
 
-function socketLogout(socket, callback) {
-  socket.rooms.forEach(element => {
-    if (element != socket.id) { // ? and any other room which should be still part of
-      socket.leave(element);
-    }
-  });
-  for (const item of global.connectedClientApp) {
-    if (item.socket_id == socket.id) {
-      item.username = null;
-      item.user_id = null;
-      item.is_logged = false;
-      callback({ 
-        status: 'OK', 
-        data: {
-          message: 'Logged out!'
-        } 
-      });
-      break;
-    }
-  }
-};
+// function socketLogout(socket, callback) {
+//   socket.rooms.forEach(element => {
+//     if (element != socket.id) { // ? and any other room which should be still part of
+//       socket.leave(element);
+//     }
+//   });
+//   for (const item of global.connectedClientApp) {
+//     if (item.socket_id == socket.id) {
+//       item.username = null;
+//       item.user_id = null;
+//       item.is_logged = false;
+//       callback({ 
+//         status: 'OK', 
+//         data: {
+//           message: 'Logged out!'
+//         } 
+//       });
+//       break;
+//     }
+//   }
+// };
 
 function socketDisconnect(socketID) {
   for (const item of global.connectedClientApp) {
@@ -153,18 +154,42 @@ function socketHandler(io) {
   const clientAppNamespace = io.of('/client-app');
 
   clientAppNamespace.use((socket, next) => { // ensure the socket has access to the 'client-app' namespace, and then
-    socketConnect(socket.id); // TODO - on connection maybe check if exist and if is logged, and return logged user to frontend | problem with logged on frontend and lost connection - user will be logged in frontend but not in backend
-    next();
+    // socketConnect(socket.id); // TODO - on connection maybe check if exist and if is logged, and return logged user to frontend | problem with logged on frontend and lost connection - user will be logged in frontend but not in backend
+    
+    // console.log(socket.handshake.auth.token);
+    // next();
+
+    // TODO - check if token is passed, if is valid, and if expiration is close, send refreshed token, if user is admin then join admin room
+
+    if (socket.handshake.auth.token) {
+      // TODO - validate jwt token
+      next();
+    } else {
+      next(); // TODO - for postman dev only
+      // next(Error({ 
+      //   status: 'NOK',
+      //   data: {
+      //     type: 'authorization_error',
+      //     message: `No authorization token passed` 
+      //   }
+      // }));
+    }
   });
 
   clientAppNamespace.on('connection', (socket) => {
+
+    var ip = socket.handshake.address.split('::ffff:');
+    console.log(`ClientApp - Client Connected! - ID: ${socket.id}, IP: ${ip[1]}`);
+    // TODO
 
     socket.on('app-socket-clients-array', getAllClientAppSockets);
     socket.on('ms-socket-clients-array', getAllMaterialStorageSockets);
     socket.on('ac-socket-clients-array', getAllAccessControlSockets);
 
-    socket.on('login-password', loginService.loginPassword);
-    socket.on('logout', loginService.logout); // ? - for clientApp maybe delete the socket aswell on logout, as new socket is handled on login from frontend
+    socket.on('login', loginService.getUserData); // TODO
+
+    // socket.on('login-password', loginService.loginPassword);
+    // socket.on('logout', loginService.logout); // ? - for clientApp maybe delete the socket aswell on logout, as new socket is handled on login from frontend
 
     socket.on('ldap-test-connection', ldapService.ldapTestConnection);
     socket.on('ldap-sync-full', ldapService.ldapSyncFull); // TODO
@@ -181,6 +206,8 @@ function socketHandler(io) {
     socket.on('user-edit', userService.userEdit); // TODO
     socket.on('user-delete', userService.userDelete); // TODO
 
+    socket.on('department-get-list', departmentService.getFullList); // TODO
+
     socket.on('ms-device-get-one', materialstorageService.msDeviceGetOne);
     socket.on('ms-device-get-all', materialstorageService.msDeviceGetAll);
     socket.on('ms-device-create', materialstorageService.msDeviceCreate);
@@ -194,7 +221,13 @@ function socketHandler(io) {
     // socket.on('ms-group-delete', materialstorageService.msGroupDelete); // TODO
 
 
-    socket.on('disconnect', () => socketDisconnect(socket.id));
+    // socket.on('disconnect', () => socketDisconnect(socket.id)); // TODO
+    socket.on('disconnect', () => {
+      var ip = socket.handshake.address.split('::ffff:');
+      console.log(`ClientApp - Client Disconnected! - ID: ${socket.id}, IP: ${ip[1]}`);
+
+      socketDisconnect(socket.id)
+    });
   });
 };
 
@@ -203,7 +236,7 @@ export default {
   getSocket,
   socketConnect,
   // socketRemove,
-  socketLogin,
-  socketLogout,
+  // socketLogin,
+  // socketLogout,
   socketDisconnect,
 };

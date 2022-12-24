@@ -3,7 +3,7 @@ import { msDeviceService } from '../../controllers/mongo.controller.js';
 
 // socket can be accessed by this in classic funtion
 
-async function msDeviceGetAll(payload, callback) {
+async function msDeviceGetAll(payload, callback) { // TODO - maybe load everything from groups, instead of ids
   try {
     var deviceList = await msDeviceService.get({}, '-createdAt -updatedAt -__v');
     callback({ 

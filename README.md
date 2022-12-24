@@ -59,7 +59,7 @@
 &nbsp;
 <p align="center">
   &nbsp;
-  <img height="25" src="https://img.shields.io/badge/WEB-❌-666?style=for-the-badge&logo=googlechrome&logoColor=white" alt="web"/>
+  <img height="25" src="https://img.shields.io/badge/WEB-✔️-666?style=for-the-badge&logo=googlechrome&logoColor=white" alt="web"/>
   &nbsp;
   <img height="25" src="https://img.shields.io/badge/WINDOWS-❌-666?style=for-the-badge&logo=windows&logoColor=white" alt="windows"/>
   &nbsp;

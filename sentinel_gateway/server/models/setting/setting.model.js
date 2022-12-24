@@ -71,6 +71,9 @@ settingSchema.pre('save', { document: true, query: false }, function(next) { // 
   if (this.isModified('value') && this.scope == 'general' && this.name == 'hash_card' && this.isNew) {
     this.value = utils.generateRandomHash();
   }
+  if (this.isModified('value') && this.scope == 'general' && this.name == 'hash_jwt' && this.isNew) {
+    this.value = utils.generateRandomHash();
+  }
   if (this.isModified('value') && this.scope == 'proxy' && this.name == 'url_string') { // crypt proxy url_string password + handle string change
     if (this.isNew) {
       if (this.value) this.value = utils.crypt(this.id, this.value);

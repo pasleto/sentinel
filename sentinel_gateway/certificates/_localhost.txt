@@ -1,0 +1,16 @@
+https://github.com/FiloSottile/mkcert
+--- macos
+brew install mkcert
+brew install nss # if you use Firefox
+--- windows
+choco install mkcert
+--- mkcert folder
+mkcert -CAROOT
+
+------
+
+mkcert -key-file privkey.pem -cert-file fullchain.pem localhost 127.0.0.1
+mkcert -install
+
+-- windows workaround on error | run cmd as administrator
+certutil –addstore -enterprise –f "Root" "%localappdata%\mkcert\rootCA.pem"

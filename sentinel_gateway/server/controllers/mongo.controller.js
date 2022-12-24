@@ -100,6 +100,17 @@ async function _init() { // init database structure
   // var user = await userService.getOne({ username: 'sentinel' });
   // console.log(user);
 
+  // await departmentService.create({
+  //   'department_number': '105604',
+  //   'name': 'IT_04',
+  //   'description': 'IT 04',
+  //   'is_root': false,
+  //   'can_have_child': true,
+  //   'ldap_sync': false,
+  //   'parent': '6376226bdeae0265feba18e2',
+  //   'is_protected': false,
+  // });
+
   // cardService.create({
   //   value: "A4DCCC1D",
   //   type: "630d00241f04cfa4f60b6ac5",		// MIFARE Classic S50 32-bit CSN/UID

@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include "configuration.h" // project configuration file
+
 #include <ETH.h>  
 #include <Wiegand.h>
 #include <Wire.h>
@@ -14,8 +16,6 @@
 #include <ArduinoJson.h>
 #include <WebServer.h>
 #include <Adafruit_MCP23X17.h>
-
-#include "configuration.h" // project configuration file
 
 // ----------------------------------------------------------------------------------------------------------------
 /*

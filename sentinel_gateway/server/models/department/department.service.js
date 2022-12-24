@@ -32,8 +32,14 @@ async function get(...params) {
   return result;
 };
 
-async function getOne(params) {
-  var result = await DepartmentModel.findOne(params);
+async function getLean(...params) { // TODO - merge functions
+  var result = await DepartmentModel.find(...params).lean();
+  if (!result) throw new Error('No department found in database!');
+  return result;
+};
+
+async function getOne(...params) {
+  var result = await DepartmentModel.findOne(...params);
   if (!result) throw new Error('Department not found in database!');
   return result;
 };
@@ -47,6 +53,7 @@ export default {
   init,
   exists,
   get,
+  getLean,
   getOne,
   create,
 };

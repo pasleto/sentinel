@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+// import autopopulatePlugin from 'mongoose-autopopulate';
 
-const department = new mongoose.Schema({ // TODO - add users array
+const departmentSchema = new mongoose.Schema({ // TODO - add users array
   department_number: { // TODO - maybe possible to add more departments into one 
     type: String,
     reguired: true,
@@ -63,6 +64,7 @@ const department = new mongoose.Schema({ // TODO - add users array
       this._parent = this.parent;
       return parent;
     },
+    // autopopulate: true,
   },
   ldap_sync: {
     type: Boolean,
@@ -88,4 +90,6 @@ const department = new mongoose.Schema({ // TODO - add users array
   toJSON: { virtuals: true},
 });
 
-export default mongoose.model('department', department);
+// departmentSchema.plugin(autopopulatePlugin);
+
+export default mongoose.model('department', departmentSchema);

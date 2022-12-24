@@ -5,7 +5,7 @@ import https from 'https';
 import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
+// import helmet from 'helmet';
 import { Server } from "socket.io";
 import client from './server/controllers/client.controller.js';
 import socket from './server/controllers/socket.controller.js';
@@ -14,6 +14,9 @@ import { mongoConnect } from './server/controllers/mongo.controller.js';
 import { cronSetup } from './server/controllers/cron.controller.js';
 import filesRoutes from './server/routes/files.js';
 import apiRoutes from './server/routes/api.js';
+
+import { io as socketIOClient } from 'socket.io-client';
+import cloud from './server/controllers/cloud.controller.js';
 
 function onError (error) {
   if (error.syscall !== 'listen') { throw error; }
@@ -57,13 +60,16 @@ app.use(express.json());
 app.use(client.compressHandler); // frontend compression handler
 app.use(client.frontendStaticFilesHandler); // frontend static files hosting
 app.use('/files', filesRoutes); // File Server Hosting
-app.use(helmet()); // Server Security
+// app.use(helmet()); // Server Security // TODO - some headers make flutter crash after http call
 app.use('/api', apiRoutes); // Backend /api routes
 app.use(clientLoggerHandler); // morgan client logger
 app.use(client.frontendHostingHandler); // Frontend Hosting - failover route
 
 socket.socketHandler(io);
 
+cloud.socketHandler(socketIOClient); // TODO - cloud relay test
+
 server.on('error', onError);
 server.on('listening', onListening);
 server.listen(443);
+// server.listen(8443); // TODO - cloud relay test

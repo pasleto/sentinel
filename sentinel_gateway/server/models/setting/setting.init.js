@@ -15,6 +15,22 @@ const settingInitData = [
     'value': '',
     'is_protected': true
   },
+  {
+    'scope': 'general',
+    'name': 'hash_jwt',
+    'friendly_name': 'JWT Hash',
+    'description': 'Hash for JWT generation (default: auto-generated)',
+    'value': '',
+    'is_protected': true
+  },
+  {
+    'scope': 'general',
+    'name': 'expiration_jwt',
+    'friendly_name': 'JWT Expiration',
+    'description': 'JWT expiration period (default: 6h)',
+    'value': '6h',
+    'is_protected': true
+  },
   { // Proxy
     'scope': 'proxy',
     'name': 'url_string',
@@ -141,6 +157,22 @@ const settingInitData = [
     'friendly_name': 'User Attribute - sAMAccountName',
     'description': 'User Attribute Mapping - sAMAccountName (default: sAMAccountName)',
     'value': 'sAMAccountName',
+    'is_protected': true
+  },
+  // { // TODO
+  //   'scope': 'ldap',
+  //   'name': 'attr_user_jpegphoto',
+  //   'friendly_name': 'User Attribute - jpegPhoto',
+  //   'description': 'User Attribute Mapping - jpegPhoto (default: jpegPhoto)',
+  //   'value': 'jpegPhoto',
+  //   'is_protected': true
+  // },
+  { // TODO
+    'scope': 'ldap',
+    'name': 'attr_user_thumbnailphoto',
+    'friendly_name': 'User Attribute - thumbnailPhoto',
+    'description': 'User Attribute Mapping - thumbnailPhoto (default: thumbnailPhoto)',
+    'value': 'thumbnailPhoto',
     'is_protected': true
   },
   {

@@ -114,7 +114,7 @@ cardSchema.pre('save', { document: true, query: false }, function(next) { // doc
 cardSchema.post('save', { document: true, query: false }, async function(doc, next) { // document middleware - post - save
   if (doc._wasModified) {
     if (doc._wasNew) { // new document
-      var userObj = await userService.getOne({ _id: doc.user });
+      var userObj = await userService.getOne(false, false, { _id: doc.user });
       userObj.cards.push(doc._id);
       userObj.save();
     } else { // existing document
@@ -124,7 +124,7 @@ cardSchema.post('save', { document: true, query: false }, async function(doc, ne
           oldUser.cards.pull(doc._id);
           await oldUser.save()
         }
-        var newUser = await userService.getOne({ _id: doc.user });
+        var newUser = await userService.getOne(false, false, { _id: doc.user });
         newUser.cards.push(doc._id);
         await newUser.save();
       }

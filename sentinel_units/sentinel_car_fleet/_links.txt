@@ -1,0 +1,4 @@
+https://www.hackster.io/tanmoy-dutta/connect-sim7600-to-ibm-watson-iot-platform-using-mqtt-5ed237
+
+https://github.com/Xinyuan-LilyGO/LilyGo-T-PCIE
+

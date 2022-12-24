@@ -8,7 +8,7 @@ import { userService, cardService } from '../../controllers/mongo.controller.js'
 async function userCardSearch(payload, callback) {
   try {
     var cardExist = await cardService.getOne({ value: payload.value });
-    var existingUser = await userService.getOne({ _id: cardExist.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
+    var existingUser = await userService.getOne(false, false, { _id: cardExist.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
     callback({ 
       status: 'OK', 
       data: {
@@ -31,9 +31,9 @@ async function userCardCreate(payload, callback) {
     var socketObj = clientApp.getSocket(this.id);
     var cardExist = await cardService.exists({ value: payload.value });
     if (cardExist) {
-      var existingUser = await userService.getOne({ _id: cardExist.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
+      var existingUser = await userService.getOne(false, false, { _id: cardExist.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
       if (payload.force) {
-        var newUser = await userService.getOne({ _id: payload.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
+        var newUser = await userService.getOne(false, false, { _id: payload.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
         await cardService.modify(cardExist._id, {
           ...(payload.type != null && payload.type != undefined) && { type: payload.type },
           ...(payload.description != null && payload.description != undefined) && { description: payload.description },
