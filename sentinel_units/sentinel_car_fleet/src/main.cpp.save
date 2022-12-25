@@ -1,6 +1,7 @@
 #include "configuration.h" // project configuration file
 #include <Arduino.h>
 
+#include <Preferences.h>
 #include <WiFi.h>
 #include <DNSServer.h>
 #include <WebServer.h>
@@ -10,24 +11,26 @@
 #include <sqlite3.h>
 #include <FS.h>
 #include <SPIFFS.h>
+#include <RTClib.h>
 #include <Ticker.h>
 #include <TinyGsmClient.h>
+#include <PubSubClient.h>
+// #include <ArduinoHttpClient.h>
 
 // ----------------------------------------------------------------------------------------------------------------
 /*
 
-TODO - gms and gps
-TODO - card reader
-TODO - connection to cloud-relay server
-TODO - ntp and rtc
-TODO - database
-
-? - module working using gsm through sentinel cloud gateway
+TODO
 
 */
 // ----------------------------------------------------------------------------------------------------------------
+
+Preferences preferences;
 sqlite3 *fs_db;
 TinyGsm modem(SerialAT);
+TinyGsmClient client(modem);
+PubSubClient mqtt(client);
+RTC_DS3231 rtc;
 
 DNSServer dnsServer;
 WebServer webServer(80);
@@ -57,7 +60,7 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Africa/Bujumbura", "CAT-2"},
   {"Africa/Cairo", "EET-2"},
   {"Africa/Casablanca", "<+01>-1"},
-  {"Africa/Ceuta", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Africa/Ceuta", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Africa/Conakry", "GMT0"},
   {"Africa/Dakar", "GMT0"},
   {"Africa/Dar_es_Salaam", "EAT-3"},
@@ -95,8 +98,8 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Africa/Tripoli", "EET-2"},
   {"Africa/Tunis", "CET-1"},
   {"Africa/Windhoek", "CAT-2"},
-  {"America/Adak", "HST10HDTM3.2.0M11.1.0"},
-  {"America/Anchorage", "AKST9AKDTM3.2.0M11.1.0"},
+  {"America/Adak", "HST10HDT,M3.2.0,M11.1.0"},
+  {"America/Anchorage", "AKST9AKDT,M3.2.0,M11.1.0"},
   {"America/Anguilla", "AST4"},
   {"America/Antigua", "AST4"},
   {"America/Araguaina", "<-03>3"},
@@ -113,25 +116,25 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"America/Argentina/Tucuman", "<-03>3"},
   {"America/Argentina/Ushuaia", "<-03>3"},
   {"America/Aruba", "AST4"},
-  {"America/Asuncion", "<-04>4<-03>M10.1.0/0M3.4.0/0"},
+  {"America/Asuncion", "<-04>4<-03>,M10.1.0/0,M3.4.0/0"},
   {"America/Atikokan", "EST5"},
   {"America/Bahia", "<-03>3"},
-  {"America/Bahia_Banderas", "CST6CDTM4.1.0M10.5.0"},
+  {"America/Bahia_Banderas", "CST6CDT,M4.1.0,M10.5.0"},
   {"America/Barbados", "AST4"},
   {"America/Belem", "<-03>3"},
   {"America/Belize", "CST6"},
   {"America/Blanc-Sablon", "AST4"},
   {"America/Boa_Vista", "<-04>4"},
   {"America/Bogota", "<-05>5"},
-  {"America/Boise", "MST7MDTM3.2.0M11.1.0"},
-  {"America/Cambridge_Bay", "MST7MDTM3.2.0M11.1.0"},
+  {"America/Boise", "MST7MDT,M3.2.0,M11.1.0"},
+  {"America/Cambridge_Bay", "MST7MDT,M3.2.0,M11.1.0"},
   {"America/Campo_Grande", "<-04>4"},
   {"America/Cancun", "EST5"},
   {"America/Caracas", "<-04>4"},
   {"America/Cayenne", "<-03>3"},
   {"America/Cayman", "EST5"},
-  {"America/Chicago", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Chihuahua", "MST7MDTM4.1.0M10.5.0"},
+  {"America/Chicago", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Chihuahua", "MST7MDT,M4.1.0,M10.5.0"},
   {"America/Costa_Rica", "CST6"},
   {"America/Creston", "MST7"},
   {"America/Cuiaba", "<-04>4"},
@@ -139,123 +142,123 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"America/Danmarkshavn", "GMT0"},
   {"America/Dawson", "MST7"},
   {"America/Dawson_Creek", "MST7"},
-  {"America/Denver", "MST7MDTM3.2.0M11.1.0"},
-  {"America/Detroit", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Denver", "MST7MDT,M3.2.0,M11.1.0"},
+  {"America/Detroit", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Dominica", "AST4"},
-  {"America/Edmonton", "MST7MDTM3.2.0M11.1.0"},
+  {"America/Edmonton", "MST7MDT,M3.2.0,M11.1.0"},
   {"America/Eirunepe", "<-05>5"},
   {"America/El_Salvador", "CST6"},
   {"America/Fort_Nelson", "MST7"},
   {"America/Fortaleza", "<-03>3"},
-  {"America/Glace_Bay", "AST4ADTM3.2.0M11.1.0"},
-  {"America/Godthab", "<-03>3<-02>M3.5.0/-2M10.5.0/-1"},
-  {"America/Goose_Bay", "AST4ADTM3.2.0M11.1.0"},
-  {"America/Grand_Turk", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Glace_Bay", "AST4ADT,M3.2.0,M11.1.0"},
+  {"America/Godthab", "<-03>3<-02>,M3.5.0/-2,M10.5.0/-1"},
+  {"America/Goose_Bay", "AST4ADT,M3.2.0,M11.1.0"},
+  {"America/Grand_Turk", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Grenada", "AST4"},
   {"America/Guadeloupe", "AST4"},
   {"America/Guatemala", "CST6"},
   {"America/Guayaquil", "<-05>5"},
   {"America/Guyana", "<-04>4"},
-  {"America/Halifax", "AST4ADTM3.2.0M11.1.0"},
-  {"America/Havana", "CST5CDTM3.2.0/0M11.1.0/1"},
+  {"America/Halifax", "AST4ADT,M3.2.0,M11.1.0"},
+  {"America/Havana", "CST5CDT,M3.2.0/0,M11.1.0/1"},
   {"America/Hermosillo", "MST7"},
-  {"America/Indiana/Indianapolis", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Indiana/Knox", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Indiana/Marengo", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Indiana/Petersburg", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Indiana/Tell_City", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Indiana/Vevay", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Indiana/Vincennes", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Indiana/Winamac", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Inuvik", "MST7MDTM3.2.0M11.1.0"},
-  {"America/Iqaluit", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Indiana/Indianapolis", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Knox", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Marengo", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Petersburg", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Tell_City", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Vevay", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Vincennes", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Indiana/Winamac", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Inuvik", "MST7MDT,M3.2.0,M11.1.0"},
+  {"America/Iqaluit", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Jamaica", "EST5"},
-  {"America/Juneau", "AKST9AKDTM3.2.0M11.1.0"},
-  {"America/Kentucky/Louisville", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Kentucky/Monticello", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Juneau", "AKST9AKDT,M3.2.0,M11.1.0"},
+  {"America/Kentucky/Louisville", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Kentucky/Monticello", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Kralendijk", "AST4"},
   {"America/La_Paz", "<-04>4"},
   {"America/Lima", "<-05>5"},
-  {"America/Los_Angeles", "PST8PDTM3.2.0M11.1.0"},
+  {"America/Los_Angeles", "PST8PDT,M3.2.0,M11.1.0"},
   {"America/Lower_Princes", "AST4"},
   {"America/Maceio", "<-03>3"},
   {"America/Managua", "CST6"},
   {"America/Manaus", "<-04>4"},
   {"America/Marigot", "AST4"},
   {"America/Martinique", "AST4"},
-  {"America/Matamoros", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Mazatlan", "MST7MDTM4.1.0M10.5.0"},
-  {"America/Menominee", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Merida", "CST6CDTM4.1.0M10.5.0"},
-  {"America/Metlakatla", "AKST9AKDTM3.2.0M11.1.0"},
-  {"America/Mexico_City", "CST6CDTM4.1.0M10.5.0"},
-  {"America/Miquelon", "<-03>3<-02>M3.2.0M11.1.0"},
-  {"America/Moncton", "AST4ADTM3.2.0M11.1.0"},
-  {"America/Monterrey", "CST6CDTM4.1.0M10.5.0"},
+  {"America/Matamoros", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Mazatlan", "MST7MDT,M4.1.0,M10.5.0"},
+  {"America/Menominee", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Merida", "CST6CDT,M4.1.0,M10.5.0"},
+  {"America/Metlakatla", "AKST9AKDT,M3.2.0,M11.1.0"},
+  {"America/Mexico_City", "CST6CDT,M4.1.0,M10.5.0"},
+  {"America/Miquelon", "<-03>3<-02>,M3.2.0,M11.1.0"},
+  {"America/Moncton", "AST4ADT,M3.2.0,M11.1.0"},
+  {"America/Monterrey", "CST6CDT,M4.1.0,M10.5.0"},
   {"America/Montevideo", "<-03>3"},
   {"America/Montserrat", "AST4"},
-  {"America/Nassau", "EST5EDTM3.2.0M11.1.0"},
-  {"America/New_York", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Nipigon", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Nome", "AKST9AKDTM3.2.0M11.1.0"},
+  {"America/Nassau", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/New_York", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Nipigon", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Nome", "AKST9AKDT,M3.2.0,M11.1.0"},
   {"America/Noronha", "<-02>2"},
-  {"America/North_Dakota/Beulah", "CST6CDTM3.2.0M11.1.0"},
-  {"America/North_Dakota/Center", "CST6CDTM3.2.0M11.1.0"},
-  {"America/North_Dakota/New_Salem", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Ojinaga", "MST7MDTM3.2.0M11.1.0"},
+  {"America/North_Dakota/Beulah", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/North_Dakota/Center", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/North_Dakota/New_Salem", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Ojinaga", "MST7MDT,M3.2.0,M11.1.0"},
   {"America/Panama", "EST5"},
-  {"America/Pangnirtung", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Pangnirtung", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Paramaribo", "<-03>3"},
   {"America/Phoenix", "MST7"},
-  {"America/Port-au-Prince", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Port-au-Prince", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Port_of_Spain", "AST4"},
   {"America/Porto_Velho", "<-04>4"},
   {"America/Puerto_Rico", "AST4"},
-  {"America/Rainy_River", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Rankin_Inlet", "CST6CDTM3.2.0M11.1.0"},
+  {"America/Rainy_River", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Rankin_Inlet", "CST6CDT,M3.2.0,M11.1.0"},
   {"America/Recife", "<-03>3"},
   {"America/Regina", "CST6"},
-  {"America/Resolute", "CST6CDTM3.2.0M11.1.0"},
+  {"America/Resolute", "CST6CDT,M3.2.0,M11.1.0"},
   {"America/Rio_Branco", "<-05>5"},
   {"America/Santarem", "<-03>3"},
-  {"America/Santiago", "<-04>4<-03>M9.1.6/24M4.1.6/24"},
+  {"America/Santiago", "<-04>4<-03>,M9.1.6/24,M4.1.6/24"},
   {"America/Santo_Domingo", "AST4"},
   {"America/Sao_Paulo", "<-03>3"},
-  {"America/Scoresbysund", "<-01>1<+00>M3.5.0/0M10.5.0/1"},
-  {"America/Sitka", "AKST9AKDTM3.2.0M11.1.0"},
+  {"America/Scoresbysund", "<-01>1<+00>,M3.5.0/0,M10.5.0/1"},
+  {"America/Sitka", "AKST9AKDT,M3.2.0,M11.1.0"},
   {"America/St_Barthelemy", "AST4"},
-  {"America/St_Johns", "NST3:30NDTM3.2.0M11.1.0"},
+  {"America/St_Johns", "NST3:30NDT,M3.2.0,M11.1.0"},
   {"America/St_Kitts", "AST4"},
   {"America/St_Lucia", "AST4"},
   {"America/St_Thomas", "AST4"},
   {"America/St_Vincent", "AST4"},
   {"America/Swift_Current", "CST6"},
   {"America/Tegucigalpa", "CST6"},
-  {"America/Thule", "AST4ADTM3.2.0M11.1.0"},
-  {"America/Thunder_Bay", "EST5EDTM3.2.0M11.1.0"},
-  {"America/Tijuana", "PST8PDTM3.2.0M11.1.0"},
-  {"America/Toronto", "EST5EDTM3.2.0M11.1.0"},
+  {"America/Thule", "AST4ADT,M3.2.0,M11.1.0"},
+  {"America/Thunder_Bay", "EST5EDT,M3.2.0,M11.1.0"},
+  {"America/Tijuana", "PST8PDT,M3.2.0,M11.1.0"},
+  {"America/Toronto", "EST5EDT,M3.2.0,M11.1.0"},
   {"America/Tortola", "AST4"},
-  {"America/Vancouver", "PST8PDTM3.2.0M11.1.0"},
+  {"America/Vancouver", "PST8PDT,M3.2.0,M11.1.0"},
   {"America/Whitehorse", "MST7"},
-  {"America/Winnipeg", "CST6CDTM3.2.0M11.1.0"},
-  {"America/Yakutat", "AKST9AKDTM3.2.0M11.1.0"},
-  {"America/Yellowknife", "MST7MDTM3.2.0M11.1.0"},
+  {"America/Winnipeg", "CST6CDT,M3.2.0,M11.1.0"},
+  {"America/Yakutat", "AKST9AKDT,M3.2.0,M11.1.0"},
+  {"America/Yellowknife", "MST7MDT,M3.2.0,M11.1.0"},
   {"Antarctica/Casey", "<+11>-11"},
   {"Antarctica/Davis", "<+07>-7"},
   {"Antarctica/DumontDUrville", "<+10>-10"},
-  {"Antarctica/Macquarie", "AEST-10AEDTM10.1.0M4.1.0/3"},
+  {"Antarctica/Macquarie", "AEST-10AEDT,M10.1.0,M4.1.0/3"},
   {"Antarctica/Mawson", "<+05>-5"},
-  {"Antarctica/McMurdo", "NZST-12NZDTM9.5.0M4.1.0/3"},
+  {"Antarctica/McMurdo", "NZST-12NZDT,M9.5.0,M4.1.0/3"},
   {"Antarctica/Palmer", "<-03>3"},
   {"Antarctica/Rothera", "<-03>3"},
   {"Antarctica/Syowa", "<+03>-3"},
-  {"Antarctica/Troll", "<+00>0<+02>-2M3.5.0/1M10.5.0/3"},
+  {"Antarctica/Troll", "<+00>0<+02>-2,M3.5.0/1,M10.5.0/3"},
   {"Antarctica/Vostok", "<+06>-6"},
-  {"Arctic/Longyearbyen", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Arctic/Longyearbyen", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Asia/Aden", "<+03>-3"},
   {"Asia/Almaty", "<+06>-6"},
-  {"Asia/Amman", "EET-2EESTM3.5.4/24M10.5.5/1"},
+  {"Asia/Amman", "EET-2EEST,M3.5.4/24,M10.5.5/1"},
   {"Asia/Anadyr", "<+12>-12"},
   {"Asia/Aqtau", "<+05>-5"},
   {"Asia/Aqtobe", "<+05>-5"},
@@ -266,27 +269,27 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Asia/Baku", "<+04>-4"},
   {"Asia/Bangkok", "<+07>-7"},
   {"Asia/Barnaul", "<+07>-7"},
-  {"Asia/Beirut", "EET-2EESTM3.5.0/0M10.5.0/0"},
+  {"Asia/Beirut", "EET-2EEST,M3.5.0/0,M10.5.0/0"},
   {"Asia/Bishkek", "<+06>-6"},
   {"Asia/Brunei", "<+08>-8"},
   {"Asia/Chita", "<+09>-9"},
   {"Asia/Choibalsan", "<+08>-8"},
   {"Asia/Colombo", "<+0530>-5:30"},
-  {"Asia/Damascus", "EET-2EESTM3.5.5/0M10.5.5/0"},
+  {"Asia/Damascus", "EET-2EEST,M3.5.5/0,M10.5.5/0"},
   {"Asia/Dhaka", "<+06>-6"},
   {"Asia/Dili", "<+09>-9"},
   {"Asia/Dubai", "<+04>-4"},
   {"Asia/Dushanbe", "<+05>-5"},
-  {"Asia/Famagusta", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Asia/Gaza", "EET-2EESTM3.4.4/48M10.4.4/49"},
-  {"Asia/Hebron", "EET-2EESTM3.4.4/48M10.4.4/49"},
+  {"Asia/Famagusta", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Asia/Gaza", "EET-2EEST,M3.4.4/48,M10.4.4/49"},
+  {"Asia/Hebron", "EET-2EEST,M3.4.4/48,M10.4.4/49"},
   {"Asia/Ho_Chi_Minh", "<+07>-7"},
   {"Asia/Hong_Kong", "HKT-8"},
   {"Asia/Hovd", "<+07>-7"},
   {"Asia/Irkutsk", "<+08>-8"},
   {"Asia/Jakarta", "WIB-7"},
   {"Asia/Jayapura", "WIT-9"},
-  {"Asia/Jerusalem", "IST-2IDTM3.4.4/26M10.5.0"},
+  {"Asia/Jerusalem", "IST-2IDT,M3.4.4/26,M10.5.0"},
   {"Asia/Kabul", "<+0430>-4:30"},
   {"Asia/Kamchatka", "<+12>-12"},
   {"Asia/Karachi", "PKT-5"},
@@ -302,7 +305,7 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Asia/Makassar", "WITA-8"},
   {"Asia/Manila", "PST-8"},
   {"Asia/Muscat", "<+04>-4"},
-  {"Asia/Nicosia", "EET-2EESTM3.5.0/3M10.5.0/4"},
+  {"Asia/Nicosia", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
   {"Asia/Novokuznetsk", "<+07>-7"},
   {"Asia/Novosibirsk", "<+07>-7"},
   {"Asia/Omsk", "<+06>-6"},
@@ -322,7 +325,7 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Asia/Taipei", "CST-8"},
   {"Asia/Tashkent", "<+05>-5"},
   {"Asia/Tbilisi", "<+04>-4"},
-  {"Asia/Tehran", "<+0330>-3:30<+0430>J79/24J263/24"},
+  {"Asia/Tehran", "<+0330>-3:30<+0430>,J79/24,J263/24"},
   {"Asia/Thimphu", "<+06>-6"},
   {"Asia/Tokyo", "JST-9"},
   {"Asia/Tomsk", "<+07>-7"},
@@ -335,88 +338,88 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Asia/Yangon", "<+0630>-6:30"},
   {"Asia/Yekaterinburg", "<+05>-5"},
   {"Asia/Yerevan", "<+04>-4"},
-  {"Atlantic/Azores", "<-01>1<+00>M3.5.0/0M10.5.0/1"},
-  {"Atlantic/Bermuda", "AST4ADTM3.2.0M11.1.0"},
-  {"Atlantic/Canary", "WET0WESTM3.5.0/1M10.5.0"},
+  {"Atlantic/Azores", "<-01>1<+00>,M3.5.0/0,M10.5.0/1"},
+  {"Atlantic/Bermuda", "AST4ADT,M3.2.0,M11.1.0"},
+  {"Atlantic/Canary", "WET0WEST,M3.5.0/1,M10.5.0"},
   {"Atlantic/Cape_Verde", "<-01>1"},
-  {"Atlantic/Faroe", "WET0WESTM3.5.0/1M10.5.0"},
-  {"Atlantic/Madeira", "WET0WESTM3.5.0/1M10.5.0"},
+  {"Atlantic/Faroe", "WET0WEST,M3.5.0/1,M10.5.0"},
+  {"Atlantic/Madeira", "WET0WEST,M3.5.0/1,M10.5.0"},
   {"Atlantic/Reykjavik", "GMT0"},
   {"Atlantic/South_Georgia", "<-02>2"},
   {"Atlantic/St_Helena", "GMT0"},
   {"Atlantic/Stanley", "<-03>3"},
-  {"Australia/Adelaide", "ACST-9:30ACDTM10.1.0M4.1.0/3"},
+  {"Australia/Adelaide", "ACST-9:30ACDT,M10.1.0,M4.1.0/3"},
   {"Australia/Brisbane", "AEST-10"},
-  {"Australia/Broken_Hill", "ACST-9:30ACDTM10.1.0M4.1.0/3"},
-  {"Australia/Currie", "AEST-10AEDTM10.1.0M4.1.0/3"},
+  {"Australia/Broken_Hill", "ACST-9:30ACDT,M10.1.0,M4.1.0/3"},
+  {"Australia/Currie", "AEST-10AEDT,M10.1.0,M4.1.0/3"},
   {"Australia/Darwin", "ACST-9:30"},
   {"Australia/Eucla", "<+0845>-8:45"},
-  {"Australia/Hobart", "AEST-10AEDTM10.1.0M4.1.0/3"},
+  {"Australia/Hobart", "AEST-10AEDT,M10.1.0,M4.1.0/3"},
   {"Australia/Lindeman", "AEST-10"},
-  {"Australia/Lord_Howe", "<+1030>-10:30<+11>-11M10.1.0M4.1.0"},
-  {"Australia/Melbourne", "AEST-10AEDTM10.1.0M4.1.0/3"},
+  {"Australia/Lord_Howe", "<+1030>-10:30<+11>-11,M10.1.0,M4.1.0"},
+  {"Australia/Melbourne", "AEST-10AEDT,M10.1.0,M4.1.0/3"},
   {"Australia/Perth", "AWST-8"},
-  {"Australia/Sydney", "AEST-10AEDTM10.1.0M4.1.0/3"},
-  {"Europe/Amsterdam", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Andorra", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Australia/Sydney", "AEST-10AEDT,M10.1.0,M4.1.0/3"},
+  {"Europe/Amsterdam", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Andorra", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Europe/Astrakhan", "<+04>-4"},
-  {"Europe/Athens", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Belgrade", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Berlin", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Bratislava", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Brussels", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Bucharest", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Budapest", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Busingen", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Chisinau", "EET-2EESTM3.5.0M10.5.0/3"},
-  {"Europe/Copenhagen", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Dublin", "IST-1GMT0M10.5.0M3.5.0/1"},
-  {"Europe/Gibraltar", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Guernsey", "GMT0BSTM3.5.0/1M10.5.0"},
-  {"Europe/Helsinki", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Isle_of_Man", "GMT0BSTM3.5.0/1M10.5.0"},
+  {"Europe/Athens", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Belgrade", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Berlin", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Bratislava", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Brussels", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Bucharest", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Budapest", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Busingen", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Chisinau", "EET-2EEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Copenhagen", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Dublin", "IST-1GMT0,M10.5.0,M3.5.0/1"},
+  {"Europe/Gibraltar", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Guernsey", "GMT0BST,M3.5.0/1,M10.5.0"},
+  {"Europe/Helsinki", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Isle_of_Man", "GMT0BST,M3.5.0/1,M10.5.0"},
   {"Europe/Istanbul", "<+03>-3"},
-  {"Europe/Jersey", "GMT0BSTM3.5.0/1M10.5.0"},
+  {"Europe/Jersey", "GMT0BST,M3.5.0/1,M10.5.0"},
   {"Europe/Kaliningrad", "EET-2"},
-  {"Europe/Kiev", "EET-2EESTM3.5.0/3M10.5.0/4"},
+  {"Europe/Kiev", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
   {"Europe/Kirov", "<+03>-3"},
-  {"Europe/Lisbon", "WET0WESTM3.5.0/1M10.5.0"},
-  {"Europe/Ljubljana", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/London", "GMT0BSTM3.5.0/1M10.5.0"},
-  {"Europe/Luxembourg", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Madrid", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Malta", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Mariehamn", "EET-2EESTM3.5.0/3M10.5.0/4"},
+  {"Europe/Lisbon", "WET0WEST,M3.5.0/1,M10.5.0"},
+  {"Europe/Ljubljana", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/London", "GMT0BST,M3.5.0/1,M10.5.0"},
+  {"Europe/Luxembourg", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Madrid", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Malta", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Mariehamn", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
   {"Europe/Minsk", "<+03>-3"},
-  {"Europe/Monaco", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Europe/Monaco", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Europe/Moscow", "MSK-3"},
-  {"Europe/Oslo", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Paris", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Podgorica", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Prague", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Riga", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Rome", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Europe/Oslo", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Paris", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Podgorica", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Prague", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Riga", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Rome", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Europe/Samara", "<+04>-4"},
-  {"Europe/San_Marino", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Sarajevo", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Europe/San_Marino", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Sarajevo", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Europe/Saratov", "<+04>-4"},
   {"Europe/Simferopol", "MSK-3"},
-  {"Europe/Skopje", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Sofia", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Stockholm", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Tallinn", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Tirane", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Europe/Skopje", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Sofia", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Stockholm", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Tallinn", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Tirane", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Europe/Ulyanovsk", "<+04>-4"},
-  {"Europe/Uzhgorod", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Vaduz", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Vatican", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Vienna", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Vilnius", "EET-2EESTM3.5.0/3M10.5.0/4"},
+  {"Europe/Uzhgorod", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Vaduz", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Vatican", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Vienna", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Vilnius", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
   {"Europe/Volgograd", "<+03>-3"},
-  {"Europe/Warsaw", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Zagreb", "CET-1CESTM3.5.0M10.5.0/3"},
-  {"Europe/Zaporozhye", "EET-2EESTM3.5.0/3M10.5.0/4"},
-  {"Europe/Zurich", "CET-1CESTM3.5.0M10.5.0/3"},
+  {"Europe/Warsaw", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Zagreb", "CET-1CEST,M3.5.0,M10.5.0/3"},
+  {"Europe/Zaporozhye", "EET-2EEST,M3.5.0/3,M10.5.0/4"},
+  {"Europe/Zurich", "CET-1CEST,M3.5.0,M10.5.0/3"},
   {"Indian/Antananarivo", "EAT-3"},
   {"Indian/Chagos", "<+06>-6"},
   {"Indian/Christmas", "<+07>-7"},
@@ -428,16 +431,16 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Indian/Mauritius", "<+04>-4"},
   {"Indian/Mayotte", "EAT-3"},
   {"Indian/Reunion", "<+04>-4"},
-  {"Pacific/Apia", "<+13>-13<+14>M9.5.0/3M4.1.0/4"},
-  {"Pacific/Auckland", "NZST-12NZDTM9.5.0M4.1.0/3"},
+  {"Pacific/Apia", "<+13>-13<+14>,M9.5.0/3,M4.1.0/4"},
+  {"Pacific/Auckland", "NZST-12NZDT,M9.5.0,M4.1.0/3"},
   {"Pacific/Bougainville", "<+11>-11"},
-  {"Pacific/Chatham", "<+1245>-12:45<+1345>M9.5.0/2:45M4.1.0/3:45"},
+  {"Pacific/Chatham", "<+1245>-12:45<+1345>,M9.5.0/2:45,M4.1.0/3:45"},
   {"Pacific/Chuuk", "<+10>-10"},
-  {"Pacific/Easter", "<-06>6<-05>M9.1.6/22M4.1.6/22"},
+  {"Pacific/Easter", "<-06>6<-05>,M9.1.6/22,M4.1.6/22"},
   {"Pacific/Efate", "<+11>-11"},
   {"Pacific/Enderbury", "<+13>-13"},
   {"Pacific/Fakaofo", "<+13>-13"},
-  {"Pacific/Fiji", "<+12>-12<+13>M11.2.0M1.2.3/99"},
+  {"Pacific/Fiji", "<+12>-12<+13>,M11.2.0,M1.2.3/99"},
   {"Pacific/Funafuti", "<+12>-12"},
   {"Pacific/Galapagos", "<-06>6"},
   {"Pacific/Gambier", "<-09>9"},
@@ -452,7 +455,7 @@ const tzStruct_t tzArray[] PROGMEM = {
   {"Pacific/Midway", "SST11"},
   {"Pacific/Nauru", "<+12>-12"},
   {"Pacific/Niue", "<-11>11"},
-  {"Pacific/Norfolk", "<+11>-11<+12>M10.1.0M4.1.0/3"},
+  {"Pacific/Norfolk", "<+11>-11<+12>,M10.1.0,M4.1.0/3"},
   {"Pacific/Noumea", "<+11>-11"},
   {"Pacific/Pago_Pago", "SST11"},
   {"Pacific/Palau", "<+09>-9"},
@@ -490,7 +493,8 @@ table { width: 100%; max-width: 400px; }
 input[type="text"], select { height: 30px; width: 100%; max-width: 400px; padding: 5px 10px; margin: 8px auto; border: 2px solid #3498DB; border-radius: 4px; box-sizing: border-box; }
 select { cursor: pointer; }
 input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height: 20px; }
-.credentials { display: none; }
+.gprs-credentials { display: none; }
+.mqtt-credentials { display: none; }
 </style>
 </head>
 <body>
@@ -504,7 +508,13 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 </table>
 <form id="form1" action="/setup" method="POST">
 <p><label class="label">Sentinel Cloud-Relay Server URL / IP</label><br><input type="text" name="server" placeholder="sentinel-cloud-relay.example.com" autocapitalize="off" required><br></p>
-<p><label class="label">Sentinel Cloud-Relay Server Port</label><br><input type="text" pattern="[0-9]{2,4}" name="port" placeholder="443" autocapitalize="off" required><br></p>
+<p><label class="label">Sentinel Cloud-Relay Server HTTP Port</label><br><input type="text" pattern="[0-9]{2,5}" name="httpport" placeholder="80" autocapitalize="off" required><br></p>
+<p><label class="label">Sentinel Cloud-Relay Server MQTT Port</label><br><input type="text" pattern="[0-9]{2,5}" name="mqttport" placeholder="1883" autocapitalize="off" required><br></p>
+
+<p><label class="label">MQTT Credentials</label><br><input type="checkbox" name="mqttcredentials"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT User</label><br><input type="text" name="mqttuser" autocapitalize="off"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT Password</label><br><input type="text" name="mqttpass" autocapitalize="off"><br></p>
+
 <p><label class="label">NTP Server</label><br><input type="text" name="ntp" placeholder="pool.ntp.org" autocapitalize="off" required><br></p> 
 <p><label class="label">Timezone</label><br><select name="timezone">
 <option value="Africa/Abidjan">Africa/Abidjan</option>
@@ -944,9 +954,9 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 <option value="15">GLONASS + BEIDOU + GALILEO + QZSS</option>
 </select>
 <p><label class="label">GPRS APN</label><br><input type="text" name="apn" autocapitalize="off" required><br></p>
-<p><label class="label">GPRS Credentials</label><br><input type="checkbox" name="credentials"><br></p>
-<p class="credentials"><label class="label">GPRS User</label><br><input type="text" name="user" autocapitalize="off"><br></p>
-<p class="credentials"><label class="label">GPRS Password</label><br><input type="text" name="pass" autocapitalize="off"><br></p>
+<p><label class="label">GPRS Credentials</label><br><input type="checkbox" name="gprscredentials"><br></p>
+<p class="gprs-credentials"><label class="label">GPRS User</label><br><input type="text" name="gprsuser" autocapitalize="off"><br></p>
+<p class="gprs-credentials"><label class="label">GPRS Password</label><br><input type="text" name="gprspass" autocapitalize="off"><br></p>
 <input type="submit" value="Save & Reboot">
 <h2 class="info">You need to save the configuration and reboot the device, otherwise the device will not work</h2>
 </form>
@@ -964,38 +974,66 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
       mac.innerHTML = json.mac_address;
       var form1 = document.getElementById("form1");
       form1.server.value = json.server;
-      form1.port.value = json.port;
+      form1.httpport.value = json.http_port;
+      form1.mqttport.value = json.mqtt_port;
+      form1.mqttcredentials.checked = json.mqtt_credentials;
+      if (json.mqtt_credentials) {
+        var mqttcred = document.getElementsByClassName('mqtt-credentials');
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      }
+      form1.mqttuser.value = json.mqtt_user;
+      form1.mqttpass.value = json.mqtt_pass;
       form1.ntp.value = json.ntp;
       form1.timezone.value = json.timezone;
       form1.gnss.value = json.gnss_mode;
       form1.apn.value = json.apn;
-      form1.credentials.checked = json.credentials;
-      if (json.credentials) {
-        var cred = document.getElementsByClassName('credentials');
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'block';
+      form1.gprscredentials.checked = json.gprs_credentials;
+      if (json.gprs_credentials) {
+        var gprscred = document.getElementsByClassName('gprs-credentials');
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'block';
         }
-        form1.user.required = true;
-        form1.pass.required = true;
+        form1.gprsuser.required = true;
+        form1.gprspass.required = true;
       }
-      form1.user.value = json.user;
-      form1.pass.value = json.pass;
+      form1.gprsuser.value = json.gprs_user;
+      form1.gprspass.value = json.gprs_pass;
     });
     var form1 = document.getElementById("form1");
-    var cred = document.getElementsByClassName('credentials');
-    form1.credentials.onclick = function () {
-      if (this.form.credentials.checked) {
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'block';
+    var mqttcred = document.getElementsByClassName('mqtt-credentials');
+    form1.mqttcredentials.onclick = function () {
+      if (this.form.mqttcredentials.checked) {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
         }
-        form1.user.required = true;
-        form1.pass.required = true;
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
       } else {
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'none';
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'none';
         }
-        form1.user.required = false;
-        form1.pass.required = false;
+        form1.mqttuser.required = false;
+        form1.mqttpass.required = false;
+      }
+    }
+    var gprscred = document.getElementsByClassName('gprs-credentials');
+    form1.gprscredentials.onclick = function () {
+      if (this.form.gprscredentials.checked) {
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'block';
+        }
+        form1.gprsuser.required = true;
+        form1.gprspass.required = true;
+      } else {
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'none';
+        }
+        form1.gprsuser.required = false;
+        form1.gprspass.required = false;
       }
     }
   }
@@ -1047,9 +1085,20 @@ body { background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; col
 
 // ----------------------------------------------------------------------------------------------------------------
 
+const char* dbData = "Callback function called";
+char *dbErrorMessage = 0;
+sqlite3_stmt *dbRes;
+const char *dbTail;
+int dbRc;
+
+bool hw_reboot = DEFAULT_HW_REBOOT;
 bool is_setup_done = DEFAULT_IS_SETUP_DONE;
 String backend_server = DEFAULT_BACKEND_SERVER;
-int backend_port = DEFAULT_BACKEND_PORT;
+int http_port = DEFAULT_HTTP_PORT;
+int mqtt_port = DEFAULT_MQTT_PORT;
+bool mqtt_credentials = DEFAULT_MQTT_CREDENTIALS;
+String mqtt_user = DEFAULT_MQTT_USER;
+String mqtt_pass = DEFAULT_MQTT_PASS;
 String ntp_server = DEFAULT_NTP_SERVER;
 String timezone = DEFAULT_TIMEZONE;
 String timezone_name = DEFAULT_TIMEZONE_NAME;
@@ -1063,40 +1112,35 @@ bool gprs_credentials = DEFAULT_GPRS_CREDENTIALS;
 String gprs_user = DEFAULT_GPRS_USER;
 String gprs_pass = DEFAULT_GPRS_PASS;
 
-bool is_network_connected = false;
-bool is_gprs_connected = false;
+bool is_network_connected = false; // ?
+bool is_gprs_connected = false; // ?
 
-// Ticker gpsTicker; // TODO
-
-const int gps_period = 5000;
-unsigned long gps_last_time = 0;
-unsigned long gsm_last_time = 0;
-
-// String current_ride_id; // TODO
-// String current_driver_card; // TODO
-
-
-
-bool config_ap = false; // ?
 int config_button_last_state = 1;
 bool config_button_pressed = false;
 bool config_button_active = false;
 unsigned long config_button_last_time = 0;
 unsigned long config_button_period = 5000;
 
+const int gps_period = 5000; // 10000 
 
+Ticker gps_ticker;
+Ticker mqtt_ticker;
 
+unsigned long mqtt_check_last_time = 0;
 
+float gps_last_lat = 0.0;
+float gps_last_lon = 0.0;
+float gps_last_alt = 0.0;
+float gps_last_speed = 0.0;
+float gps_last_accuracy = 0.0;
+DateTime gps_last_datetime = DateTime(2000, 1, 1, 0, 0, 0);
 
+String driver_card = "";  // ?
 
-char *dbErrorMessage = 0;
-sqlite3_stmt *res;
-const char *tail;
-int rc;
 
 // ----------------------------------------------------------------------------------------------------------------
 
-String mac2String(byte ar[]) {
+String mac2String(byte ar[]) { // Done
   String s;
   for (byte i = 0; i < 6; ++i) {
     char buf[3];
@@ -1107,132 +1151,161 @@ String mac2String(byte ar[]) {
   return s;
 }
 
-String defaultHostname() {
+String defaultHostname() { // Done
   uint64_t esp_id = ESP.getEfuseMac();
   String mac_address = mac2String((byte*) &esp_id);
   mac_address.replace(":", "");
   String hostname = MODULE_TYPE + String('-') + mac_address;
-
   return hostname;
 }
 
-void clearWifi() {
+void clearWifi() { // Done
   WiFi.persistent(false);
   WiFi.disconnect(true);
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_OFF);
 }
 
-void setupUnitVariables() {
+void setupUnitVariables() { // Done
   uint64_t esp_id = ESP.getEfuseMac();
   String mac_address = mac2String((byte*) &esp_id);
   mac_address_raw = mac_address;
   mac_address.replace(":", "");
   mac_address_nag = mac_address;
+  wifi_hostname = defaultHostname();
 }
 
 void setupEspPins() { // TODO
+  digitalWrite(ESP_RST, HIGH); // off
+  pinMode(ESP_RST, OUTPUT);
+
+  digitalWrite(ESP_PWR_CARD_READER, LOW); // LOW/HIGH depends on mosfet type - here should set mosfet to OFF
+  pinMode(ESP_PWR_CARD_READER, OUTPUT); // card reader mosfet // TODO
 
   // TODO
 
   pinMode(ESP_WIFI_BUTTON, INPUT_PULLUP);
 
-  pinMode(GSM_MODULE_LED, OUTPUT);
-  digitalWrite(GSM_MODULE_LED, HIGH); // off
+  pinMode(ESP_LED, OUTPUT);
+  digitalWrite(ESP_LED, HIGH); // off
   pinMode(GSM_MODULE_POWER, OUTPUT);
   pinMode(GSM_MODULE_PWR, OUTPUT);
   pinMode(GSM_MODULE_INT, INPUT);
 
-  SerialMon.println(F("[ESP] Success"));
+  SerialMon.println("[ESP] Success");
 }
 
-int openDb(const char *filename, sqlite3 **db) {
-  /*int*/ rc = sqlite3_open(filename, db);
-  if (rc) {
-    SerialMon.print(F("[DB] Can't open database: "));
-    SerialMon.println(F(sqlite3_errmsg(*db)));
-    return rc;
+void setupRtc() { // Done
+  if (!rtc.begin()) {
+    SerialMon.println("[RTC] Error");
+    while (1);
+  }
+  SerialMon.println("[RTC] Success");
+  if (rtc.lostPower()) {
+    SerialMon.println("[RTC] Lost power, setting default date (1/1/2000 00:00:00)");
+     rtc.adjust(DateTime(2000, 1, 1, 0, 0, 0)); // 1.1. 1970 00:00:00
+  }
+  SerialMon.print("[RTC] Temperature is: "); 
+  SerialMon.print(rtc.getTemperature());
+  SerialMon.println(" °C");
+}
+
+int openDb(const char *filename, sqlite3 **db) { // Done
+  dbRc = sqlite3_open(filename, db);
+  if (dbRc) {
+    SerialMon.print("[DB] Can't open database: ");
+    SerialMon.println(sqlite3_errmsg(*db));
+    return dbRc;
   } 
-  return rc;
+  return dbRc;
 }
 
-static int dbCallback(void *data, int dataLength, char **colValue, char **colName) {
-  SerialMon.println(F((const char*)data));
+static int dbCallback(void *data, int dataLength, char **colValue, char **colName) { // Done
+  SerialMon.println((const char*)data);
+  // no output printed - use only for data in to database
   return 0;
 }
 
-int dbExec(sqlite3 *db, const char *sql) {
-  const char* data = "Callback function called";
-  // char *dbErrorMessage = 0;
+int dbExec(sqlite3 *db, const char *sql) { // Done
+  SerialMon.print("[DB] "); 
+  SerialMon.println(sql); // TODO - test
 
-  SerialMon.print(F("[DB] ")); 
-  SerialMon.println(F(sql)); // TODO - test
-
-  /*int*/ rc = sqlite3_exec(db, sql, dbCallback, (void*)data, &dbErrorMessage);
-  if (rc != SQLITE_OK) {
-    SerialMon.print(F("[DB] SQL error ("));
-    SerialMon.print(F(rc));
-    SerialMon.print(F("): "));
-    SerialMon.println(F(dbErrorMessage));
+  dbRc = sqlite3_exec(db, sql, dbCallback, (void*)dbData, &dbErrorMessage);
+  if (dbRc != SQLITE_OK) {
+    SerialMon.print("[DB] SQL error (");
+    SerialMon.print(dbRc);
+    SerialMon.print("): ");
+    SerialMon.println(dbErrorMessage);
     sqlite3_free(dbErrorMessage);
   } 
-  return rc;
+  return dbRc;
 }
 
-String loadConfigStringVariable(String sql, String default_value) { // TODO - how to check when column value is null => set column not null
-  // sqlite3_stmt *res;
-  // const char *tail;
-  /*int*/ rc = sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &res, &tail); // sqlite3_prepare_v2(fs_db, sql.c_str(), 1000, &res, &tail);
-  if (rc != SQLITE_OK) {
-    SerialMon.print(F("Failed to fetch data: "));
-    SerialMon.println(F(sqlite3_errmsg(fs_db)));
-    return default_value;
-  }
-  while (sqlite3_step(res) == SQLITE_ROW) {
-    return (const char *) sqlite3_column_text(res, 0);
-  }
-  sqlite3_finalize(res);
-  return default_value; // failover if no rows
+// void dbExecPrep(String sql) {
+//   dbRc = sqlite3_prepare_v2(fs_db, sql.c_str(), strlen(sql.c_str()), &dbRes, &dbTail);
+//   if (dbRc != SQLITE_OK) {
+//     SerialMon.print("[DB] Failed to update data: ");
+//     SerialMon.println(sqlite3_errmsg(fs_db));
+//   }
+//   if (sqlite3_step(dbRes) != SQLITE_DONE) {
+//     SerialMon.print("[DB] ERROR executing stmt (");
+//     SerialMon.print(sqlite3_step(dbRes));
+//     SerialMon.print("): ");
+//     SerialMon.println(sqlite3_errmsg(fs_db)); // TODO
+//   }
+//   sqlite3_finalize(dbRes);
+// }
+
+// String loadConfigStringVariable(String sql, String default_value) { // TODO - how to check when column value is null => set column not null
+//   dbRc = sqlite3_prepare_v2(fs_db, sql.c_str(), strlen(sql.c_str()), &dbRes, &dbTail); // sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &dbRes, &dbTail) || sqlite3_prepare_v2(fs_db, sql.c_str(), 1000, &res, &tail)
+//   if (dbRc != SQLITE_OK) {
+//     SerialMon.print("Failed to fetch data: ");
+//     SerialMon.println(sqlite3_errmsg(fs_db));
+//     return default_value;
+//   }
+//   while (sqlite3_step(dbRes) == SQLITE_ROW) {
+//     return (const char *) sqlite3_column_text(dbRes, 0);
+//   }
+//   sqlite3_finalize(dbRes);
+//   return default_value; // failover if no rows
+// }
+
+// int loadConfigIntVariable(String sql, int default_value) { // TODO - how to check when column value is null => set column not null
+//   dbRc = sqlite3_prepare_v2(fs_db, sql.c_str(), strlen(sql.c_str()), &dbRes, &dbTail); // sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &dbRes, &dbTail) || sqlite3_prepare_v2(fs_db, sql.c_str(), 1000, &res, &tail)
+//   if (dbRc != SQLITE_OK) {
+//     SerialMon.print("Failed to fetch data: ");
+//     SerialMon.println(sqlite3_errmsg(fs_db));
+//     return default_value;
+//   }
+//   while (sqlite3_step(dbRes) == SQLITE_ROW) {
+//     return sqlite3_column_int(dbRes, 0);
+//   }
+//   sqlite3_finalize(dbRes);
+//   return default_value; // failover if no rows
+// }
+
+void loadDatabaseConfig() { // ?
+  // if (openDb("/spiffs/database.db", &fs_db))
+  //   return;
+  // is_setup_done = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'is_setup_done'", DEFAULT_IS_SETUP_DONE);
+  // fw_version = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'fw_version'", MODULE_FIRMWARE_VERSION);
+  // wifi_hostname = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'hostname'", defaultHostname());
+  // ntp_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'ntp_server'", DEFAULT_NTP_SERVER);
+  // timezone = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone'", DEFAULT_TIMEZONE);
+  // timezone_name = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone_name'", DEFAULT_TIMEZONE_NAME);
+  // gnss_mode = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gnss_mode'", DEFAULT_GNSS_MODE);
+  // backend_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'backend_server'", DEFAULT_BACKEND_SERVER);
+  // http_port = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'http_port'", DEFAULT_HTTP_PORT);
+  // gprs_apn = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_apn'", DEFAULT_GPRS_APN);
+  // gprs_credentials = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gprs_credentials'", DEFAULT_GPRS_CREDENTIALS);
+  // gprs_user = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_user'", DEFAULT_GPRS_USER);
+  // gprs_pass = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_pass'", DEFAULT_GPRS_PASS);
+  // sqlite3_close(fs_db);
+
+  SerialMon.println("[FS] Database Values Loaded");
 }
 
-int loadConfigIntVariable(String sql, int default_value) { // TODO - how to check when column value is null => set column not null
-  // sqlite3_stmt *res;
-  // const char *tail;
-  /*int*/ rc = sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &res, &tail); // sqlite3_prepare_v2(fs_db, sql.c_str(), 1000, &res, &tail);
-  if (rc != SQLITE_OK) {
-    SerialMon.print(F("Failed to fetch data: "));
-    SerialMon.println(F(sqlite3_errmsg(fs_db)));
-    return default_value;
-  }
-  while (sqlite3_step(res) == SQLITE_ROW) {
-    return sqlite3_column_int(res, 0);
-  }
-  sqlite3_finalize(res);
-  return default_value; // failover if no rows
-}
-
-void loadConfig() { // TODO
-  if (openDb("/spiffs/database.db", &fs_db))
-    return;
-  is_setup_done = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'is_setup_done'", DEFAULT_IS_SETUP_DONE);
-  fw_version = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'fw_version'", MODULE_FIRMWARE_VERSION);
-  wifi_hostname = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'hostname'", defaultHostname());
-  ntp_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'ntp_server'", DEFAULT_NTP_SERVER);
-  timezone = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone'", DEFAULT_TIMEZONE);
-  timezone_name = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone_name'", DEFAULT_TIMEZONE_NAME);
-  gnss_mode = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gnss_mode'", DEFAULT_GNSS_MODE);
-  backend_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'backend_server'", DEFAULT_BACKEND_SERVER);
-  backend_port = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'backend_port'", DEFAULT_BACKEND_PORT);
-  gprs_apn = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_apn'", DEFAULT_GPRS_APN);
-  gprs_credentials = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gprs_credentials'", DEFAULT_GPRS_CREDENTIALS);
-  gprs_user = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_user'", DEFAULT_GPRS_USER);
-  gprs_pass = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_pass'", DEFAULT_GPRS_PASS);
-  sqlite3_close(fs_db);
-  SerialMon.println(F("[FS] Config Loaded From Database File"));
-}
-
-void initDatabaseFile(const char *database_path, sqlite3 *database_instance) { // TODO
-  // wifi_hostname = defaultHostname();
+void initDatabaseFile() { // ?
   // String sqlArray[] = {
   //   "CREATE TABLE IF NOT EXISTS config (variable TEXT, value)",
   //   "INSERT INTO config VALUES ('is_setup_done','" + String(DEFAULT_IS_SETUP_DONE) + "')",
@@ -1243,253 +1316,386 @@ void initDatabaseFile(const char *database_path, sqlite3 *database_instance) { /
   //   "INSERT INTO config VALUES ('time_zone','" + String(DEFAULT_TIMEZONE) + "')",
   //   "INSERT INTO config VALUES ('gnss_mode','" + String(DEFAULT_GNSS_MODE) + "')",
   //   "INSERT INTO config VALUES ('backend_server','" + String(DEFAULT_BACKEND_SERVER) + "')",
-  //   "INSERT INTO config VALUES ('backend_port','" + String(DEFAULT_BACKEND_PORT) + "')",
+  //   "INSERT INTO config VALUES ('http_port','" + String(DEFAULT_HTTP_PORT) + "')",
   //   "INSERT INTO config VALUES ('gprs_apn','" + String(DEFAULT_GPRS_APN) + "')",
   //   "INSERT INTO config VALUES ('gprs_credentials','" + String(DEFAULT_GPRS_CREDENTIALS) + "')",
   //   "INSERT INTO config VALUES ('gprs_user','" + String(DEFAULT_GPRS_USER) + "')",
   //   "INSERT INTO config VALUES ('gprs_pass','" + String(DEFAULT_GPRS_PASS) + "')"
   // };
-  // if (openDb(database_path, &database_instance))
+
+  // if (openDb("/spiffs/database.db", &fs_db))
   //   return;
+
   // for (int i = 0; i < sizeof(sqlArray)/sizeof(sqlArray[0]); i++) {
-  //   rc = dbExec(database_instance, sqlArray[i].c_str());
-  //   if (rc != SQLITE_OK) {
-  //     sqlite3_close(database_instance);
+  //   dbRc = dbExec(fs_db, sqlArray[i].c_str());
+  //   if (dbRc != SQLITE_OK) {
+  //     sqlite3_close(fs_db);
   //     return;
   //   }
-  //   delay(100);
+  //   // dbExecPrep(sqlArray[i]);
   // }
 
-  if (openDb(database_path, &database_instance))
-    return;
-  String config_table_insert_query = "CREATE TABLE IF NOT EXISTS config (variable TEXT, value)";
-  // int rc_config_table = dbExec(database_instance, config_table_insert_query.c_str());
-  // if (rc_config_table != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_table_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_is_setup_done_insert_query = "INSERT INTO config VALUES ('is_setup_done','" + String(DEFAULT_IS_SETUP_DONE) + "')";
-  // int rc_config_is_setup_done = dbExec(database_instance, config_is_setup_done_insert_query.c_str());
-  // if (rc_config_is_setup_done != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_is_setup_done_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_fw_version_insert_query = "INSERT INTO config VALUES ('fw_version','" + String(MODULE_FIRMWARE_VERSION) + "')";
-  // int rc_config_fw_version = dbExec(database_instance, config_fw_version_insert_query.c_str());
-  // if (rc_config_fw_version != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_fw_version_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_hostname_insert_query = "INSERT INTO config VALUES ('hostname','" + defaultHostname() + "')";
-  // int rc_config_hostname = dbExec(database_instance, config_hostname_insert_query.c_str());
-  // if (rc_config_hostname != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_hostname_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  wifi_hostname = defaultHostname();
-  String config_ntp_server_insert_query = "INSERT INTO config VALUES ('ntp_server','" + String(DEFAULT_NTP_SERVER) + "')";
-  // int rc_config_ntp_server = dbExec(database_instance, config_ntp_server_insert_query.c_str());
-  // if (rc_config_ntp_server != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_ntp_server_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_time_zone_name_insert_query = "INSERT INTO config VALUES ('time_zone_name','" + String(DEFAULT_TIMEZONE_NAME) + "')";
-  // int rc_config_time_zone_name = dbExec(database_instance, config_time_zone_name_insert_query.c_str());
-  // if (rc_config_time_zone_name != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_time_zone_name_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_time_zone_insert_query = "INSERT INTO config VALUES ('time_zone','" + String(DEFAULT_TIMEZONE) + "')";
-  // int rc_config_time_zone = dbExec(database_instance, config_time_zone_insert_query.c_str());
-  // if (rc_config_time_zone != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_time_zone_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  // String config_gnss_mode_insert_query = "INSERT INTO config VALUES ('gnss_mode','" + String(DEFAULT_GNSS_MODE) + "')";
-  // int rc_config_gnss_mode = dbExec(database_instance, config_gnss_mode_insert_query.c_str());
-  // if (rc_config_gnss_mode != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  String config_backend_server_insert_query = "INSERT INTO config VALUES ('backend_server','" + String(DEFAULT_BACKEND_SERVER) + "')";
-  // int rc_config_backend_server = dbExec(database_instance, config_backend_server_insert_query.c_str());
-  // if (rc_config_backend_server != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_backend_server_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_backend_port_insert_query = "INSERT INTO config VALUES ('backend_port','" + String(DEFAULT_BACKEND_PORT) + "')";
-  // int rc_config_backend_port = dbExec(database_instance, config_backend_port_insert_query.c_str());
-  // if (rc_config_backend_port != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_backend_port_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_gprs_apn_insert_query = "INSERT INTO config VALUES ('gprs_apn','" + String(DEFAULT_GPRS_APN) + "')";
-  // int rc_config_gprs_apn = dbExec(database_instance, config_gprs_apn_insert_query.c_str());
-  // if (rc_config_gprs_apn != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_gprs_apn_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_gprs_credentials_insert_query = "INSERT INTO config VALUES ('gprs_credentials','" + String(DEFAULT_GPRS_CREDENTIALS) + "')";
-  // int rc_config_gprs_credentials = dbExec(database_instance, config_gprs_credentials_insert_query.c_str());
-  // if (rc_config_gprs_credentials != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_gprs_credentials_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_gprs_user_insert_query = "INSERT INTO config VALUES ('gprs_user','" + String(DEFAULT_GPRS_USER) + "')";
-  // int rc_config_gprs_user = dbExec(database_instance, config_gprs_user_insert_query.c_str());
-  // if (rc_config_gprs_user != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_gprs_user_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  String config_gprs_pass_insert_query = "INSERT INTO config VALUES ('gprs_pass','" + String(DEFAULT_GPRS_PASS) + "')";
-  // int rc_config_gprs_pass = dbExec(database_instance, config_gprs_pass_insert_query.c_str());
-  // if (rc_config_gprs_pass != SQLITE_OK) {
-  //   sqlite3_close(database_instance);
-  //   return;
-  // }
-  rc = dbExec(database_instance, config_gprs_pass_insert_query.c_str());
-  if (rc != SQLITE_OK) {
-    sqlite3_close(database_instance);
-    return;
-  }
-  delay(500);
-  sqlite3_close(database_instance);
-  delay(500);
-  SerialMon.println(F("[FS] Database Structure Written Into Database File"));
+  // sqlite3_close(fs_db);
+  SerialMon.println("[FS] Database Structure Written Into Database File");
 }
 
-void setupFileSystem() {
+void handlePreferences() { // Done
+  preferences.begin("module-config", false);
+  if (preferences.isKey("fw_version")) {
+    fw_version = preferences.getString("fw_version");
+  } else {
+    preferences.putString("fw_version", MODULE_FIRMWARE_VERSION);
+  }
+  if (preferences.isKey("hostname")) {
+    wifi_hostname = preferences.getString("hostname");
+  } else {
+    preferences.putString("hostname", defaultHostname());
+  }
+  if (preferences.isKey("ntp_server")) {
+    ntp_server = preferences.getString("ntp_server");
+  } else {
+    preferences.putString("ntp_server", DEFAULT_NTP_SERVER);
+  }
+  if (preferences.isKey("time_zone")) {
+    timezone = preferences.getString("time_zone");
+  } else {
+    preferences.putString("time_zone", DEFAULT_TIMEZONE);
+  }
+  if (preferences.isKey("tz_name")) {
+    timezone_name = preferences.getString("tz_name");
+  } else {
+    preferences.putString("tz_name", DEFAULT_TIMEZONE_NAME);
+  }
+  if (preferences.isKey("gnss_mode")) {
+    gnss_mode = preferences.getInt("gnss_mode");
+  } else {
+    preferences.putInt("gnss_mode", DEFAULT_GNSS_MODE);
+  }
+  if (preferences.isKey("server")) {
+    backend_server = preferences.getString("server");
+  } else {
+    preferences.putString("server", DEFAULT_BACKEND_SERVER);
+  }
+  if (preferences.isKey("http_port")) {
+    http_port = preferences.getInt("http_port");
+  } else {
+    preferences.putInt("http_port", DEFAULT_HTTP_PORT);
+  }
+  if (preferences.isKey("mqtt_port")) {
+    mqtt_port = preferences.getInt("mqtt_port");
+  } else {
+    preferences.putInt("mqtt_port", DEFAULT_MQTT_PORT);
+  }
+  if (preferences.isKey("mqtt_cred")) {
+    mqtt_credentials = preferences.getBool("mqtt_cred");
+  } else {
+    preferences.putBool("mqtt_cred", DEFAULT_MQTT_CREDENTIALS);
+  }
+  if (preferences.isKey("mqtt_user")) {
+    mqtt_user = preferences.getString("mqtt_user");
+  } else {
+    preferences.putString("mqtt_user", DEFAULT_MQTT_USER);
+  }
+  if (preferences.isKey("mqtt_pass")) {
+    mqtt_pass = preferences.getString("mqtt_pass");
+  } else {
+    preferences.putString("mqtt_pass", DEFAULT_MQTT_PASS);
+  }
+  if (preferences.isKey("gprs_apn")) {
+    gprs_apn = preferences.getString("gprs_apn");
+  } else {
+    preferences.putString("gprs_apn", DEFAULT_GPRS_APN);
+  }
+  if (preferences.isKey("gprs_cred")) {
+    gprs_credentials = preferences.getBool("gprs_cred");
+  } else {
+    preferences.putBool("gprs_cred", DEFAULT_GPRS_CREDENTIALS);
+  }
+  if (preferences.isKey("gprs_user")) {
+    gprs_user = preferences.getString("gprs_user");
+  } else {
+    preferences.putString("gprs_user", DEFAULT_GPRS_USER);
+  }
+  if (preferences.isKey("gprs_pass")) {
+    gprs_pass = preferences.getString("gprs_pass");
+  } else {
+    preferences.putString("gprs_pass", DEFAULT_GPRS_PASS);
+  }
+  if (preferences.isKey("hw_reboot")) {
+    hw_reboot = preferences.getBool("hw_reboot");
+  } else {
+    preferences.putBool("hw_reboot", DEFAULT_HW_REBOOT);
+  }
+  if (preferences.isKey("last_lat")) {
+    gps_last_lat = preferences.getFloat("last_lat");
+  } else {
+    preferences.putFloat("last_lat", 0.0);
+  }
+  if (preferences.isKey("last_lon")) {
+    gps_last_lon = preferences.getFloat("last_lon");
+  } else {
+    preferences.putFloat("last_lon", 0.0);
+  }
+  if (preferences.isKey("last_alt")) {
+    gps_last_alt = preferences.getFloat("last_alt");
+  } else {
+    preferences.putFloat("last_alt", 0.0);
+  }
+  if (preferences.isKey("last_speed")) {
+    gps_last_speed = preferences.getFloat("last_speed");
+  } else {
+    preferences.putFloat("last_speed", 0.0);
+  }
+  if (preferences.isKey("last_accuracy")) {
+    gps_last_accuracy = preferences.getFloat("last_accuracy");
+  } else {
+    preferences.putFloat("last_accuracy", 0.0);
+  }
+  if (preferences.isKey("last_datetime")) {
+    gps_last_datetime = DateTime(preferences.getString("last_datetime").c_str());
+  } else {
+    preferences.putString("last_datetime", DateTime(2000,1,1,0,0,0).timestamp());
+  }
+  if (preferences.isKey("setup_done")) {
+    is_setup_done = preferences.getBool("setup_done");
+  } else {
+    preferences.putBool("setup_done", DEFAULT_IS_SETUP_DONE);
+  }
+  SerialMon.println("[CONFIG] Preferences Loaded");
+}
+
+void setupFileSystem() { // Done
   if (!SPIFFS.begin(FORMAT_FS_IF_FAILED)) {
-    SerialMon.println(F("[FS] File System Mount Failed"));
+    SerialMon.println("[FS] File System Mount Failed");
     while(1);
   } else {
-    SerialMon.println(F("[FS] File System Mounted"));
+    SerialMon.println("[FS] File System Mounted");
     if (SPIFFS.exists("/database.db")) {
-      SerialMon.println(F("[FS] Database File Exists"));
-      loadConfig();
+      SerialMon.println("[FS] Database File Exists");
+      loadDatabaseConfig();
     } else {
-      SerialMon.println(F("[FS] Database File Does Not Exist"));
+      SerialMon.println("[FS] Database File Does Not Exist");
       File dbFile;
       dbFile = SPIFFS.open("/database.db", FILE_WRITE);
       dbFile.close();
-      SerialMon.println(F("[FS] Database File Created"));
-      initDatabaseFile("/spiffs/database.db", fs_db);
+      SerialMon.println("[FS] Database File Created");
+      initDatabaseFile();
     }
+    handlePreferences();
+  }
+}
+
+// void sendSMS(String recipient, String message) {
+//   bool sms_send = modem.sendSMS(recipient, message);
+//   SerialMon.print("[GSM] SMS: ");
+//   SerialMon.println(sms_send ? "Sent" : "Failed");
+// }
+
+// String getGpsJson() { // ?
+//   DynamicJsonDocument json_doc(1024);
+//   json_doc["unit_id"] = mac_address_nag;
+//   json_doc["timestamp"] = rtc.now().timestamp();
+//   json_doc["temperature"] = String(rtc.getTemperature(), 2);
+//   json_doc["gps_lat"] = String(gps_last_lat, 6); // gps_last_lat;
+//   json_doc["gps_lon"] = String(gps_last_lon, 6); // gps_last_lon;
+//   json_doc["gps_alt"] = String(gps_last_alt, 2);
+//   json_doc["gps_speed"] = String(gps_last_speed, 2);
+//   json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
+//   json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
+//   String data_out;
+//   serializeJson(json_doc, data_out);
+//   return data_out;
+// }
+
+// void sendHttpPost() {
+//   HttpClient http(client, backend_server, http_port);
+//   http.setHttpResponseTimeout(gps_period / 2);
+//   SerialMon.print("[HTTP] Connecting to ");
+//   SerialMon.print(backend_server);
+//   SerialMon.print(":");
+//   SerialMon.println(http_port);
+//   int err = http.post(DEFAULT_HTTP_GPS_ENDPOINT, "application/json", getGpsJson());
+//   if (err == 0) {
+//     int responseCode = http.responseStatusCode();
+//     String responseBody = http.responseBody();
+//     SerialMon.print("[HTTP] POST (");
+//     SerialMon.print(responseCode);
+//     SerialMon.print(") ");
+//     SerialMon.println(responseBody);
+//   } else if (err == -1) {
+//     SerialMon.println("[HTTP] POST - HTTP CONNECTION FAILED");
+//   } else if (err == -2) {
+//     SerialMon.println("[HTTP] POST - INCORECT USAGE");
+//   } else if (err == -3) {
+//     SerialMon.println("[HTTP] POST - TIMED OUT");
+//   } else if (err == -4) {
+//     SerialMon.println("[HTTP] POST - INVALID RESPONSE");
+//   }
+// }
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) { // TODO
+  SerialMon.print("[MQTT] Message arrived (");
+  SerialMon.print(topic);
+  SerialMon.print(") ");
+  for (int i = 0; i < length; i++) {
+    SerialMon.print((char)payload[i]);
+  }
+  SerialMon.println();
+  // if (String(topic) == mqtt_StatusTopic) { // TODO
+  //   
+  // }
+  // ? OR
+  // String topicToProcess = topic;
+  // payload[length] = '\0';
+  // String payloadToProcess = (char*)payload;
+  // triggerAction(topicToProcess, payloadToProcess);
+}
+
+void setupMqtt() { // Done
+  mqtt.setServer(backend_server.c_str(), mqtt_port);
+  mqtt.setCallback(mqttCallback);
+  SerialMon.println("[MQTT] Setup Done");
+}
+
+void publishMqttBirthMessage() { // Done
+  SerialMon.print("[MQTT] Publishing ");
+  SerialMon.print(MQTT_AVAILABILITY_BIRTH);
+  SerialMon.print(" to ");
+  SerialMon.print("car-fleet/" + mac_address_nag + "/availability");
+  SerialMon.print(": ");
+  bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/availability").c_str(), MQTT_AVAILABILITY_BIRTH, true);
+  if (stat) {
+    SerialMon.println("OK");
+  } else {
+    SerialMon.println("Failed");
+  }
+}
+
+void publishTemperatureTopic() { // Done
+  SerialMon.print("[MQTT] Publishing to ");
+  SerialMon.print("car-fleet/" + mac_address_nag + "/temperature");
+  SerialMon.print(": ");
+  // bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/temperature").c_str(), String(rtc.getTemperature(), 2).c_str(), true);
+  // if (stat) {
+  //   SerialMon.println("OK");
+  // } else {
+  //   SerialMon.println("Failed");
+  // }
+  SerialMon.println("TEST");
+}
+
+void publishTimestampTopic() { // Done
+  SerialMon.print("[MQTT] Publishing to ");
+  SerialMon.print("car-fleet/" + mac_address_nag + "/timestamp");
+  SerialMon.print(": ");
+  // bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/timestamp").c_str(), rtc.now().timestamp().c_str(), true); // ?
+  // if (stat) {
+  //   SerialMon.println("OK");
+  // } else {
+  //   SerialMon.println("Failed");
+  // }
+  SerialMon.println("TEST");
+}
+
+void publishGpsTopic() {
+  SerialMon.print("[MQTT] Publishing to ");
+  SerialMon.print("car-fleet/" + mac_address_nag + "/gps");
+  SerialMon.print(": ");
+  DynamicJsonDocument json_doc(1024);
+  json_doc["gps_lat"] = String(gps_last_lat, 6);
+  json_doc["gps_lon"] = String(gps_last_lon, 6);
+  json_doc["gps_alt"] = String(gps_last_alt, 2);
+  json_doc["gps_speed"] = String(gps_last_speed, 2);
+  json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
+  json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
+  String data_out;
+  serializeJson(json_doc, data_out);
+  bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/gps").c_str(), data_out.c_str(), true); // ?
+  if (stat) {
+    SerialMon.println("OK");
+  } else {
+    SerialMon.println("Failed");
   }
 }
 
 
 
-void sendSMS(String recipient, String message) {
-  bool sms_send = modem.sendSMS(recipient, message);
-  SerialMon.print(F("[GSM] SMS: "));
-  SerialMon.println(F(sms_send ? "Sent" : "Failed"));
-}
-
-void getGpsPosition() {
-  if (millis() - gps_last_time >= gps_period) {
-    SerialMon.print(F("[GPS]"));
-    float lat, lon, speed, alt, accuracy;
-    int vsat, usat;
-    if (modem.getGPS(&lat, &lon, &speed, &alt, &vsat, &usat, &accuracy)) {
-      SerialMon.print(F(" lat: "));
-      SerialMon.print(lat, 6);
-      SerialMon.print(F(" lon: "));
-      SerialMon.print(lon, 6);
-      SerialMon.print(F(" speed: "));
-      SerialMon.print(speed);
-      SerialMon.print(F(" alt: "));
-      SerialMon.print(alt);
-      SerialMon.print(F(" accuracy: "));
-      SerialMon.println(accuracy);
+void connectMqtt() { // Done
+  // if (!mqtt.connected()) {
+    SerialMon.print("[MQTT] Connecting to ");
+    SerialMon.print(backend_server);
+    SerialMon.print(":");
+    SerialMon.print(mqtt_port);
+    SerialMon.print(" (user: ");
+    SerialMon.print(mqtt_user);
+    SerialMon.print(", pass: ");
+    SerialMon.print(mqtt_pass);
+    SerialMon.print("): ");
+    if (mqtt.connect(mac_address_nag.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), String("car-fleet/" + mac_address_nag + "/availability").c_str(), 0, true, MQTT_AVAILABILITY_LWT)) {
+      SerialMon.println("OK");
+      publishMqttBirthMessage();
+      // TODO - subscribe to needed topics
+      // ? - publish init state
     } else {
-      SerialMon.println(F(" timed out"));
+      SerialMon.print("Failed (");
+      SerialMon.print(mqtt.state());
+      SerialMon.println(")");
     }
-    gps_last_time = millis();
-  }
+  // }
 }
 
-void getGsmPosition() {
-  if (millis() - gsm_last_time >= gps_period) {
-    SerialMon.print(F("[GSM]"));
-    float lat, lon, accuracy;
-    if (modem.getGsmLocation(&lat, &lon, &accuracy)) {
-      SerialMon.print(F(" lat: "));
-      SerialMon.print(lat, 6);
-      SerialMon.print(F(" lon: "));
-      SerialMon.print(lon, 6);
-      SerialMon.print(F(" accuracy: "));
-      SerialMon.println(accuracy);
-    } else {
-      SerialMon.println(F(" timed out"));
+void handleMqttConnection() {
+  if (!mqtt.connected()) {
+    SerialMon.println("[MQTT] Disconnected");
+    if (millis() - mqtt_check_last_time > gps_period*2) {
+      mqtt_check_last_time = millis();
+      connectMqtt();
     }
-    gsm_last_time = millis();
   }
+  
+  mqtt.loop();
 }
 
 
-void setupGsmModule() { // TODO
-  digitalWrite(GSM_MODULE_LED, LOW); // module LED -> ON
+
+void getGpsPosition() { // TODO
+  int year, month, day, hour, minute, second;
+  if (modem.getGPS(&gps_last_lat, &gps_last_lon, &gps_last_speed, &gps_last_alt, NULL, NULL, &gps_last_accuracy, &year, &month, &day, &hour, &minute, &second)) {
+    SerialMon.println("[GPS] Receiving Data");
+
+    gps_last_datetime = DateTime(year, month, day, hour, minute, second);
+    rtc.adjust(gps_last_datetime);
+    preferences.putFloat("last_lat", gps_last_lat);
+    preferences.putFloat("last_lon", gps_last_lon);
+    preferences.putFloat("last_alt", gps_last_alt);
+    preferences.putFloat("last_speed", gps_last_speed);
+    preferences.putFloat("last_accuracy", gps_last_accuracy);
+    preferences.putString("last_datetime", gps_last_datetime.timestamp());
+
+    // sendHttpPost(); // TODO - temp disable
+
+    // if (mqtt.connected()) {
+    //   publishGpsTopic();
+    //   publishTemperatureTopic();
+    //   publishTimestampTopic();
+    // }
+
+  } else {
+    SerialMon.println("[GPS] No Signal");
+
+    // if (mqtt.connected()) {
+    //   publishTemperatureTopic();
+    //   publishTimestampTopic();
+    // }
+
+    publishTemperatureTopic();
+
+  }
+}
+
+
+
+void setupGsmModule() { // Done
   digitalWrite(GSM_MODULE_POWER, HIGH); // POWER_PIN: This pin controls the power supply of the SIM7600
   digitalWrite(GSM_MODULE_PWR, HIGH); // PWR_PIN：This Pin is the PWR-KEY of the SIM7600, The time of active low level impulse of PWRKEY pin to power on module , type 500 ms
   delay(500);
@@ -1497,59 +1703,64 @@ void setupGsmModule() { // TODO
   attachInterrupt(GSM_MODULE_INT, []() { // If SIM7600 starts normally, then set the onboard LED to flash once every 1 second
     detachInterrupt(GSM_MODULE_INT);
     led_ticker.attach_ms(1000, []() {
-      digitalWrite(GSM_MODULE_LED, !digitalRead(GSM_MODULE_LED));
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
     });
-  }, CHANGE);
-  SerialMon.println(F("[GSM] Waiting ..."));
-  delay(5000);
-  SerialAT.begin(GSM_MODULE_UART_BAUD, SERIAL_8N1, GSM_MODULE_RX, GSM_MODULE_TX);
-  delay(15000);
-  // Restart takes quite some time, To skip it, call init() instead of restart()
-  // SerialMon.println("[GSM] Initializing modem ...");
-  // if (!modem.restart()) {
-  //   SerialMon.println("[GSM] Failed to restart modem");
-  //   // delay(10000);
-  //   // return;
-  // }
+  }, RISING);
+          
+  delay(3000); // ?
 
-  SerialMon.print(F("[GSM] Initializing modem: "));
-  if (modem.init()) {
-    SerialMon.println(F("OK"));
+  SerialAT.begin(GSM_MODULE_UART_BAUD, SERIAL_8N1, GSM_MODULE_RX, GSM_MODULE_TX);
+
+  if (digitalRead(GSM_MODULE_INT) == 0) {
+    SerialMon.println("[GSM] Waiting For Power On...");
+    // delay(15000);
   } else {
-    SerialMon.println(F("failed"));
+    detachInterrupt(GSM_MODULE_INT);
+    led_ticker.attach_ms(1000, []() {
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
+    });
   }
 
-//   //Set to GSM mode, please refer to manual 5.11 AT+CNMP Preferred mode selection for more parameters
-//   String result;
-//   do {
-    // result = modem.setNetworkMode(2);
-//     delay(500);
-//   } while (result != "OK");
+  while(digitalRead(GSM_MODULE_INT) == 0) {
+    delay(1000); // Waiting for power on
+  }
+  
+  SerialMon.print("[GSM] Initializing modem: ");
+  if (modem.init()) {
+    SerialMon.println("OK");
+  } else {
+    SerialMon.println("failed");
+  }
 
-  // Unlock your SIM card with a PIN if needed
+  SerialMon.print("[GSM] Setting Network Mode: ");
+  if (modem.setNetworkMode(DEFAULT_NETWORK_MODE)) {
+    SerialMon.println("OK");
+  } else {
+    SerialMon.println("failed");
+  }
+
   if ( GSM_PIN && modem.getSimStatus() != 3 ) {
-    SerialMon.print(F("[GSM] Unlocking SIM: "));
+    SerialMon.print("[GSM] Unlocking SIM: ");
     if (modem.simUnlock(GSM_PIN)) {
-      SerialMon.println(F("OK"));
+      SerialMon.println("OK");
     } else {
-      SerialMon.println(F("failed"));
+      SerialMon.println("failed");
     }
   }
 
-  SerialMon.print(F("[GSM] Setting GNSS Mode: "));
-  // String gnss_res = modem.setGNSSMode(gnss_mode, 0);
-  String gnss_res = modem.setGNSSMode(gnss_mode, 1);
+  SerialMon.print("[GSM] Setting GNSS Mode: ");
+  String gnss_res = modem.setGNSSMode(gnss_mode, 1); // String gnss_res = modem.setGNSSMode(gnss_mode, 0);
   if (gnss_res == "OK") {
-    SerialMon.println(F("OK"));
+    SerialMon.println("OK");
   } else {
-    SerialMon.println(F("failed"));
+    SerialMon.println("failed");
   }
 
-  SerialMon.print(F("[GSM] Enabling GPS: "));
+  SerialMon.print("[GSM] Enabling GPS: ");
   if(modem.enableGPS()) {
-    SerialMon.println(F("OK"));
+    SerialMon.println("OK");
   } else {
-    SerialMon.println(F("failed"));
+    SerialMon.println("failed");
   }
 
   String name = modem.getModemName();
@@ -1558,7 +1769,7 @@ void setupGsmModule() { // TODO
   SerialMon.println("[GSM] Modem Info: " + modemInfo);
   SimStatus simStatus = modem.getSimStatus();
   SerialMon.println("[GSM] SIM Status: " + String(simStatus));
-  int16_t networkMode = modem.getNetworkMode(); // 2 - auto | 13 - GSM only | 38 - LTE only | 14 - WCDMA only | 9 - CDMA only | 10 - EVDO only
+  int16_t networkMode = modem.getNetworkMode(); 
   SerialMon.println("[GSM] Network Mode: " + String(networkMode));
   RegStatus registrationStatus = modem.getRegistrationStatus();
   SerialMon.println("[GSM] Registration Status: " + String(registrationStatus));
@@ -1571,58 +1782,33 @@ void setupGsmModule() { // TODO
   String cop = modem.getOperator();
   SerialMon.println("[GSM] Operator: " + cop);
 
-  SerialMon.print(F("[GSM] Waiting for network: "));
+  SerialMon.print("[GSM] Waiting for network: ");
   if (modem.waitForNetwork()) {
-    SerialMon.println(F("OK"));
+    SerialMon.println("OK");
   } else {
     delay(10000);
-    SerialMon.println(F("failed"));
+    SerialMon.println("failed");
     return;
   }
 
-  // if (modem.isNetworkConnected()) {
-  //   SerialMon.println("[GSM] Network connected");
-  // }
   is_network_connected = modem.isNetworkConnected();
-  SerialMon.print(F("[GSM] Network status: "));
+  SerialMon.print("[GSM] Network status: ");
   SerialMon.println(is_network_connected ? "connected" : "not connected");
 
-  // if (gprs_credentials) {
-  //   SerialMon.print("[GSM] Starting GPRS (apn: " + gprs_apn);
-  //   SerialMon.print(", user: " + gprs_user);
-  //   SerialMon.print(", pass: " + gprs_pass);
-  //   SerialMon.print("): ");
-  //   if (modem.gprsConnect(gprs_apn.c_str(), gprs_user.c_str(), gprs_pass.c_str())) {
-  //     SerialMon.println(F("OK"));
-  //   } else {
-  //     delay(10000);
-  //     SerialMon.println(F("failed"));
-  //     return;
-  //   }
-  // } else {
-  //   SerialMon.print("[GSM] Starting GPRS (apn: " + gprs_apn + "): ");
-  //   if (modem.gprsConnect(gprs_apn.c_str())) {
-  //     SerialMon.println(F("OK"));
-  //   } else {
-  //     delay(10000);
-  //     SerialMon.println(F("failed"));
-  //     return;
-  //   }
-  // }
   SerialMon.print("[GSM] Starting GPRS (apn: " + gprs_apn);
   SerialMon.print(", user: " + gprs_user);
   SerialMon.print(", pass: " + gprs_pass);
   SerialMon.print("): ");
   if (modem.gprsConnect(gprs_apn.c_str(), gprs_user.c_str(), gprs_pass.c_str())) {
-    SerialMon.println(F("OK"));
+    SerialMon.println("OK");
   } else {
     delay(10000);
-    SerialMon.println(F("failed"));
+    SerialMon.println("failed");
     return;
   }
 
   is_gprs_connected = modem.isGprsConnected();
-  SerialMon.print(F("[GSM] GPRS status: "));
+  SerialMon.print("[GSM] GPRS status: ");
   SerialMon.println(is_gprs_connected ? "connected" : "not connected");
 
   IPAddress local = modem.localIP();
@@ -1631,61 +1817,47 @@ void setupGsmModule() { // TODO
   SerialMon.println("[GSM] IMSI: " + imsi);
   String ccid = modem.getSimCCID();
   SerialMon.println("[GSM] CCID: " + ccid);
-  String gsmDateTime = modem.getGSMDateTime(DATE_FULL);
-  SerialMon.println("[GSM] DateTime: " + gsmDateTime);
-  String gsmTime = modem.getGSMDateTime(DATE_TIME);
-  SerialMon.println("[GSM] Time: " + gsmTime);
-  String gsmDate = modem.getGSMDateTime(DATE_DATE);
-  SerialMon.println("[GSM] Data: " + gsmDate);
 
-  // float temperature = modem.getTemperature();
-  // SerialMon.println("[GSM] Temperature: " + String(temperature));
-  // uint16_t batVolate = modem.getBattVoltage();
-  // SerialMon.println("[GSM] Battery Voltage: " + String(batVolate));
+  // sendSMS("+420xxxxxxxxx", String("Hello from ") + imei);
 
-  // sendSMS("+420720374052", String("Hello from ") + imei);
-  SerialMon.println(F("[GSM] Setup Done"));
+  SerialMon.println("[GSM] Setup Done");
 }
 
-void handleGsmModem() { // TODO
-  // SerialMon.println("[GSM] Restarting modem ...");
-  // // Restart takes quite some time, To skip it, call init() instead of restart()
-  // if (!modem.restart()) {
-  //   SerialMon.println("[GSM] Failed to restart modem, delaying 10s and retrying");
-  //   return;
-  // }
-  
-  // is_network_connected = modem.isNetworkConnected();
-  // SerialMon.print("[GSM] Network status: ");
-  // SerialMon.println(is_network_connected ? "connected" : "not connected");
-  // is_gprs_connected = modem.isGprsConnected();
-  // SerialMon.print("[GSM] GPRS status: ");
-  // SerialMon.println(is_gprs_connected ? "connected" : "not connected");
+void startRide() { // TODO
 
-  getGpsPosition();
-  // getGsmPosition();
+  // TODO
 
-//   while (true) {
-    // modem.maintain();
-//   }
+  // TODO - power handling of card reader using mosfet - TURN ON
+
 }
 
+void stopRide() { // TODO
 
-void onCardReaderReceive() {
-  SerialMon.println(F("[READER] Receiving data"));
-  if (SerialCardReader.available()) {
-    String incoming = SerialCardReader.readString();
-    SerialMon.println("[READER] Data: " + incoming);
+  // TODO
+
+  // TODO - power handling of card reader using mosfet - TURN OFF
+
+  driver_card = "";
+
+}
+
+void onCardReaderReceive() { // TODO
+  if (is_setup_done && !hw_reboot) {
+    if (SerialCardReader.available()) {
+      driver_card = SerialCardReader.readString();
+      SerialMon.println("[READER] Card: " + driver_card);
+      // TODO - play tone
+    }
   }
 }
 
 void setupCardReader() {
   SerialCardReader.begin(9600, SERIAL_8N1, ESP_RX_CARD_READER, ESP_TX_CARD_READER);
   SerialCardReader.onReceive(onCardReaderReceive);
-  SerialMon.println(F("[READER] Card Reader Setup Done"));
+  SerialMon.println("[READER] Card Reader Setup Done");
 }
 
-String getTimezoneValue(String timezoneName) {
+String getTimezoneValue(String timezoneName) { // Done
   String out = DEFAULT_TIMEZONE;
   for (int x = 0; x <= sizeof(tzArray)/sizeof(tzArray[0]); x++) {
     if (timezoneName == tzArray[x].name) {
@@ -1695,564 +1867,161 @@ String getTimezoneValue(String timezoneName) {
   return out;
 }
 
-void handleWebServerRootGet() {
+void handleWebServerRootGet() { // Done
   webServer.send_P(200, "text/html", captive_root_html);
 }
 
-void handleWebServerConfigGet() {
+void handleWebServerConfigGet() { // Done
   DynamicJsonDocument json_doc(1024);
   json_doc["module_type"] = MODULE_TYPE;
   json_doc["firmware"] = fw_version;
   json_doc["unit_id"] = mac_address_nag;
   json_doc["mac_address"] = mac_address_raw;
   json_doc["server"] = backend_server;
-  json_doc["port"] = backend_port;
+  json_doc["http_port"] = http_port;
+  json_doc["mqtt_port"] = mqtt_port;
+  json_doc["mqtt_credentials"] = mqtt_credentials;
+  json_doc["mqtt_user"] = mqtt_user;
+  json_doc["mqtt_pass"] = mqtt_pass;
   json_doc["ntp"] = ntp_server;
   json_doc["timezone"] = timezone_name;
   json_doc["gnss_mode"] = gnss_mode;
   json_doc["apn"] = gprs_apn;
-  json_doc["credentials"] = gprs_credentials;
-  json_doc["user"] = gprs_user;
-  json_doc["pass"] = gprs_pass;
+  json_doc["gprs_credentials"] = gprs_credentials;
+  json_doc["gprs_user"] = gprs_user;
+  json_doc["gprs_pass"] = gprs_pass;
   String data_out;
   serializeJson(json_doc, data_out);
   webServer.send(200, "application/json", data_out);
 }
 
-void displayFreeHeap() { // TODO
-  Serial.printf("\nHeap size: %d\n", ESP.getHeapSize());
-  Serial.printf("Free Heap: %d\n", heap_caps_get_free_size(MALLOC_CAP_8BIT));
-  Serial.printf("Min Free Heap: %d\n", heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT));
-  Serial.printf("Max Alloc Heap: %d\n", heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-}
-
-void databaseInValue(String sql) { // ?
-
-  displayFreeHeap(); // TODO
-
-  // sqlite3_stmt *res;
-  // const char *tail;
-
-  SerialMon.print("[DB] SQL: "); // TODO
-  SerialMon.println(sql); // TODO
-
-  rc = sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &res, &tail);
-  if (rc != SQLITE_OK) {
-    SerialMon.print("[DB] Failed to update data: ");
-    SerialMon.println(sqlite3_errmsg(fs_db));
-  }
-
-  rc = sqlite3_step(res);
-  if (rc != SQLITE_DONE) {
-    SerialMon.print("[DB] Query did not succeeded (");
-    SerialMon.print(rc);
-    SerialMon.print("): ");
-    SerialMon.println(sqlite3_errmsg(fs_db)); // TODO
-  }
-
-  sqlite3_finalize(res);
-}
-
-void updateConfig() { // ?
- 
-  char *sql = "UPDATE config SET value=? WHERE variable=?";
-  rc = sqlite3_prepare_v2(fs_db, sql, strlen(sql), &res, &tail);
-  if (rc != SQLITE_OK) {
-    SerialMon.print("[DB] ERROR preparing sql: ");
-    SerialMon.println(sqlite3_errmsg(fs_db));
-    sqlite3_close(fs_db);
-    return;
-  }
-
-  // sqlite3_exec(fs_db, "BEGIN TRANSACTION", NULL, NULL, &dbErrorMessage); // ?
-
-  // for each value
-  sqlite3_bind_text(res, 1, "val", strlen("val"), SQLITE_STATIC);
-  sqlite3_bind_text(res, 2, "var", strlen("var"), SQLITE_STATIC);
-  if (sqlite3_step(res) != SQLITE_DONE) {
-    SerialMon.print("[DB] ERROR executing stmt: ");
-    SerialMon.println(sqlite3_errmsg(fs_db));
-    sqlite3_close(fs_db);
-    return;
-  }
-  sqlite3_clear_bindings(res);
-  rc = sqlite3_reset(res);
-  if (rc != SQLITE_OK) {
-    sqlite3_close(fs_db);
-    return;
-  }
-  //
-
-  // sqlite3_exec(fs_db, "END TRANSACTION", NULL, NULL, &dbErrorMessage); // ?
-
-  sqlite3_finalize(res);
-}
-
-void handleWebServerSetupPost() {
+void handleWebServerSetupPost() { // Done
   webServer.send_P(200, "text/html", captive_setup_html);
-
-  // String credentials_attr = "0";
-  // String user_attr = DEFAULT_GPRS_USER;
-  // String pass_attr = DEFAULT_GPRS_PASS;
-  // if(webServer.arg("credentials") == "on") {
-  //   credentials_attr = "1";
-  //   user_attr = webServer.arg("user");
-  //   pass_attr = webServer.arg("pass");
-  // }
-  // String sqlArray[] = {
-  //   "UPDATE config SET value = '" + webServer.arg("server") + "' WHERE variable = 'backend_server'",
-  //   "UPDATE config SET value = '" + webServer.arg("port") + "' WHERE variable = 'backend_port'",
-  //   "UPDATE config SET value = '" + webServer.arg("ntp") + "' WHERE variable = 'ntp_server'",
-  //   "UPDATE config SET value = '" + webServer.arg("timezone") + "' WHERE variable = 'time_zone_name'",
-  //   "UPDATE config SET value = '" + getTimezoneValue(webServer.arg("timezone")) + "' WHERE variable = 'time_zone'",
-  //   // "UPDATE config SET value = '" + webServer.arg("gnss") + "' WHERE variable = 'gnss_mode'", // ?
-  //   "UPDATE config SET value = '" + webServer.arg("apn") + "' WHERE variable = 'gprs_apn'",
-  //   // "UPDATE config SET value = " + credentials_attr + " WHERE variable = 'gprs_credentials'",
-  //   "UPDATE config SET value = '" + (webServer.arg("credentials") == "on" ? String(1) : String(0)) + "' WHERE variable = 'gprs_credentials'",
-  //   // "UPDATE config SET value = '" + user_attr + "' WHERE variable = 'gprs_user'",
-  //   "UPDATE config SET value = '" + (webServer.arg("credentials") == "on" ? webServer.arg("user") : String(DEFAULT_GPRS_USER)) + "' WHERE variable = 'gprs_user'",
-  //   // "UPDATE config SET value = '" + pass_attr + "' WHERE variable = 'gprs_pass'",
-  //   "UPDATE config SET value = '" + (webServer.arg("credentials") == "on" ? webServer.arg("pass") : String(DEFAULT_GPRS_PASS)) + "' WHERE variable = 'gprs_pass'",
-  //   "UPDATE config SET value = '1' WHERE variable = 'is_setup_done'",
-  // };
-  // if (openDb("/spiffs/database.db", &fs_db))
-  //   return;
-  // for (int i = 0; i < sizeof(sqlArray)/sizeof(sqlArray[0]); i++) {
-  //   int rc = dbExec(fs_db, sqlArray[i].c_str());
-  //   if (rc != SQLITE_OK) {
-  //     sqlite3_close(fs_db);
-  //     return;
-  //   }
-  //   delay(100);
-  // }
-
-  if (openDb("/spiffs/database.db", &fs_db))
-    return;
-
-  char *sql = "UPDATE config SET value=? WHERE variable=?";
-  rc = sqlite3_prepare_v2(fs_db, sql, strlen(sql), &res, &tail);
-  if (rc != SQLITE_OK) {
-    SerialMon.print("[DB] ERROR preparing sql: ");
-    SerialMon.println(sqlite3_errmsg(fs_db));
-    sqlite3_close(fs_db);
-    return;
-  }
-
-  // sqlite3_exec(fs_db, "BEGIN TRANSACTION", NULL, NULL, &dbErrorMessage); // ?
-
   if (webServer.arg("server") != backend_server) {
-    // String config_backend_server_update_query = "UPDATE config SET value = '" + webServer.arg("server") + "' WHERE variable = 'backend_server'";
-    // int rc_config_backend_server = dbExec(fs_db, config_backend_server_update_query.c_str());
-    // if (rc_config_backend_server != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '" + webServer.arg("server") + "' WHERE variable = 'backend_server'");
-    sqlite3_bind_text(res, 1, webServer.arg("server").c_str(), strlen(webServer.arg("server").c_str()), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "Backend_server", strlen("backend_server"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
+    preferences.putString("server", webServer.arg("server"));
+  }
+  if (webServer.arg("httpport") != String(http_port)) {
+    preferences.putInt("http_port", webServer.arg("httpport").toInt());
+  }
+  if (webServer.arg("mqttport") != String(mqtt_port)) {
+    preferences.putInt("mqtt_port", webServer.arg("mqttport").toInt());
+  }
+  if(webServer.arg("mqttcredentials") == "on") {
+    if (!mqtt_credentials) {
+      preferences.putBool("mqtt_cred", true);
     }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
+    if (webServer.arg("mqttuser") != mqtt_user) {
+      preferences.putString("mqtt_user", webServer.arg("mqttuser"));
+    }
+    if (webServer.arg("mqttpass") != mqtt_pass) {
+      preferences.putString("mqtt_pass", webServer.arg("mqttpass"));
+    }
+  } else {
+    if (mqtt_credentials) {
+      preferences.putBool("mqtt_cred", false);
+    }
+    if (String(DEFAULT_MQTT_USER) != mqtt_user) {
+      preferences.putString("mqtt_user", DEFAULT_MQTT_USER);
+    }
+    if (String(DEFAULT_MQTT_PASS) != mqtt_pass) {
+      preferences.putString("mqtt_pass", DEFAULT_MQTT_PASS);
     }
   }
-  if (webServer.arg("port") != String(backend_port)) {
-    // String config_backend_port_update_query = "UPDATE config SET value = '" + webServer.arg("port") + "' WHERE variable = 'backend_port'";
-    // int rc_config_backend_port = dbExec(fs_db, config_backend_port_update_query.c_str());
-    // if (rc_config_backend_port != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '" + webServer.arg("port") + "' WHERE variable = 'backend_port'");
-    sqlite3_bind_text(res, 1, webServer.arg("port").c_str(), strlen(webServer.arg("port").c_str()), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "backend_port", strlen("backend_port"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
-    }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
-    }
-  } 
   if (webServer.arg("ntp") != ntp_server) {
-    // String config_ntp_server_update_query = "UPDATE config SET value = '" + webServer.arg("ntp") + "' WHERE variable = 'ntp_server'";
-    // int rc_config_ntp_server = dbExec(fs_db, config_ntp_server_update_query.c_str());
-    // if (rc_config_ntp_server != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '" + webServer.arg("ntp") + "' WHERE variable = 'ntp_server'");
-    sqlite3_bind_text(res, 1, webServer.arg("ntp").c_str(), strlen(webServer.arg("ntp").c_str()), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "ntp_server", strlen("ntp_server"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
-    }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
-    }
+    preferences.putString("ntp_server", webServer.arg("ntp"));
   }
   if (webServer.arg("timezone") != timezone_name) {
-    // String config_time_zone_name_update_query = "UPDATE config SET value = '" + webServer.arg("timezone") + "' WHERE variable = 'time_zone_name'";
-    // int rc_config_time_zone_name = dbExec(fs_db, config_time_zone_name_update_query.c_str());
-    // if (rc_config_time_zone_name != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '" + webServer.arg("timezone") + "' WHERE variable = 'time_zone_name'");
-    sqlite3_bind_text(res, 1, webServer.arg("timezone").c_str(), strlen(webServer.arg("timezone").c_str()), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "time_zone_name", strlen("time_zone_name"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
-    }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
-    }
+    preferences.putString("tz_name", webServer.arg("timezone"));
   }
   if (getTimezoneValue(webServer.arg("timezone")) != timezone) {
-    // String config_time_zone_update_query = "UPDATE config SET value = '" + getTimezoneValue(webServer.arg("timezone")) + "' WHERE variable = 'time_zone'";
-    // int rc_config_time_zone = dbExec(fs_db, config_time_zone_update_query.c_str());
-    // if (rc_config_time_zone != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '" + getTimezoneValue(webServer.arg("timezone")) + "' WHERE variable = 'time_zone'");
-    sqlite3_bind_text(res, 1, getTimezoneValue(webServer.arg("timezone")).c_str(), strlen(getTimezoneValue(webServer.arg("timezone")).c_str()), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "time_zone", strlen("time_zone"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
-    }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
-    }
+    preferences.putString("time_zone", getTimezoneValue(webServer.arg("timezone")));
   }
-  // if (webServer.arg("gnss") != gnss_mode) {
-  //   String config_gnss_mode_update_query = "UPDATE config SET value = '" + webServer.arg("gnss") + "' WHERE variable = 'gnss_mode'";
-  // //   int rc_config_gnss_mode = dbExec(fs_db, config_gnss_mode_update_query.c_str());
-  // //   if (rc_config_gnss_mode != SQLITE_OK) {
-  // //     sqlite3_close(fs_db);
-  // //     return;
-  // //   }
-  //   databaseInValue(config_gnss_mode_update_query);
-  //   delay(500);
-  // }
+  if (webServer.arg("gnss") != String(gnss_mode)) {
+    preferences.putInt("gnss_mode", webServer.arg("gnss").toInt());
+  }
   if (webServer.arg("apn") != gprs_apn) {
-    // String config_gprs_apn_update_query = "UPDATE config SET value = '" + webServer.arg("apn") + "' WHERE variable = 'gprs_apn'";
-    // int rc_config_gprs_apn = dbExec(fs_db, config_gprs_apn_update_query.c_str());
-    // if (rc_config_gprs_apn != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '" + webServer.arg("apn") + "' WHERE variable = 'gprs_apn'");
-    sqlite3_bind_text(res, 1, webServer.arg("apn").c_str(), strlen(webServer.arg("apn").c_str()), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "gprs_apn", strlen("gprs_apn"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
-    }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
-    }
+    preferences.putString("gprs_apn", webServer.arg("apn"));
   }
-  if(webServer.arg("credentials") == "on") {
+  if(webServer.arg("gprscredentials") == "on") {
     if (!gprs_credentials) {
-      // String config_gprs_credentials_update_query = "UPDATE config SET value = '1' WHERE variable = 'gprs_credentials'";
-      // int rc_config_gprs_credentials = dbExec(fs_db, config_gprs_credentials_update_query.c_str());
-      // if (rc_config_gprs_credentials != SQLITE_OK) {
-      //   sqlite3_close(fs_db);
-      //   return;
-      // }
-      // delay(500);
-
-      // databaseInValue("UPDATE config SET value = '1' WHERE variable = 'gprs_credentials'");
-      sqlite3_bind_text(res, 1, "1", strlen("1"), SQLITE_STATIC);
-      sqlite3_bind_text(res, 2, "gprs_credentials", strlen("gprs_credentials"), SQLITE_STATIC);
-      if (sqlite3_step(res) != SQLITE_DONE) {
-        SerialMon.print("[DB] ERROR executing stmt: ");
-        SerialMon.println(sqlite3_errmsg(fs_db));
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_clear_bindings(res);
-      rc = sqlite3_reset(res);
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
+      preferences.putBool("gprs_cred", true);
     }
-    if (webServer.arg("user") != gprs_user) {
-      // String config_gprs_user_update_query = "UPDATE config SET value = '" + webServer.arg("user") + "' WHERE variable = 'gprs_user'";
-      // int rc_config_gprs_user = dbExec(fs_db, config_gprs_user_update_query.c_str());
-      // if (rc_config_gprs_user != SQLITE_OK) {
-      //   sqlite3_close(fs_db);
-      //   return;
-      // }
-      // delay(500);
-
-      // databaseInValue("UPDATE config SET value = '" + webServer.arg("user") + "' WHERE variable = 'gprs_user'");
-      sqlite3_bind_text(res, 1, webServer.arg("user").c_str(), strlen(webServer.arg("user").c_str()), SQLITE_STATIC);
-      sqlite3_bind_text(res, 2, "gprs_user", strlen("gprs_user"), SQLITE_STATIC);
-      if (sqlite3_step(res) != SQLITE_DONE) {
-        SerialMon.print("[DB] ERROR executing stmt: ");
-        SerialMon.println(sqlite3_errmsg(fs_db));
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_clear_bindings(res);
-      rc = sqlite3_reset(res);
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
+    if (webServer.arg("gprsuser") != gprs_user) {
+      preferences.putString("gprs_user", webServer.arg("gprsuser"));
     }
-    if (webServer.arg("pass") != gprs_user) {
-      // String config_gprs_pass_update_query = "UPDATE config SET value = '" + webServer.arg("pass") + "' WHERE variable = 'gprs_pass'";
-      // int rc_config_gprs_pass = dbExec(fs_db, config_gprs_pass_update_query.c_str());
-      // if (rc_config_gprs_pass != SQLITE_OK) {
-      //   sqlite3_close(fs_db);
-      //   return;
-      // }
-      // delay(500);
-
-      // databaseInValue("UPDATE config SET value = '" + webServer.arg("pass") + "' WHERE variable = 'gprs_pass'");
-      sqlite3_bind_text(res, 1, webServer.arg("pass").c_str(), strlen(webServer.arg("pass").c_str()), SQLITE_STATIC);
-      sqlite3_bind_text(res, 2, "gprs_pass", strlen("gprs_pass"), SQLITE_STATIC);
-      if (sqlite3_step(res) != SQLITE_DONE) {
-        SerialMon.print("[DB] ERROR executing stmt: ");
-        SerialMon.println(sqlite3_errmsg(fs_db));
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_clear_bindings(res);
-      rc = sqlite3_reset(res);
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
+    if (webServer.arg("gprspass") != gprs_pass) {
+      preferences.putString("gprs_pass", webServer.arg("gprspass"));
     }
   } else {
     if (gprs_credentials) {
-      // String config_gprs_credentials_update_query = "UPDATE config SET value = '0' WHERE variable = 'gprs_credentials'";
-      // int rc_config_gprs_credentials = dbExec(fs_db, config_gprs_credentials_update_query.c_str());
-      // if (rc_config_gprs_credentials != SQLITE_OK) {
-      //   sqlite3_close(fs_db);
-      //   return;
-      // }
-      // delay(500);
-
-      // databaseInValue("UPDATE config SET value = '0' WHERE variable = 'gprs_credentials'");
-      sqlite3_bind_text(res, 1, "0", strlen("0"), SQLITE_STATIC);
-      sqlite3_bind_text(res, 2, "gprs_credentials", strlen("gprs_credentials"), SQLITE_STATIC);
-      if (sqlite3_step(res) != SQLITE_DONE) {
-        SerialMon.print("[DB] ERROR executing stmt: ");
-        SerialMon.println(sqlite3_errmsg(fs_db));
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_clear_bindings(res);
-      rc = sqlite3_reset(res);
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
+      preferences.putBool("gprs_cred", false);
     }
     if (String(DEFAULT_GPRS_USER) != gprs_user) {
-      // String config_gprs_user_update_query = "UPDATE config SET value = '" + String(DEFAULT_GPRS_USER) + "' WHERE variable = 'gprs_user'";
-      // int rc_config_gprs_user = dbExec(fs_db, config_gprs_user_update_query.c_str());
-      // if (rc_config_gprs_user != SQLITE_OK) {
-      //   sqlite3_close(fs_db);
-      //   return;
-      // }
-      // delay(500);
-
-      // databaseInValue("UPDATE config SET value = '" + String(DEFAULT_GPRS_USER) + "' WHERE variable = 'gprs_user'");
-      sqlite3_bind_text(res, 1, DEFAULT_GPRS_USER, strlen(DEFAULT_GPRS_USER), SQLITE_STATIC);
-      sqlite3_bind_text(res, 2, "gprs_user", strlen("gprs_user"), SQLITE_STATIC);
-      if (sqlite3_step(res) != SQLITE_DONE) {
-        SerialMon.print("[DB] ERROR executing stmt: ");
-        SerialMon.println(sqlite3_errmsg(fs_db));
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_clear_bindings(res);
-      rc = sqlite3_reset(res);
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
+      preferences.putString("gprs_user", DEFAULT_GPRS_USER);
     }
     if (String(DEFAULT_GPRS_PASS) != gprs_pass) {
-      // String config_gprs_pass_update_query = "UPDATE config SET value = '" + String(DEFAULT_GPRS_PASS) + "' WHERE variable = 'gprs_pass'";
-      // int rc_config_gprs_pass = dbExec(fs_db, config_gprs_pass_update_query.c_str());
-      // if (rc_config_gprs_pass != SQLITE_OK) {
-      //   sqlite3_close(fs_db);
-      //   return;
-      // }
-      // delay(500);
-
-      // databaseInValue("UPDATE config SET value = '" + String(DEFAULT_GPRS_PASS) + "' WHERE variable = 'gprs_pass'");
-      sqlite3_bind_text(res, 1, DEFAULT_GPRS_PASS, strlen(DEFAULT_GPRS_PASS), SQLITE_STATIC);
-      sqlite3_bind_text(res, 2, "gprs_pass", strlen("gprs_pass"), SQLITE_STATIC);
-      if (sqlite3_step(res) != SQLITE_DONE) {
-        SerialMon.print("[DB] ERROR executing stmt: ");
-        SerialMon.println(sqlite3_errmsg(fs_db));
-        sqlite3_close(fs_db);
-        return;
-      }
-      sqlite3_clear_bindings(res);
-      rc = sqlite3_reset(res);
-      if (rc != SQLITE_OK) {
-        sqlite3_close(fs_db);
-        return;
-      }
+      preferences.putString("gprs_pass", DEFAULT_GPRS_PASS);
     }
   }
   if (!is_setup_done) {
-    // String config_is_setup_done_update_query = "UPDATE config SET value = '1' WHERE variable = 'is_setup_done'";
-    // int rc_config_is_setup_done = dbExec(fs_db, config_is_setup_done_update_query.c_str());
-    // if (rc_config_is_setup_done != SQLITE_OK) {
-    //   sqlite3_close(fs_db);
-    //   return;
-    // }
-    // delay(500);
-
-    // databaseInValue("UPDATE config SET value = '1' WHERE variable = 'is_setup_done'");
-    sqlite3_bind_text(res, 1, "1", strlen("1"), SQLITE_STATIC);
-    sqlite3_bind_text(res, 2, "is_setup_done", strlen("is_setup_done"), SQLITE_STATIC);
-    if (sqlite3_step(res) != SQLITE_DONE) {
-      SerialMon.print("[DB] ERROR executing stmt: ");
-      SerialMon.println(sqlite3_errmsg(fs_db));
-      sqlite3_close(fs_db);
-      return;
-    }
-    sqlite3_clear_bindings(res);
-    rc = sqlite3_reset(res);
-    if (rc != SQLITE_OK) {
-      sqlite3_close(fs_db);
-      return;
-    }
+    preferences.putBool("setup_done", true);
   }
-
-  // sqlite3_exec(fs_db, "END TRANSACTION", NULL, NULL, &dbErrorMessage); // ?
-  sqlite3_finalize(res);
-
+  preferences.putBool("hw_reboot", true);
   delay(250);
-  sqlite3_close(fs_db);
-  delay(250);
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println("[BOOT] Restarting");
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
   ESP.restart();
 }
 
-void setupWebServer() {
+void setupWebServer() { // Done
   webServer.on("/", HTTP_GET, handleWebServerRootGet);
   webServer.on("/config", HTTP_GET, handleWebServerConfigGet);
   webServer.on("/setup", HTTP_POST, handleWebServerSetupPost);
   webServer.onNotFound(handleWebServerRootGet);
   webServer.begin();
-  SerialMon.println(F("[AP] Captive Setup Done"));
+  SerialMon.println("[AP] Captive Setup Done");
 }
 
-void setupCaptivePortal() {
+void setupCaptivePortal() { // Done
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(wifi_ap_ip, wifi_ap_gw, wifi_ap_mask);
   WiFi.softAP(wifi_hostname.c_str(), NULL, 1, false, 1);
-  SerialMon.print(F("[AP] Created with IP Gateway "));
+  SerialMon.print("[AP] Created with IP Gateway ");
   SerialMon.println(WiFi.softAPIP());
   dnsServer.start(53, "*", wifi_ap_ip);
   setupWebServer();
 }
 
-void stopCaptivePortal() { // ?
-  dnsServer.stop();
-  webServer.close();
-  webServer.stop();
-  clearWifi();
-  SerialMon.println(F("[AP] AP and Captive stopped"));
-}
-
-void handleCaptivePortal() {
+void handleCaptivePortal() { // Done
   webServer.handleClient();
   dnsServer.processNextRequest();
 }
 
-void switchToConfigMode() { // ?
-  SerialMon.println(F("[CONFIG] Switching to config mode"));
-
+void switchToConfigMode() { // Done
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println("[CONFIG] Switching to config mode");
   // TODO - play tone
-
-  if (openDb("/spiffs/database.db", &fs_db))
-    return;
-
-  // int rc = dbExec(fs_db, "UPDATE config SET value = '0' WHERE variable = 'is_setup_done'");
-  // if (rc != SQLITE_OK) {
-  //   sqlite3_close(fs_db);
-  //   return;
-  // }
-  databaseInValue("UPDATE config SET value = '0' WHERE variable = 'is_setup_done'");
-
+  preferences.putBool("setup_done", false);
   delay(250);
-  sqlite3_close(fs_db);
-  delay(250);
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println("[BOOT] Restarting");
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
   ESP.restart();
 }
 
-void configButtonHandler() { // ?
+void configButtonHandler() { // Done
   int button_current_state = digitalRead(ESP_WIFI_BUTTON);
   if (button_current_state != config_button_last_state) {
     if (millis() - config_button_last_time >= 250) {
       if (button_current_state == LOW) {
         if (!config_button_pressed) {
-          SerialMon.println(F("[CONFIG] BUTTON PRESS"));
+          SerialMon.println("[CONFIG] BUTTON PRESS");
           config_button_pressed = true;
         }
       } else {
         if (config_button_pressed) {
-          SerialMon.println(F("[CONFIG] BUTTON RELEASE"));
+          SerialMon.println("[CONFIG] BUTTON RELEASE");
           config_button_active = false;
           config_button_pressed = false;
         }
@@ -2265,21 +2034,9 @@ void configButtonHandler() { // ?
       if  (!config_button_active) {
         if (config_button_pressed) {
           if ((millis() - config_button_last_time > config_button_period)) {
-            SerialMon.println(F("[CONFIG] LONG PRESS"));
+            SerialMon.println("[CONFIG] LONG PRESS");
             config_button_active = true;
-            switchToConfigMode(); // ?
-            // if (config_ap) {
-            //   SerialMon.println(F("[CONFIG] Stopping AP"));
-            //   // TODO - play stop config tone
-            //   stopCaptivePortal();
-            //   is_setup_done = true;
-            // } else {
-            //   SerialMon.println(F("[CONFIG] Starting AP"));
-            //   // TODO - play start config tone
-            //   is_setup_done = false;
-            //   setupCaptivePortal();
-            // }
-            config_ap = !config_ap;
+            switchToConfigMode();
           }
         }
       }
@@ -2288,25 +2045,21 @@ void configButtonHandler() { // ?
 }
 
 void core0Task( void * parameter ) { // TODO
-  // SerialMon.print("[CORE_");
-  // SerialMon.print(xPortGetCoreID());
-  // SerialMon.println("] Task Started");
+  SerialMon.print("[CORE_");
+  SerialMon.print(xPortGetCoreID());
+  SerialMon.println("] Task Started");
   for( ;; ){
-    // wifiButtonPressStateHandler();
-    // configButtonHandler(); // ?
     if (is_setup_done) {
-
-      // wifiButtonPressStateHandler();
-      // if (wifi_ap) {
-      //   handleCaptivePortal();
-      // }
-
       configButtonHandler(); // ?
+      if (!hw_reboot) {
+        // TODO - check GSM network status
+        // TODO - check GPRS connection status
 
-      // TODO 
-      // SerialMon.println("[TODO] Core0 loop");
-      // vTaskDelay(5000/portTICK_PERIOD_MS);
-
+        // handleMqttConnection();
+        // if (mqtt_ticker.active()) {
+          // mqtt.loop();
+        // }
+      }
     } else {
       handleCaptivePortal();
     }
@@ -2317,7 +2070,6 @@ void core0Task( void * parameter ) { // TODO
 
 void setup() {
   SerialMon.begin(9600);
-  SerialMon.setDebugOutput(true); // TODO
   SerialMon.println();
   SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   SerialMon.println("[Module Unit Name] " + String(MODULE_NAME) + " (" + String(MODULE_TYPE) + ")");
@@ -2326,30 +2078,47 @@ void setup() {
   SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   // ----------------------------------------------------------------------------------------------------------------
   setupEspPins();
-  Wire.setPins(ESP_WIRE_SDA, ESP_WIRE_SCL);
+  Wire.setPins(ESP_SDA, ESP_SCL);
   clearWifi();
   sqlite3_initialize();
   setupFileSystem();
   setupUnitVariables();
-  setupCardReader();  // TODO - setup rfid reader
-  // TODO - setup buzzer
+  setupRtc();
+  // setupBuzzer(); // TODO - setup buzzer
+  setupCardReader();
   // ----------------------------------------------------------------------------------------------------------------
-  // if (!is_setup_done) {
-  //   setupCaptivePortal();
-  // }
   if (is_setup_done) {
-    setupGsmModule(); // TODO
+    led_ticker.attach_ms(500, []() {
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
+    });
+    setupGsmModule();
+    if (!hw_reboot) {
+      led_ticker.detach();
+      digitalWrite(ESP_LED, LOW); // module LED -> ON
+      setupMqtt();
+      SerialMon.println(F("[GPS] Starting Scheduler"));
+      gps_ticker.attach_ms(gps_period, getGpsPosition);
+      // delay(gps_period - gps_period / 5);
+      // SerialMon.println("[MQTT] Starting Scheduler");
+      // mqtt_ticker.attach_ms(gps_period, handleMqttSending); // mqtt_ticker.attach_ms(gps_period*2, connectMqtt);
+    }
   } else {
+    led_ticker.attach_ms(200, []() {
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
+    });
     setupCaptivePortal();
   }
   // ----------------------------------------------------------------------------------------------------------------
-
-  // setupGsmModule(); // TODO
-  // xxx
-
   SerialMon.println(F("[BOOT] Completed"));
   SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
-  // ----------------------------------------------------------------------------------------------------------------
+  if (hw_reboot) {
+    SerialMon.println(F("[BOOT] Performing requested hardware reboot"));
+    preferences.putBool("hw_reboot", false);
+    SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+    delay(250);
+    digitalWrite(ESP_RST, LOW);
+  }
+  // ----------------------------------------------------------------------------------------------------------------,
   xTaskCreatePinnedToCore(core0Task, "Core0Task", 10000, NULL, tskIDLE_PRIORITY, NULL, 0);
   // ----------------------------------------------------------------------------------------------------------------
 }
@@ -2358,12 +2127,13 @@ void setup() {
 
 void loop() { // This is Core 1
   if (is_setup_done) {
-
-    handleGsmModem(); // TODO 
-
-  }
+    // configButtonHandler(); // ?
+    if (!hw_reboot) {
+      handleMqttConnection();
+    }
+  } 
   // else {
-
+  //   handleCaptivePortal();
   // }
 }
 

@@ -18,7 +18,8 @@ table { width: 100%; max-width: 400px; }
 input[type="text"], select { height: 30px; width: 100%; max-width: 400px; padding: 5px 10px; margin: 8px auto; border: 2px solid #3498DB; border-radius: 4px; box-sizing: border-box; }
 select { cursor: pointer; }
 input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height: 20px; }
-.credentials { display: none; }
+.gprs-credentials { display: none; }
+.mqtt-credentials { display: none; }
 </style>
 </head>
 <body>
@@ -32,7 +33,13 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 </table>
 <form id="form1" action="/setup" method="POST">
 <p><label class="label">Sentinel Cloud-Relay Server URL / IP</label><br><input type="text" name="server" placeholder="sentinel-cloud-relay.example.com" autocapitalize="off" required><br></p>
-<p><label class="label">Sentinel Cloud-Relay Server Port</label><br><input type="text" pattern="[0-9]{2,4}" name="port" placeholder="443" autocapitalize="off" required><br></p>
+<p><label class="label">Sentinel Cloud-Relay Server HTTP Port</label><br><input type="text" pattern="[0-9]{2,5}" name="httpport" placeholder="80" autocapitalize="off" required><br></p>
+<p><label class="label">Sentinel Cloud-Relay Server MQTT Port</label><br><input type="text" pattern="[0-9]{2,5}" name="mqttport" placeholder="1883" autocapitalize="off" required><br></p>
+
+<p><label class="label">MQTT Credentials</label><br><input type="checkbox" name="mqttcredentials"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT User</label><br><input type="text" name="mqttuser" autocapitalize="off"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT Password</label><br><input type="text" name="mqttpass" autocapitalize="off"><br></p>
+
 <p><label class="label">NTP Server</label><br><input type="text" name="ntp" placeholder="pool.ntp.org" autocapitalize="off" required><br></p> 
 <p><label class="label">Timezone</label><br><select name="timezone">
 <option value="Africa/Abidjan">Africa/Abidjan</option>
@@ -472,9 +479,9 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 <option value="15">GLONASS + BEIDOU + GALILEO + QZSS</option>
 </select>
 <p><label class="label">GPRS APN</label><br><input type="text" name="apn" autocapitalize="off" required><br></p>
-<p><label class="label">GPRS Credentials</label><br><input type="checkbox" name="credentials"><br></p>
-<p class="credentials"><label class="label">GPRS User</label><br><input type="text" name="user" autocapitalize="off"><br></p>
-<p class="credentials"><label class="label">GPRS Password</label><br><input type="text" name="pass" autocapitalize="off"><br></p>
+<p><label class="label">GPRS Credentials</label><br><input type="checkbox" name="gprscredentials"><br></p>
+<p class="gprs-credentials"><label class="label">GPRS User</label><br><input type="text" name="gprsuser" autocapitalize="off"><br></p>
+<p class="gprs-credentials"><label class="label">GPRS Password</label><br><input type="text" name="gprspass" autocapitalize="off"><br></p>
 <input type="submit" value="Save & Reboot">
 <h2 class="info">You need to save the configuration and reboot the device, otherwise the device will not work</h2>
 </form>
@@ -492,38 +499,66 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
       mac.innerHTML = json.mac_address;
       var form1 = document.getElementById("form1");
       form1.server.value = json.server;
-      form1.port.value = json.port;
+      form1.httpport.value = json.http_port;
+      form1.mqttport.value = json.mqtt_port;
+      form1.mqttcredentials.checked = json.mqtt_credentials;
+      if (json.mqtt_credentials) {
+        var mqttcred = document.getElementsByClassName('mqtt-credentials');
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      }
+      form1.mqttuser.value = json.mqtt_user;
+      form1.mqttpass.value = json.mqtt_pass;
       form1.ntp.value = json.ntp;
       form1.timezone.value = json.timezone;
       form1.gnss.value = json.gnss_mode;
       form1.apn.value = json.apn;
-      form1.credentials.checked = json.credentials;
-      if (json.credentials) {
-        var cred = document.getElementsByClassName('credentials');
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'block';
+      form1.gprscredentials.checked = json.gprs_credentials;
+      if (json.gprs_credentials) {
+        var gprscred = document.getElementsByClassName('gprs-credentials');
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'block';
         }
-        form1.user.required = true;
-        form1.pass.required = true;
+        form1.gprsuser.required = true;
+        form1.gprspass.required = true;
       }
-      form1.user.value = json.user;
-      form1.pass.value = json.pass;
+      form1.gprsuser.value = json.gprs_user;
+      form1.gprspass.value = json.gprs_pass;
     });
     var form1 = document.getElementById("form1");
-    var cred = document.getElementsByClassName('credentials');
-    form1.credentials.onclick = function () {
-      if (this.form.credentials.checked) {
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'block';
+    var mqttcred = document.getElementsByClassName('mqtt-credentials');
+    form1.mqttcredentials.onclick = function () {
+      if (this.form.mqttcredentials.checked) {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
         }
-        form1.user.required = true;
-        form1.pass.required = true;
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
       } else {
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'none';
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'none';
         }
-        form1.user.required = false;
-        form1.pass.required = false;
+        form1.mqttuser.required = false;
+        form1.mqttpass.required = false;
+      }
+    }
+    var gprscred = document.getElementsByClassName('gprs-credentials');
+    form1.gprscredentials.onclick = function () {
+      if (this.form.gprscredentials.checked) {
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'block';
+        }
+        form1.gprsuser.required = true;
+        form1.gprspass.required = true;
+      } else {
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'none';
+        }
+        form1.gprsuser.required = false;
+        form1.gprspass.required = false;
       }
     }
   }

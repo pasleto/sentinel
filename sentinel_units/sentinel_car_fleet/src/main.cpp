@@ -11,20 +11,16 @@
 #include <sqlite3.h>
 #include <FS.h>
 #include <SPIFFS.h>
+#include <RTClib.h>
 #include <Ticker.h>
 #include <TinyGsmClient.h>
-#include <RTClib.h>
+#include <PubSubClient.h>
+// #include <ArduinoHttpClient.h>
 
 // ----------------------------------------------------------------------------------------------------------------
 /*
 
-TODO - gms and gps
-TODO - card reader
-TODO - connection to cloud-relay server
-TODO - ntp and rtc
-TODO - database
-
-? - module working using gsm through sentinel cloud gateway
+TODO
 
 */
 // ----------------------------------------------------------------------------------------------------------------
@@ -32,6 +28,8 @@ TODO - database
 Preferences preferences;
 sqlite3 *fs_db;
 TinyGsm modem(SerialAT);
+TinyGsmClient client(modem);
+PubSubClient mqtt(client);
 RTC_DS3231 rtc;
 
 DNSServer dnsServer;
@@ -495,7 +493,8 @@ table { width: 100%; max-width: 400px; }
 input[type="text"], select { height: 30px; width: 100%; max-width: 400px; padding: 5px 10px; margin: 8px auto; border: 2px solid #3498DB; border-radius: 4px; box-sizing: border-box; }
 select { cursor: pointer; }
 input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height: 20px; }
-.credentials { display: none; }
+.gprs-credentials { display: none; }
+.mqtt-credentials { display: none; }
 </style>
 </head>
 <body>
@@ -509,7 +508,13 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 </table>
 <form id="form1" action="/setup" method="POST">
 <p><label class="label">Sentinel Cloud-Relay Server URL / IP</label><br><input type="text" name="server" placeholder="sentinel-cloud-relay.example.com" autocapitalize="off" required><br></p>
-<p><label class="label">Sentinel Cloud-Relay Server Port</label><br><input type="text" pattern="[0-9]{2,4}" name="port" placeholder="443" autocapitalize="off" required><br></p>
+<p><label class="label">Sentinel Cloud-Relay Server HTTP Port</label><br><input type="text" pattern="[0-9]{2,5}" name="httpport" placeholder="80" autocapitalize="off" required><br></p>
+<p><label class="label">Sentinel Cloud-Relay Server MQTT Port</label><br><input type="text" pattern="[0-9]{2,5}" name="mqttport" placeholder="1883" autocapitalize="off" required><br></p>
+
+<p><label class="label">MQTT Credentials</label><br><input type="checkbox" name="mqttcredentials"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT User</label><br><input type="text" name="mqttuser" autocapitalize="off"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT Password</label><br><input type="text" name="mqttpass" autocapitalize="off"><br></p>
+
 <p><label class="label">NTP Server</label><br><input type="text" name="ntp" placeholder="pool.ntp.org" autocapitalize="off" required><br></p> 
 <p><label class="label">Timezone</label><br><select name="timezone">
 <option value="Africa/Abidjan">Africa/Abidjan</option>
@@ -949,9 +954,9 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 <option value="15">GLONASS + BEIDOU + GALILEO + QZSS</option>
 </select>
 <p><label class="label">GPRS APN</label><br><input type="text" name="apn" autocapitalize="off" required><br></p>
-<p><label class="label">GPRS Credentials</label><br><input type="checkbox" name="credentials"><br></p>
-<p class="credentials"><label class="label">GPRS User</label><br><input type="text" name="user" autocapitalize="off"><br></p>
-<p class="credentials"><label class="label">GPRS Password</label><br><input type="text" name="pass" autocapitalize="off"><br></p>
+<p><label class="label">GPRS Credentials</label><br><input type="checkbox" name="gprscredentials"><br></p>
+<p class="gprs-credentials"><label class="label">GPRS User</label><br><input type="text" name="gprsuser" autocapitalize="off"><br></p>
+<p class="gprs-credentials"><label class="label">GPRS Password</label><br><input type="text" name="gprspass" autocapitalize="off"><br></p>
 <input type="submit" value="Save & Reboot">
 <h2 class="info">You need to save the configuration and reboot the device, otherwise the device will not work</h2>
 </form>
@@ -969,38 +974,66 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
       mac.innerHTML = json.mac_address;
       var form1 = document.getElementById("form1");
       form1.server.value = json.server;
-      form1.port.value = json.port;
+      form1.httpport.value = json.http_port;
+      form1.mqttport.value = json.mqtt_port;
+      form1.mqttcredentials.checked = json.mqtt_credentials;
+      if (json.mqtt_credentials) {
+        var mqttcred = document.getElementsByClassName('mqtt-credentials');
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      }
+      form1.mqttuser.value = json.mqtt_user;
+      form1.mqttpass.value = json.mqtt_pass;
       form1.ntp.value = json.ntp;
       form1.timezone.value = json.timezone;
       form1.gnss.value = json.gnss_mode;
       form1.apn.value = json.apn;
-      form1.credentials.checked = json.credentials;
-      if (json.credentials) {
-        var cred = document.getElementsByClassName('credentials');
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'block';
+      form1.gprscredentials.checked = json.gprs_credentials;
+      if (json.gprs_credentials) {
+        var gprscred = document.getElementsByClassName('gprs-credentials');
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'block';
         }
-        form1.user.required = true;
-        form1.pass.required = true;
+        form1.gprsuser.required = true;
+        form1.gprspass.required = true;
       }
-      form1.user.value = json.user;
-      form1.pass.value = json.pass;
+      form1.gprsuser.value = json.gprs_user;
+      form1.gprspass.value = json.gprs_pass;
     });
     var form1 = document.getElementById("form1");
-    var cred = document.getElementsByClassName('credentials');
-    form1.credentials.onclick = function () {
-      if (this.form.credentials.checked) {
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'block';
+    var mqttcred = document.getElementsByClassName('mqtt-credentials');
+    form1.mqttcredentials.onclick = function () {
+      if (this.form.mqttcredentials.checked) {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
         }
-        form1.user.required = true;
-        form1.pass.required = true;
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
       } else {
-        for(i = 0; i < cred.length; i++) {
-          cred[i].style.display = 'none';
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'none';
         }
-        form1.user.required = false;
-        form1.pass.required = false;
+        form1.mqttuser.required = false;
+        form1.mqttpass.required = false;
+      }
+    }
+    var gprscred = document.getElementsByClassName('gprs-credentials');
+    form1.gprscredentials.onclick = function () {
+      if (this.form.gprscredentials.checked) {
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'block';
+        }
+        form1.gprsuser.required = true;
+        form1.gprspass.required = true;
+      } else {
+        for(i = 0; i < gprscred.length; i++) {
+          gprscred[i].style.display = 'none';
+        }
+        form1.gprsuser.required = false;
+        form1.gprspass.required = false;
       }
     }
   }
@@ -1058,10 +1091,14 @@ sqlite3_stmt *dbRes;
 const char *dbTail;
 int dbRc;
 
-bool extra_reboot = DEFAULT_EXTRA_REBOOT;
+bool hw_reboot = DEFAULT_HW_REBOOT;
 bool is_setup_done = DEFAULT_IS_SETUP_DONE;
 String backend_server = DEFAULT_BACKEND_SERVER;
-int backend_port = DEFAULT_BACKEND_PORT;
+int http_port = DEFAULT_HTTP_PORT;
+int mqtt_port = DEFAULT_MQTT_PORT;
+bool mqtt_credentials = DEFAULT_MQTT_CREDENTIALS;
+String mqtt_user = DEFAULT_MQTT_USER;
+String mqtt_pass = DEFAULT_MQTT_PASS;
 String ntp_server = DEFAULT_NTP_SERVER;
 String timezone = DEFAULT_TIMEZONE;
 String timezone_name = DEFAULT_TIMEZONE_NAME;
@@ -1075,12 +1112,8 @@ bool gprs_credentials = DEFAULT_GPRS_CREDENTIALS;
 String gprs_user = DEFAULT_GPRS_USER;
 String gprs_pass = DEFAULT_GPRS_PASS;
 
-bool is_network_connected = false;
-bool is_gprs_connected = false;
-
-
-// String current_ride_id; // TODO
-// String current_driver_card; // TODO
+bool is_network_connected = false; // ?
+bool is_gprs_connected = false; // ?
 
 int config_button_last_state = 1;
 bool config_button_pressed = false;
@@ -1088,8 +1121,12 @@ bool config_button_active = false;
 unsigned long config_button_last_time = 0;
 unsigned long config_button_period = 5000;
 
-Ticker gps_ticker;
 const int gps_period = 5000; // 10000 
+
+// Ticker gps_ticker;
+// Ticker mqtt_ticker;
+unsigned long gps_last_time = 0;
+unsigned long mqtt_check_last_time = 0;
 
 float gps_last_lat = 0.0;
 float gps_last_lon = 0.0;
@@ -1097,6 +1134,11 @@ float gps_last_alt = 0.0;
 float gps_last_speed = 0.0;
 float gps_last_accuracy = 0.0;
 DateTime gps_last_datetime = DateTime(2000, 1, 1, 0, 0, 0);
+
+String driver_card = "";  // ?
+
+
+unsigned long currentMillis;
 
 // ----------------------------------------------------------------------------------------------------------------
 
@@ -1136,13 +1178,18 @@ void setupUnitVariables() { // Done
 }
 
 void setupEspPins() { // TODO
+  digitalWrite(ESP_RST, HIGH); // off
+  pinMode(ESP_RST, OUTPUT);
+
+  digitalWrite(ESP_PWR_CARD_READER, LOW); // LOW/HIGH depends on mosfet type - here should set mosfet to OFF
+  pinMode(ESP_PWR_CARD_READER, OUTPUT); // card reader mosfet // TODO
 
   // TODO
 
   pinMode(ESP_WIFI_BUTTON, INPUT_PULLUP);
 
-  pinMode(ESP_BOARD_LED, OUTPUT);
-  digitalWrite(ESP_BOARD_LED, HIGH); // off
+  pinMode(ESP_LED, OUTPUT);
+  digitalWrite(ESP_LED, HIGH); // off
   pinMode(GSM_MODULE_POWER, OUTPUT);
   pinMode(GSM_MODULE_PWR, OUTPUT);
   pinMode(GSM_MODULE_INT, INPUT);
@@ -1250,7 +1297,7 @@ void loadDatabaseConfig() { // ?
   // timezone_name = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone_name'", DEFAULT_TIMEZONE_NAME);
   // gnss_mode = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gnss_mode'", DEFAULT_GNSS_MODE);
   // backend_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'backend_server'", DEFAULT_BACKEND_SERVER);
-  // backend_port = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'backend_port'", DEFAULT_BACKEND_PORT);
+  // http_port = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'http_port'", DEFAULT_HTTP_PORT);
   // gprs_apn = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_apn'", DEFAULT_GPRS_APN);
   // gprs_credentials = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gprs_credentials'", DEFAULT_GPRS_CREDENTIALS);
   // gprs_user = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_user'", DEFAULT_GPRS_USER);
@@ -1271,7 +1318,7 @@ void initDatabaseFile() { // ?
   //   "INSERT INTO config VALUES ('time_zone','" + String(DEFAULT_TIMEZONE) + "')",
   //   "INSERT INTO config VALUES ('gnss_mode','" + String(DEFAULT_GNSS_MODE) + "')",
   //   "INSERT INTO config VALUES ('backend_server','" + String(DEFAULT_BACKEND_SERVER) + "')",
-  //   "INSERT INTO config VALUES ('backend_port','" + String(DEFAULT_BACKEND_PORT) + "')",
+  //   "INSERT INTO config VALUES ('http_port','" + String(DEFAULT_HTTP_PORT) + "')",
   //   "INSERT INTO config VALUES ('gprs_apn','" + String(DEFAULT_GPRS_APN) + "')",
   //   "INSERT INTO config VALUES ('gprs_credentials','" + String(DEFAULT_GPRS_CREDENTIALS) + "')",
   //   "INSERT INTO config VALUES ('gprs_user','" + String(DEFAULT_GPRS_USER) + "')",
@@ -1296,51 +1343,127 @@ void initDatabaseFile() { // ?
 
 void handlePreferences() { // Done
   preferences.begin("module-config", false);
-  if (preferences.isKey("setup_done")) { // config exist
+  if (preferences.isKey("fw_version")) {
     fw_version = preferences.getString("fw_version");
-    wifi_hostname = preferences.getString("hostname");
-    ntp_server = preferences.getString("ntp_server");
-    timezone = preferences.getString("time_zone");
-    timezone_name = preferences.getString("tz_name");
-    gnss_mode = preferences.getInt("gnss_mode");
-    backend_server = preferences.getString("server");
-    backend_port = preferences.getInt("port");
-    gprs_apn = preferences.getString("gprs_apn");
-    gprs_credentials = preferences.getBool("gprs_cred");
-    gprs_user = preferences.getString("gprs_user");
-    gprs_pass = preferences.getString("gprs_pass");
-    extra_reboot = preferences.getBool("extra_reboot");
-    gps_last_lat = preferences.getFloat("last_lat");
-    gps_last_lon = preferences.getFloat("last_lon");
-    gps_last_alt = preferences.getFloat("last_alt");
-    gps_last_speed = preferences.getFloat("last_speed");
-    gps_last_accuracy = preferences.getFloat("last_accuracy");
-    gps_last_datetime = DateTime(preferences.getString("last_datetime").c_str());
-    is_setup_done = preferences.getBool("setup_done");
-    SerialMon.println("[CONFIG] Preferences Loaded");
-  } else { // config not exist
+  } else {
     preferences.putString("fw_version", MODULE_FIRMWARE_VERSION);
-    preferences.putString("hostname", defaultHostname());
-    preferences.putString("ntp_server", DEFAULT_NTP_SERVER);
-    preferences.putString("time_zone", DEFAULT_TIMEZONE);
-    preferences.putString("tz_name", DEFAULT_TIMEZONE_NAME);
-    preferences.putInt("gnss_mode", DEFAULT_GNSS_MODE);
-    preferences.putString("server", DEFAULT_BACKEND_SERVER);
-    preferences.putInt("port", DEFAULT_BACKEND_PORT);
-    preferences.putString("gprs_apn", DEFAULT_GPRS_APN);
-    preferences.putBool("gprs_cred", DEFAULT_GPRS_CREDENTIALS);
-    preferences.putString("gprs_user", DEFAULT_GPRS_USER);
-    preferences.putString("gprs_pass", DEFAULT_GPRS_PASS);
-    preferences.putBool("extra_reboot", DEFAULT_EXTRA_REBOOT);
-    preferences.putFloat("last_lat", 0.0);
-    preferences.putFloat("last_lon", 0.0);
-    preferences.putFloat("last_alt", 0.0);
-    preferences.putFloat("last_speed", 0.0);
-    preferences.putFloat("last_accuracy", 0.0);
-    preferences.putString("last_datetime", DateTime(2000,1,1,0,0,0).timestamp());
-    preferences.putBool("setup_done", DEFAULT_IS_SETUP_DONE);
-    SerialMon.println("[CONFIG] Preferences Writtent Into Memory");
   }
+  if (preferences.isKey("hostname")) {
+    wifi_hostname = preferences.getString("hostname");
+  } else {
+    preferences.putString("hostname", defaultHostname());
+  }
+  if (preferences.isKey("ntp_server")) {
+    ntp_server = preferences.getString("ntp_server");
+  } else {
+    preferences.putString("ntp_server", DEFAULT_NTP_SERVER);
+  }
+  if (preferences.isKey("time_zone")) {
+    timezone = preferences.getString("time_zone");
+  } else {
+    preferences.putString("time_zone", DEFAULT_TIMEZONE);
+  }
+  if (preferences.isKey("tz_name")) {
+    timezone_name = preferences.getString("tz_name");
+  } else {
+    preferences.putString("tz_name", DEFAULT_TIMEZONE_NAME);
+  }
+  if (preferences.isKey("gnss_mode")) {
+    gnss_mode = preferences.getInt("gnss_mode");
+  } else {
+    preferences.putInt("gnss_mode", DEFAULT_GNSS_MODE);
+  }
+  if (preferences.isKey("server")) {
+    backend_server = preferences.getString("server");
+  } else {
+    preferences.putString("server", DEFAULT_BACKEND_SERVER);
+  }
+  if (preferences.isKey("http_port")) {
+    http_port = preferences.getInt("http_port");
+  } else {
+    preferences.putInt("http_port", DEFAULT_HTTP_PORT);
+  }
+  if (preferences.isKey("mqtt_port")) {
+    mqtt_port = preferences.getInt("mqtt_port");
+  } else {
+    preferences.putInt("mqtt_port", DEFAULT_MQTT_PORT);
+  }
+  if (preferences.isKey("mqtt_cred")) {
+    mqtt_credentials = preferences.getBool("mqtt_cred");
+  } else {
+    preferences.putBool("mqtt_cred", DEFAULT_MQTT_CREDENTIALS);
+  }
+  if (preferences.isKey("mqtt_user")) {
+    mqtt_user = preferences.getString("mqtt_user");
+  } else {
+    preferences.putString("mqtt_user", DEFAULT_MQTT_USER);
+  }
+  if (preferences.isKey("mqtt_pass")) {
+    mqtt_pass = preferences.getString("mqtt_pass");
+  } else {
+    preferences.putString("mqtt_pass", DEFAULT_MQTT_PASS);
+  }
+  if (preferences.isKey("gprs_apn")) {
+    gprs_apn = preferences.getString("gprs_apn");
+  } else {
+    preferences.putString("gprs_apn", DEFAULT_GPRS_APN);
+  }
+  if (preferences.isKey("gprs_cred")) {
+    gprs_credentials = preferences.getBool("gprs_cred");
+  } else {
+    preferences.putBool("gprs_cred", DEFAULT_GPRS_CREDENTIALS);
+  }
+  if (preferences.isKey("gprs_user")) {
+    gprs_user = preferences.getString("gprs_user");
+  } else {
+    preferences.putString("gprs_user", DEFAULT_GPRS_USER);
+  }
+  if (preferences.isKey("gprs_pass")) {
+    gprs_pass = preferences.getString("gprs_pass");
+  } else {
+    preferences.putString("gprs_pass", DEFAULT_GPRS_PASS);
+  }
+  if (preferences.isKey("hw_reboot")) {
+    hw_reboot = preferences.getBool("hw_reboot");
+  } else {
+    preferences.putBool("hw_reboot", DEFAULT_HW_REBOOT);
+  }
+  if (preferences.isKey("last_lat")) {
+    gps_last_lat = preferences.getFloat("last_lat");
+  } else {
+    preferences.putFloat("last_lat", 0.0);
+  }
+  if (preferences.isKey("last_lon")) {
+    gps_last_lon = preferences.getFloat("last_lon");
+  } else {
+    preferences.putFloat("last_lon", 0.0);
+  }
+  if (preferences.isKey("last_alt")) {
+    gps_last_alt = preferences.getFloat("last_alt");
+  } else {
+    preferences.putFloat("last_alt", 0.0);
+  }
+  if (preferences.isKey("last_speed")) {
+    gps_last_speed = preferences.getFloat("last_speed");
+  } else {
+    preferences.putFloat("last_speed", 0.0);
+  }
+  if (preferences.isKey("last_accuracy")) {
+    gps_last_accuracy = preferences.getFloat("last_accuracy");
+  } else {
+    preferences.putFloat("last_accuracy", 0.0);
+  }
+  if (preferences.isKey("last_datetime")) {
+    gps_last_datetime = DateTime(preferences.getString("last_datetime").c_str());
+  } else {
+    preferences.putString("last_datetime", DateTime(2000,1,1,0,0,0).timestamp());
+  }
+  if (preferences.isKey("setup_done")) {
+    is_setup_done = preferences.getBool("setup_done");
+  } else {
+    preferences.putBool("setup_done", DEFAULT_IS_SETUP_DONE);
+  }
+  SerialMon.println("[CONFIG] Preferences Loaded");
 }
 
 void setupFileSystem() { // Done
@@ -1370,14 +1493,179 @@ void setupFileSystem() { // Done
 //   SerialMon.println(sms_send ? "Sent" : "Failed");
 // }
 
+// String getGpsJson() { // ?
+//   DynamicJsonDocument json_doc(1024);
+//   json_doc["unit_id"] = mac_address_nag;
+//   json_doc["timestamp"] = rtc.now().timestamp();
+//   json_doc["temperature"] = String(rtc.getTemperature(), 2);
+//   json_doc["gps_lat"] = String(gps_last_lat, 6); // gps_last_lat;
+//   json_doc["gps_lon"] = String(gps_last_lon, 6); // gps_last_lon;
+//   json_doc["gps_alt"] = String(gps_last_alt, 2);
+//   json_doc["gps_speed"] = String(gps_last_speed, 2);
+//   json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
+//   json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
+//   String data_out;
+//   serializeJson(json_doc, data_out);
+//   return data_out;
+// }
+
+// void sendHttpPost() {
+//   HttpClient http(client, backend_server, http_port);
+//   http.setHttpResponseTimeout(gps_period / 2);
+//   SerialMon.print("[HTTP] Connecting to ");
+//   SerialMon.print(backend_server);
+//   SerialMon.print(":");
+//   SerialMon.println(http_port);
+//   int err = http.post(DEFAULT_HTTP_GPS_ENDPOINT, "application/json", getGpsJson());
+//   if (err == 0) {
+//     int responseCode = http.responseStatusCode();
+//     String responseBody = http.responseBody();
+//     SerialMon.print("[HTTP] POST (");
+//     SerialMon.print(responseCode);
+//     SerialMon.print(") ");
+//     SerialMon.println(responseBody);
+//   } else if (err == -1) {
+//     SerialMon.println("[HTTP] POST - HTTP CONNECTION FAILED");
+//   } else if (err == -2) {
+//     SerialMon.println("[HTTP] POST - INCORECT USAGE");
+//   } else if (err == -3) {
+//     SerialMon.println("[HTTP] POST - TIMED OUT");
+//   } else if (err == -4) {
+//     SerialMon.println("[HTTP] POST - INVALID RESPONSE");
+//   }
+// }
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) { // TODO
+  SerialMon.print("[MQTT] Message arrived (");
+  SerialMon.print(topic);
+  SerialMon.print(") ");
+  for (int i = 0; i < length; i++) {
+    SerialMon.print((char)payload[i]);
+  }
+  SerialMon.println();
+  // if (String(topic) == mqtt_StatusTopic) { // TODO
+  //   
+  // }
+  // ? OR
+  // String topicToProcess = topic;
+  // payload[length] = '\0';
+  // String payloadToProcess = (char*)payload;
+  // triggerAction(topicToProcess, payloadToProcess);
+}
+
+void setupMqtt() { // Done
+  mqtt.setServer(backend_server.c_str(), mqtt_port);
+  mqtt.setCallback(mqttCallback);
+  SerialMon.println("[MQTT] Setup Done");
+}
+
+void publishMqttBirthMessage() { // Done
+  SerialMon.print("[MQTT] Publishing ");
+  SerialMon.print(MQTT_AVAILABILITY_BIRTH);
+  SerialMon.print(" to ");
+  SerialMon.print("car-fleet/" + mac_address_nag + "/availability");
+  SerialMon.print(": ");
+  bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/availability").c_str(), MQTT_AVAILABILITY_BIRTH, true);
+  if (stat) {
+    SerialMon.println("OK");
+  } else {
+    SerialMon.println("Failed");
+  }
+}
+
+void publishTemperatureTopic() { // Done
+  if (mqtt.connected()) {
+    SerialMon.print("[MQTT] Publishing to ");
+    SerialMon.print("car-fleet/" + mac_address_nag + "/temperature");
+    SerialMon.print(": ");
+    bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/temperature").c_str(), String(rtc.getTemperature(), 2).c_str(), true);
+    if (stat) {
+      SerialMon.println("OK");
+    } else {
+      SerialMon.println("Failed");
+    }
+  }
+}
+
+void publishTimestampTopic() { // Done
+  if (mqtt.connected()) {
+    SerialMon.print("[MQTT] Publishing to ");
+    SerialMon.print("car-fleet/" + mac_address_nag + "/timestamp");
+    SerialMon.print(": ");
+    bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/timestamp").c_str(), rtc.now().timestamp().c_str(), true); // ?
+    if (stat) {
+      SerialMon.println("OK");
+    } else {
+      SerialMon.println("Failed");
+    }
+  }
+}
+
+void publishGpsTopic() {
+  if (mqtt.connected()) {
+    SerialMon.print("[MQTT] Publishing to ");
+    SerialMon.print("car-fleet/" + mac_address_nag + "/gps");
+    SerialMon.print(": ");
+    DynamicJsonDocument json_doc(1024);
+    json_doc["gps_lat"] = String(gps_last_lat, 6);
+    json_doc["gps_lon"] = String(gps_last_lon, 6);
+    json_doc["gps_alt"] = String(gps_last_alt, 2);
+    json_doc["gps_speed"] = String(gps_last_speed, 2);
+    json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
+    json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
+    String data_out;
+    serializeJson(json_doc, data_out);
+    bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/gps").c_str(), data_out.c_str(), true); // ?
+    if (stat) {
+      SerialMon.println("OK");
+    } else {
+      SerialMon.println("Failed");
+    }
+  }
+}
+
+void connectMqtt() { // Done
+  if (!mqtt.connected()) {
+    SerialMon.print("[MQTT] Connecting to ");
+    SerialMon.print(backend_server);
+    SerialMon.print(":");
+    SerialMon.print(mqtt_port);
+    SerialMon.print(" (user: ");
+    SerialMon.print(mqtt_user);
+    SerialMon.print(", pass: ");
+    SerialMon.print(mqtt_pass);
+    SerialMon.print("): ");
+    if (mqtt.connect(mac_address_nag.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), String("car-fleet/" + mac_address_nag + "/availability").c_str(), 0, true, MQTT_AVAILABILITY_LWT)) {
+      SerialMon.println("OK");
+      publishMqttBirthMessage();
+      // TODO - subscribe to needed topics
+      // ? - publish init state
+    } else {
+      SerialMon.print("Failed (");
+      SerialMon.print(mqtt.state());
+      SerialMon.println(")");
+    }
+  }
+}
+
+void handleMqttConnection() {
+  if (currentMillis - mqtt_check_last_time >= (gps_period*2)) {
+    connectMqtt();
+    mqtt_check_last_time = millis();
+  }
+  mqtt.loop();
+}
+
+
+
 void getGpsPosition() { // TODO
-  // float lat, lon, speed, alt, accuracy;
   int year, month, day, hour, minute, second;
   if (modem.getGPS(&gps_last_lat, &gps_last_lon, &gps_last_speed, &gps_last_alt, NULL, NULL, &gps_last_accuracy, &year, &month, &day, &hour, &minute, &second)) {
-    
+    SerialMon.print("[GPS] Receiving Data - ");
+    SerialMon.println(rtc.now().timestamp());
+
     gps_last_datetime = DateTime(year, month, day, hour, minute, second);
     rtc.adjust(gps_last_datetime);
-
     preferences.putFloat("last_lat", gps_last_lat);
     preferences.putFloat("last_lon", gps_last_lon);
     preferences.putFloat("last_alt", gps_last_alt);
@@ -1385,27 +1673,29 @@ void getGpsPosition() { // TODO
     preferences.putFloat("last_accuracy", gps_last_accuracy);
     preferences.putString("last_datetime", gps_last_datetime.timestamp());
 
-    SerialMon.print("[GPS]");
+    // sendHttpPost(); // TODO - temp disable
+
+    publishGpsTopic();
+    publishTemperatureTopic();
+    publishTimestampTopic();
+
   } else {
-    SerialMon.print("[GPS] timed out | Last known location -> ");
+    SerialMon.print("[GPS] No Signal - ");
+    SerialMon.println(rtc.now().timestamp());
+
+    publishTemperatureTopic();
+    publishTimestampTopic();
+
   }
-
-  SerialMon.print(" lat: ");
-  SerialMon.print(gps_last_lat, 6);
-  SerialMon.print(" lon: ");
-  SerialMon.print(gps_last_lon, 6);
-  SerialMon.print(" speed: ");
-  SerialMon.print(gps_last_speed);
-  SerialMon.print(" alt: ");
-  SerialMon.print(gps_last_alt);
-  SerialMon.print(" accuracy: ");
-  SerialMon.print(gps_last_accuracy);
-  SerialMon.print(" (");
-  SerialMon.print(gps_last_datetime.timestamp());
-  SerialMon.println(")");
-
-  // TODO - here sending to server -> heartbeat + gps realtime + car monitoring realtime
 }
+
+void handleGetGps() {
+  if (currentMillis - gps_last_time >= gps_period) {
+    getGpsPosition();
+    gps_last_time = millis();
+  }
+}
+
 
 void setupGsmModule() { // Done
   digitalWrite(GSM_MODULE_POWER, HIGH); // POWER_PIN: This pin controls the power supply of the SIM7600
@@ -1415,21 +1705,26 @@ void setupGsmModule() { // Done
   attachInterrupt(GSM_MODULE_INT, []() { // If SIM7600 starts normally, then set the onboard LED to flash once every 1 second
     detachInterrupt(GSM_MODULE_INT);
     led_ticker.attach_ms(1000, []() {
-      digitalWrite(ESP_BOARD_LED, !digitalRead(ESP_BOARD_LED));
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
     });
   }, RISING);
           
-  delay(5000);
+  delay(3000); // ?
+
   SerialAT.begin(GSM_MODULE_UART_BAUD, SERIAL_8N1, GSM_MODULE_RX, GSM_MODULE_TX);
-  
+
   if (digitalRead(GSM_MODULE_INT) == 0) {
     SerialMon.println("[GSM] Waiting For Power On...");
-    delay(15000); // ? - maybe use while until pin rising
+    // delay(15000);
   } else {
     detachInterrupt(GSM_MODULE_INT);
     led_ticker.attach_ms(1000, []() {
-      digitalWrite(ESP_BOARD_LED, !digitalRead(ESP_BOARD_LED));
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
     });
+  }
+
+  while(digitalRead(GSM_MODULE_INT) == 0) {
+    delay(1000); // Waiting for power on
   }
   
   SerialMon.print("[GSM] Initializing modem: ");
@@ -1528,24 +1823,37 @@ void setupGsmModule() { // Done
   // sendSMS("+420xxxxxxxxx", String("Hello from ") + imei);
 
   SerialMon.println("[GSM] Setup Done");
-  
-  if (is_setup_done && !extra_reboot) {
-    led_ticker.detach();
-    digitalWrite(ESP_BOARD_LED, LOW); // module LED -> ON
-    SerialMon.println("[GSM] Starting GPS Scheduler");
-    gps_ticker.attach_ms(gps_period, getGpsPosition);
-  }
+}
+
+void startRide() { // TODO
+
+  // TODO
+
+  // TODO - power handling of card reader using mosfet - TURN ON
+
+}
+
+void stopRide() { // TODO
+
+  // TODO
+
+  // TODO - power handling of card reader using mosfet - TURN OFF
+
+  driver_card = "";
+
 }
 
 void onCardReaderReceive() { // TODO
-  SerialMon.println("[READER] Receiving data");
-  if (SerialCardReader.available()) {
-    String incoming = SerialCardReader.readString();
-    SerialMon.println("[READER] Data: " + incoming);
+  if (is_setup_done && !hw_reboot) {
+    if (SerialCardReader.available()) {
+      driver_card = SerialCardReader.readString();
+      SerialMon.println("[READER] Card: " + driver_card);
+      // TODO - play tone
+    }
   }
 }
 
-void setupCardReader() { // Done
+void setupCardReader() {
   SerialCardReader.begin(9600, SERIAL_8N1, ESP_RX_CARD_READER, ESP_TX_CARD_READER);
   SerialCardReader.onReceive(onCardReaderReceive);
   SerialMon.println("[READER] Card Reader Setup Done");
@@ -1572,14 +1880,18 @@ void handleWebServerConfigGet() { // Done
   json_doc["unit_id"] = mac_address_nag;
   json_doc["mac_address"] = mac_address_raw;
   json_doc["server"] = backend_server;
-  json_doc["port"] = backend_port;
+  json_doc["http_port"] = http_port;
+  json_doc["mqtt_port"] = mqtt_port;
+  json_doc["mqtt_credentials"] = mqtt_credentials;
+  json_doc["mqtt_user"] = mqtt_user;
+  json_doc["mqtt_pass"] = mqtt_pass;
   json_doc["ntp"] = ntp_server;
   json_doc["timezone"] = timezone_name;
   json_doc["gnss_mode"] = gnss_mode;
   json_doc["apn"] = gprs_apn;
-  json_doc["credentials"] = gprs_credentials;
-  json_doc["user"] = gprs_user;
-  json_doc["pass"] = gprs_pass;
+  json_doc["gprs_credentials"] = gprs_credentials;
+  json_doc["gprs_user"] = gprs_user;
+  json_doc["gprs_pass"] = gprs_pass;
   String data_out;
   serializeJson(json_doc, data_out);
   webServer.send(200, "application/json", data_out);
@@ -1590,8 +1902,32 @@ void handleWebServerSetupPost() { // Done
   if (webServer.arg("server") != backend_server) {
     preferences.putString("server", webServer.arg("server"));
   }
-  if (webServer.arg("port") != String(backend_port)) {
-    preferences.putInt("port", webServer.arg("port").toInt());
+  if (webServer.arg("httpport") != String(http_port)) {
+    preferences.putInt("http_port", webServer.arg("httpport").toInt());
+  }
+  if (webServer.arg("mqttport") != String(mqtt_port)) {
+    preferences.putInt("mqtt_port", webServer.arg("mqttport").toInt());
+  }
+  if(webServer.arg("mqttcredentials") == "on") {
+    if (!mqtt_credentials) {
+      preferences.putBool("mqtt_cred", true);
+    }
+    if (webServer.arg("mqttuser") != mqtt_user) {
+      preferences.putString("mqtt_user", webServer.arg("mqttuser"));
+    }
+    if (webServer.arg("mqttpass") != mqtt_pass) {
+      preferences.putString("mqtt_pass", webServer.arg("mqttpass"));
+    }
+  } else {
+    if (mqtt_credentials) {
+      preferences.putBool("mqtt_cred", false);
+    }
+    if (String(DEFAULT_MQTT_USER) != mqtt_user) {
+      preferences.putString("mqtt_user", DEFAULT_MQTT_USER);
+    }
+    if (String(DEFAULT_MQTT_PASS) != mqtt_pass) {
+      preferences.putString("mqtt_pass", DEFAULT_MQTT_PASS);
+    }
   }
   if (webServer.arg("ntp") != ntp_server) {
     preferences.putString("ntp_server", webServer.arg("ntp"));
@@ -1608,18 +1944,17 @@ void handleWebServerSetupPost() { // Done
   if (webServer.arg("apn") != gprs_apn) {
     preferences.putString("gprs_apn", webServer.arg("apn"));
   }
-  if(webServer.arg("credentials") == "on") {
+  if(webServer.arg("gprscredentials") == "on") {
     if (!gprs_credentials) {
       preferences.putBool("gprs_cred", true);
     }
-    if (webServer.arg("user") != gprs_user) {
-      preferences.putString("gprs_user", webServer.arg("user"));
+    if (webServer.arg("gprsuser") != gprs_user) {
+      preferences.putString("gprs_user", webServer.arg("gprsuser"));
     }
-    if (webServer.arg("pass") != gprs_pass) {
-      preferences.putString("gprs_pass", webServer.arg("pass"));
+    if (webServer.arg("gprspass") != gprs_pass) {
+      preferences.putString("gprs_pass", webServer.arg("gprspass"));
     }
   } else {
-    SerialMon.println("[DBG] gprs_credentials off");
     if (gprs_credentials) {
       preferences.putBool("gprs_cred", false);
     }
@@ -1633,8 +1968,11 @@ void handleWebServerSetupPost() { // Done
   if (!is_setup_done) {
     preferences.putBool("setup_done", true);
   }
-  preferences.putBool("extra_reboot", true);
+  preferences.putBool("hw_reboot", true);
   delay(250);
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println("[BOOT] Restarting");
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
   ESP.restart();
 }
 
@@ -1663,17 +2001,21 @@ void handleCaptivePortal() { // Done
 }
 
 void switchToConfigMode() { // Done
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
   SerialMon.println("[CONFIG] Switching to config mode");
   // TODO - play tone
   preferences.putBool("setup_done", false);
   delay(250);
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println("[BOOT] Restarting");
+  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
   ESP.restart();
 }
 
 void configButtonHandler() { // Done
   int button_current_state = digitalRead(ESP_WIFI_BUTTON);
   if (button_current_state != config_button_last_state) {
-    if (millis() - config_button_last_time >= 250) {
+    if (currentMillis - config_button_last_time >= 250) {
       if (button_current_state == LOW) {
         if (!config_button_pressed) {
           SerialMon.println("[CONFIG] BUTTON PRESS");
@@ -1693,7 +2035,7 @@ void configButtonHandler() { // Done
     if (button_current_state == LOW) {
       if  (!config_button_active) {
         if (config_button_pressed) {
-          if ((millis() - config_button_last_time > config_button_period)) {
+          if ((currentMillis - config_button_last_time > config_button_period)) {
             SerialMon.println("[CONFIG] LONG PRESS");
             config_button_active = true;
             switchToConfigMode();
@@ -1704,83 +2046,97 @@ void configButtonHandler() { // Done
   }
 }
 
-void core0Task( void * parameter ) { // TODO
-  // SerialMon.print("[CORE_");
-  // SerialMon.print(xPortGetCoreID());
-  // SerialMon.println("] Task Started");
-  for( ;; ){
-    if (is_setup_done) {
-      configButtonHandler(); // ?
-
-      // TODO 
-    } else {
-      handleCaptivePortal();
-    }
-  }
-}
+// void core0Task( void * parameter ) { // TODO
+//   SerialMon.print("[CORE_");
+//   SerialMon.print(xPortGetCoreID());
+//   SerialMon.println("] Task Started");
+//   for( ;; ){
+//     if (is_setup_done) {
+//       configButtonHandler(); // ?
+//       if (!hw_reboot) {
+//         // TODO - check GSM network status
+//         // TODO - check GPRS connection status
+//         // handleMqttConnection();
+//       }
+//     } else {
+//       handleCaptivePortal();
+//     }
+//   }
+// }
 
 // ----------------------------------------------------------------------------------------------------------------
 
 void setup() {
   SerialMon.begin(9600);
   SerialMon.println();
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   SerialMon.println("[Module Unit Name] " + String(MODULE_NAME) + " (" + String(MODULE_TYPE) + ")");
   SerialMon.println("[Hardware Version] " + String(MODULE_HARDWARE_VERSION));
   SerialMon.println("[Firmware Version] " + String(MODULE_FIRMWARE_VERSION));
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   // ----------------------------------------------------------------------------------------------------------------
   setupEspPins();
-  Wire.setPins(ESP_WIRE_SDA, ESP_WIRE_SCL);
+  Wire.setPins(ESP_SDA, ESP_SCL);
   clearWifi();
   sqlite3_initialize();
   setupFileSystem();
   setupUnitVariables();
   setupRtc();
-  setupCardReader();  // TODO - setup rfid reader
-  // TODO - setup buzzer
+  // setupBuzzer(); // TODO - setup buzzer
+  setupCardReader();
   // ----------------------------------------------------------------------------------------------------------------
   if (is_setup_done) {
     led_ticker.attach_ms(500, []() {
-      digitalWrite(ESP_BOARD_LED, !digitalRead(ESP_BOARD_LED));
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
     });
-    setupGsmModule(); // TODO
+    setupGsmModule();
+    if (!hw_reboot) {
+      led_ticker.detach();
+      digitalWrite(ESP_LED, LOW); // module LED -> ON
+      setupMqtt();
+      // SerialMon.println(F("[GPS] Starting Scheduler"));
+      // gps_ticker.attach_ms(gps_period, getGpsPosition);
+      // SerialMon.println("[MQTT] Starting Scheduler");
+      // mqtt_ticker.attach_ms(gps_period*2, connectMqtt);
+    }
   } else {
     led_ticker.attach_ms(200, []() {
-      digitalWrite(ESP_BOARD_LED, !digitalRead(ESP_BOARD_LED));
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
     });
     setupCaptivePortal();
   }
   // ----------------------------------------------------------------------------------------------------------------
-  SerialMon.println("[BOOT] Completed");
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
-  if (extra_reboot) {
-    SerialMon.println("[BOOT] Handling requested software reboot");
-    attachInterrupt(GSM_MODULE_INT, []() { // If SIM7600 starts normally, then set the onboard LED to flash once every 1 second
-      detachInterrupt(GSM_MODULE_INT);
-      SerialMon.println("[GSM] Modem Rebooted");
-      SerialMon.println("----------------------------------------------------------------------------------------------------------------");
-      preferences.putBool("extra_reboot", false);
-      ESP.restart();
-    }, RISING); // }, CHANGE); // }, FALLING);
-    SerialMon.println("[GSM] Rebooting Modem");
-    modem.restart();
-    SerialMon.println("----------------------------------------------------------------------------------------------------------------");
-  }
+  SerialMon.println(F("[BOOT] Completed"));
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   // ----------------------------------------------------------------------------------------------------------------
-  xTaskCreatePinnedToCore(core0Task, "Core0Task", 10000, NULL, tskIDLE_PRIORITY, NULL, 0);
+  if (hw_reboot) {
+    SerialMon.println(F("[BOOT] Performing requested hardware reboot"));
+    preferences.putBool("hw_reboot", false);
+    SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+    delay(250);
+    digitalWrite(ESP_RST, LOW);
+  }
+  // ----------------------------------------------------------------------------------------------------------------,
+  // xTaskCreatePinnedToCore(core0Task, "Core0Task", 10000, NULL, tskIDLE_PRIORITY, NULL, 0);
   // ----------------------------------------------------------------------------------------------------------------
 }
 
 // ----------------------------------------------------------------------------------------------------------------
 
 void loop() { // This is Core 1
-  // if (is_setup_done) {
+  currentMillis = millis();
 
-  // }
-  // else {
+  if (is_setup_done) {
+    configButtonHandler(); // ?
+    if (!hw_reboot) {
+      handleMqttConnection();
 
-  // }
+      handleGetGps();
+    }
+  } 
+  else {
+    handleCaptivePortal();
+  }
 }
 
 // ----------------------------------------------------------------------------------------------------------------
