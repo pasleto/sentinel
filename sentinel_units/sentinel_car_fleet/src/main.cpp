@@ -2000,9 +2000,8 @@ void publishRealtimeData(String data_out /*bool gps_signal*/) { // ? buffer set 
 
       // ? save to db
     }
-  }
-  else {
-    // : save to DB
+  } else {
+    // ? save to DB
   }
 }
 

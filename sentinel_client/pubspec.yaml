@@ -9,19 +9,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  fluent_ui: ^4.0.3
-  provider: ^6.0.4
+  cupertino_icons: ^1.0.5 #cupertino_icons: ^1.0.2
+  fluent_ui: ^4.1.2 # fluent_ui: ^4.0.3 #TODO
+  provider: ^6.0.5 #provider: ^6.0.4
   flutter_acrylic: ^1.0.0
   system_theme: ^2.0.0
   socket_io_client: ^2.0.0
   http: ^0.13.5
   jwt_decode: ^0.3.1
-  flutter_secure_storage: ^6.0.0
+  flutter_secure_storage: ^7.0.1 #flutter_secure_storage: ^6.0.0
   overlayment: ^0.2.1
-  data_table_2: ^2.3.8
+  data_table_2: ^2.3.10 #data_table_2: ^2.3.8
 
-  flutter_map: ^3.0.0
+  flutter_map: ^3.1.0 #flutter_map: ^3.0.0
   flutter_libserialport: ^0.3.0
   # hive: ^2.2.3
   # hive_flutter: ^1.1.0
@@ -34,13 +34,14 @@ dependencies:
   # url_strategy: ^0.2.0
   # another_flushbar: ^1.12.29
   # elegant_notification: ^1.6.4
+  visibility_detector: ^0.3.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
-  build_runner: ^2.3.0
-  dwds: ^16.0.0
+  flutter_lints: ^2.0.1 #flutter_lints: ^2.0.0
+  build_runner: ^2.3.3 #build_runner: ^2.3.0
+  dwds: ^16.0.1 #dwds: ^16.0.0
   # hive_generator: ^2.0.0
 
 flutter:

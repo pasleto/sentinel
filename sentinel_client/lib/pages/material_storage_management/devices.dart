@@ -81,7 +81,14 @@ class _MaterialStorageManagementDevicesPageState extends State<MaterialStorageMa
                   print('edit - id: ${device.id}');
                 },
               ),
-              const fluent_ui.CommandBarSeparator(),
+              // const fluent_ui.CommandBarSeparator(),
+              fluent_ui.CommandBarBuilderItem(
+                builder: (context, mode, w) => fluent_ui.Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3.0),
+                  child: w,
+                ),
+                wrappedItem: const fluent_ui.CommandBarSeparator(),
+              ),
               fluent_ui.CommandBarButton(
                 icon: const Icon(fluent_ui.FluentIcons.delete),
                 label: const Text('Delete'),
@@ -230,7 +237,14 @@ class _MaterialStorageManagementDevicesPageState extends State<MaterialStorageMa
                 label: Text('Search filters'),
                 onPressed: null,
               ),
-              const fluent_ui.CommandBarSeparator(),
+              // const fluent_ui.CommandBarSeparator(),
+              fluent_ui.CommandBarBuilderItem(
+                builder: (context, mode, w) => fluent_ui.Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3.0),
+                  child: w,
+                ),
+                wrappedItem: const fluent_ui.CommandBarSeparator(),
+              ),
               fluent_ui.CommandBarButton(
                 // icon: const Icon(fluent_ui.FluentIcons.clear_filter),
                 icon: const Icon(fluent_ui.FluentIcons.remove_filter),
@@ -413,8 +427,11 @@ class _MaterialStorageManagementDevicesPageState extends State<MaterialStorageMa
     return fluent_ui.ScaffoldPage(
       header: fluent_ui.PageHeader(
         title: const Text('Material Storage Devices', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
-        commandBar: fluent_ui.CommandBarCard(
-          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+        // commandBar: fluent_ui.CommandBarCard(
+        //   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+        //   child: fluent_ui.CommandBar(
+        commandBar: fluent_ui.Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3.0),
           child: fluent_ui.CommandBar(
             mainAxisAlignment: MainAxisAlignment.end,
             overflowBehavior: fluent_ui.CommandBarOverflowBehavior.noWrap,
@@ -466,7 +483,14 @@ class _MaterialStorageManagementDevicesPageState extends State<MaterialStorageMa
                   },
                 ),
               ),
-              const fluent_ui.CommandBarSeparator(),
+              // const fluent_ui.CommandBarSeparator(),
+              fluent_ui.CommandBarBuilderItem(
+                builder: (context, mode, w) => fluent_ui.Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3.0),
+                  child: w,
+                ),
+                wrappedItem: const fluent_ui.CommandBarSeparator(),
+              ),
               fluent_ui.CommandBarBuilderItem(
                 builder: (context, mode, w) => fluent_ui.Tooltip(
                   displayHorizontally: false,

@@ -16,6 +16,8 @@ import 'package:sentinel_client/routes/pages/user_management.dart' deferred as u
 import 'package:sentinel_client/routes/pages/material_storage_management.dart' deferred as material_storage_management;
 import 'package:sentinel_client/routes/pages/car_fleet_management.dart' deferred as car_fleet_management;
 
+// import 'package:sentinel_client/services/socket_service.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -32,6 +34,10 @@ class _MainScreenState extends State<MainScreen> {
   void resetSearch() => searchController.clear();
 
   String get searchValue => searchController.text;
+
+  registerGlobalSocketListeners() {
+    print('listening for global socket event');
+  }
 
   final List<NavigationPaneItem> originalItems = [
     // PaneItemSeparator(),
@@ -176,19 +182,6 @@ class _MainScreenState extends State<MainScreen> {
     ),
     // PaneItemExpander(
     _NoBodyPaneItemExpander(
-      icon: const Icon(FluentIcons.fixed_asset_management),
-      title: const Text('IT Asset Management'),
-      body: const SizedBox.shrink(),
-      items: [
-        PaneItem(
-          icon: const Icon(FluentIcons.view_dashboard),
-          title: const Text('Dashboard'),
-          body: const SizedBox.shrink(),
-        ),
-      ],
-    ),
-    // PaneItemExpander(
-    _NoBodyPaneItemExpander(
       icon: const Icon(FluentIcons.car),
       title: const Text('Car Fleet Management'),
       body: const SizedBox.shrink(),
@@ -207,12 +200,30 @@ class _MainScreenState extends State<MainScreen> {
           body: const SizedBox.shrink(),
         ),
         PaneItem(
+          icon: const Icon(FluentIcons.compass_n_w),
+          title: const Text('Devices'),
+          body: const SizedBox.shrink(),
+        ),
+        PaneItem(
           icon: const Icon(FluentIcons.map_pin),
           title: const Text('Realtime Map'),
           body: DeferredWidget(
             car_fleet_management.loadLibrary,
             () => car_fleet_management.CarFleetManagementRealtimeMapPage(),
           ),
+        ),
+      ],
+    ),
+    // PaneItemExpander(
+    _NoBodyPaneItemExpander(
+      icon: const Icon(FluentIcons.fixed_asset_management),
+      title: const Text('IT Asset Management'),
+      body: const SizedBox.shrink(),
+      items: [
+        PaneItem(
+          icon: const Icon(FluentIcons.view_dashboard),
+          title: const Text('Dashboard'),
+          body: const SizedBox.shrink(),
         ),
       ],
     ),
@@ -261,6 +272,11 @@ class _MainScreenState extends State<MainScreen> {
     DeferredWidget.preload(access_control_management.loadLibrary);
     DeferredWidget.preload(user_management.loadLibrary);
     DeferredWidget.preload(material_storage_management.loadLibrary);
+    DeferredWidget.preload(car_fleet_management.loadLibrary);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      registerGlobalSocketListeners();
+    });
 
     searchController.addListener(() {
       setState(() {
@@ -349,6 +365,10 @@ class _MainScreenState extends State<MainScreen> {
                   i = equivalentIndex;
                 }
                 resetSearch();
+
+                // SocketService.clearAllListeners(); // TODO
+                // registerGlobalSocketListeners(); // TODO
+
                 setState(() => index = i);
               },
               header: SizedBox(

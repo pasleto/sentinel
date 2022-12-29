@@ -4,7 +4,8 @@ import 'package:sentinel_client/providers/disposable_provider.dart';
 
 class AppConstants extends DisposableProvider {
   final String _appName = 'Sentinel';
-  String _backendServer = 'https://localhost:443';
+  // String _backendServer = 'https://localhost:443'; // TODO
+  String _backendServer = 'https://sentinel.pasler.org:443'; // TODO
   String _namespace = 'client-app';
   // String _appVersion = '';
 

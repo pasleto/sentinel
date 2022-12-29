@@ -62,8 +62,14 @@ class SocketService {
     // });
   }
 
+  static clearAllListeners() {
+    print('CLEAR ALL LISTENERS');
+    _socket!.clearListeners();
+  }
+
   static disconnect() async {
     _socket!.disconnect();
+    // _socket!.destroy(); // ?
   }
 
   static dispose() async {

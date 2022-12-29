@@ -5,6 +5,8 @@ import 'package:sentinel_client/services/socket_service.dart';
 import 'package:sentinel_client/widgets/page.dart';
 import 'package:sentinel_client/widgets/toasts.dart';
 
+import 'package:visibility_detector/visibility_detector.dart';
+
 // TODO - create global provider for blocking navigation state -> if something is marked as unsaved changes, it will show dialog when try to navigate elsewhere
 
 // user card
@@ -24,6 +26,8 @@ class UserManagementDepartmentsPage extends StatefulWidget {
 }
 
 class _UserManagementDepartmentsPageState extends State<UserManagementDepartmentsPage> with PageMixin {
+  bool _pageInScope = false;
+
   bool _initialized = false;
   List<Department> _departments = [];
   List<String> _expandList = [];
@@ -531,67 +535,69 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
   void initState() {
     super.initState();
 
+    print('DEPARTMENTS initState');
+
     _controllerSearch.addListener(() {
       if (_controllerSearch.text.isEmpty) {
         _resetSearch();
       }
     });
 
-    SocketService.socket.emitWithAck('department-get-list', {}, ack: (response) {
-      if (response['status'] == 'OK') {
-        Iterable incoming = response['data']['list'];
-        setState(() {
-          _departments = List<Department>.from(incoming.map((model) => Department.fromJson(model)));
-          _initialized = true;
-          _fetchingFailed = false;
-        });
+    // SocketService.socket.emitWithAck('department-get-list', {}, ack: (response) {
+    //   if (response['status'] == 'OK') {
+    //     Iterable incoming = response['data']['list'];
+    //     setState(() {
+    //       _departments = List<Department>.from(incoming.map((model) => Department.fromJson(model)));
+    //       _initialized = true;
+    //       _fetchingFailed = false;
+    //     });
 
-        // TODO - when refreshed data come, refresh data for selectedElement if there is any
-        // TODO - if the selectedElement is in dirty state (currently being modified) -> show notification with action to either continue in edit, or refresh with new data
-        // Future.delayed(const Duration(seconds: 10), () { // ? test only
-        //   setState(() {
-        //     _initialized = false;
-        //   });
-        //   Future.delayed(const Duration(seconds: 5), () {
-        //     SocketService.socket.emitWithAck('department-get-list', {}, ack: (response) {
-        //       if (response['status'] == 'OK') {
-        //         Iterable incoming = response['data']['list'];
-        //         setState(() {
-        //           _departments = List<Department>.from(incoming.map((model) => Department.fromJson(model)));
-        //           _initialized = true;
-        //           _fetchingFailed = false;
-        //         });
-        //       } else {
-        //         var msg = response['data']['message'];
-        //         AppToasts.errorNotification(
-        //           context: context,
-        //           titleText: 'Fetching Data Failed',
-        //           messageText: msg ?? 'Generic Failure',
-        //           duration: const Duration(seconds: 5),
-        //         );
-        //         setState(() {
-        //           _initialized = true;
-        //           _fetchingFailed = false;
-        //         });
-        //       }
-        //     });
-        //   });
-        // });
-      } else {
-        var msg = response['data']['message'];
-        AppToasts.errorNotification(
-          context: context,
-          titleText: 'Fetching Data Failed',
-          messageText: msg ?? 'Generic Failure',
-          duration: const Duration(seconds: 5),
-        );
-        setState(() {
-          _initialized = true;
-          _departments = [];
-          _fetchingFailed = true;
-        });
-      }
-    });
+    //     // TODO - when refreshed data come, refresh data for selectedElement if there is any
+    //     // TODO - if the selectedElement is in dirty state (currently being modified) -> show notification with action to either continue in edit, or refresh with new data
+    //     // Future.delayed(const Duration(seconds: 10), () { // ? test only
+    //     //   setState(() {
+    //     //     _initialized = false;
+    //     //   });
+    //     //   Future.delayed(const Duration(seconds: 5), () {
+    //     //     SocketService.socket.emitWithAck('department-get-list', {}, ack: (response) {
+    //     //       if (response['status'] == 'OK') {
+    //     //         Iterable incoming = response['data']['list'];
+    //     //         setState(() {
+    //     //           _departments = List<Department>.from(incoming.map((model) => Department.fromJson(model)));
+    //     //           _initialized = true;
+    //     //           _fetchingFailed = false;
+    //     //         });
+    //     //       } else {
+    //     //         var msg = response['data']['message'];
+    //     //         AppToasts.errorNotification(
+    //     //           context: context,
+    //     //           titleText: 'Fetching Data Failed',
+    //     //           messageText: msg ?? 'Generic Failure',
+    //     //           duration: const Duration(seconds: 5),
+    //     //         );
+    //     //         setState(() {
+    //     //           _initialized = true;
+    //     //           _fetchingFailed = false;
+    //     //         });
+    //     //       }
+    //     //     });
+    //     //   });
+    //     // });
+    //   } else {
+    //     var msg = response['data']['message'];
+    //     AppToasts.errorNotification(
+    //       context: context,
+    //       titleText: 'Fetching Data Failed',
+    //       messageText: msg ?? 'Generic Failure',
+    //       duration: const Duration(seconds: 5),
+    //     );
+    //     setState(() {
+    //       _initialized = true;
+    //       _departments = [];
+    //       _fetchingFailed = true;
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -614,22 +620,150 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
     _departmentControllerDescription.dispose();
     // TODO
 
+    print('DEPARTMENTS dispose');
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage(
-      header: PageHeader(
-        title: const Text('User Management', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
-        commandBar: CommandBarCard(
-          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-          child: CommandBar(
-            mainAxisAlignment: MainAxisAlignment.end,
-            overflowBehavior: CommandBarOverflowBehavior.noWrap,
-            isCompact: true,
-            primaryItems: [
-              if (!_initialized)
+    return VisibilityDetector(
+      key: const Key('user-management-departments'),
+      onVisibilityChanged: (visibilityInfo) {
+        if (visibilityInfo.visibleFraction == 1) {
+          if (!_pageInScope) {
+            setState(() => _pageInScope = !_pageInScope);
+
+            print('user-management-departments loading');
+
+            SocketService.socket.emitWithAck('department-get-list', {}, ack: (response) {
+              if (response['status'] == 'OK') {
+                Iterable incoming = response['data']['list'];
+                setState(() {
+                  _departments = List<Department>.from(incoming.map((model) => Department.fromJson(model)));
+                  _initialized = true;
+                  _fetchingFailed = false;
+                });
+
+                // TODO - when refreshed data come, refresh data for selectedElement if there is any
+                // TODO - if the selectedElement is in dirty state (currently being modified) -> show notification with action to either continue in edit, or refresh with new data
+                // Future.delayed(const Duration(seconds: 10), () { // ? test only
+                //   setState(() {
+                //     _initialized = false;
+                //   });
+                //   Future.delayed(const Duration(seconds: 5), () {
+                //     SocketService.socket.emitWithAck('department-get-list', {}, ack: (response) {
+                //       if (response['status'] == 'OK') {
+                //         Iterable incoming = response['data']['list'];
+                //         setState(() {
+                //           _departments = List<Department>.from(incoming.map((model) => Department.fromJson(model)));
+                //           _initialized = true;
+                //           _fetchingFailed = false;
+                //         });
+                //       } else {
+                //         var msg = response['data']['message'];
+                //         AppToasts.errorNotification(
+                //           context: context,
+                //           titleText: 'Fetching Data Failed',
+                //           messageText: msg ?? 'Generic Failure',
+                //           duration: const Duration(seconds: 5),
+                //         );
+                //         setState(() {
+                //           _initialized = true;
+                //           _fetchingFailed = false;
+                //         });
+                //       }
+                //     });
+                //   });
+                // });
+              } else {
+                var msg = response['data']['message'];
+                AppToasts.errorNotification(
+                  context: context,
+                  titleText: 'Fetching Data Failed',
+                  messageText: msg ?? 'Generic Failure',
+                  duration: const Duration(seconds: 5),
+                );
+                setState(() {
+                  _initialized = true;
+                  _departments = [];
+                  _fetchingFailed = true;
+                });
+              }
+            });
+          }
+        }
+        if (visibilityInfo.visibleFraction == 0) {
+          if (_pageInScope) {
+            setState(() => _pageInScope = !_pageInScope);
+
+            print('user-management-departments unloading');
+          }
+        }
+      },
+      child: ScaffoldPage(
+        header: PageHeader(
+          title: const Text('User Management', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
+          // commandBar: CommandBarCard(
+          //   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+          //   child: CommandBar(
+          commandBar: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: CommandBar(
+              mainAxisAlignment: MainAxisAlignment.end,
+              overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
+              isCompact: true,
+              primaryItems: [
+                if (!_initialized)
+                  CommandBarBuilderItem(
+                    builder: (context, mode, w) => Tooltip(
+                      displayHorizontally: false,
+                      useMousePosition: false,
+                      style: const TooltipThemeData(
+                        showDuration: Duration(milliseconds: 500),
+                        waitDuration: Duration(milliseconds: 500),
+                        preferBelow: true,
+                      ),
+                      message: "Fetching data",
+                      child: w,
+                    ),
+                    wrappedItem: const CommandBarButton(
+                      icon: Padding(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: ProgressRing(strokeWidth: 3.5),
+                        ),
+                      ),
+                      onPressed: null,
+                    ),
+                  ),
+                if (_fetchingFailed)
+                  CommandBarBuilderItem(
+                    builder: (context, mode, w) => Tooltip(
+                      displayHorizontally: false,
+                      useMousePosition: false,
+                      style: const TooltipThemeData(
+                        showDuration: Duration(milliseconds: 500),
+                        waitDuration: Duration(milliseconds: 500),
+                        preferBelow: true,
+                      ),
+                      message: "Fetching data failed",
+                      child: w,
+                    ),
+                    wrappedItem: const CommandBarButton(
+                      icon: Padding(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: Icon(FluentIcons.sync_error, color: Colors.warningPrimaryColor),
+                        ),
+                      ),
+                      onPressed: null,
+                    ),
+                  ),
                 CommandBarBuilderItem(
                   builder: (context, mode, w) => Tooltip(
                     displayHorizontally: false,
@@ -639,22 +773,26 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
                       waitDuration: Duration(milliseconds: 500),
                       preferBelow: true,
                     ),
-                    message: "Fetching data",
+                    message: "Add department",
                     child: w,
                   ),
-                  wrappedItem: const CommandBarButton(
-                    icon: Padding(
-                      padding: EdgeInsets.only(right: 12.0),
-                      child: SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: ProgressRing(strokeWidth: 3.5),
-                      ),
-                    ),
-                    onPressed: null,
+                  wrappedItem: CommandBarButton(
+                    icon: const Icon(FluentIcons.add),
+                    label: const Text('New'),
+                    onPressed: () {
+                      // TODO
+                      print('New department request');
+                    },
                   ),
                 ),
-              if (_fetchingFailed)
+                // const CommandBarSeparator(),
+                CommandBarBuilderItem(
+                  builder: (context, mode, w) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3.0),
+                    child: w,
+                  ),
+                  wrappedItem: const CommandBarSeparator(),
+                ),
                 CommandBarBuilderItem(
                   builder: (context, mode, w) => Tooltip(
                     displayHorizontally: false,
@@ -664,329 +802,284 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
                       waitDuration: Duration(milliseconds: 500),
                       preferBelow: true,
                     ),
-                    message: "Fetching data failed",
+                    message: "Add user",
                     child: w,
                   ),
-                  wrappedItem: const CommandBarButton(
-                    icon: Padding(
-                      padding: EdgeInsets.only(right: 12.0),
-                      child: SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: Icon(FluentIcons.sync_error, color: Colors.warningPrimaryColor),
-                      ),
-                    ),
-                    onPressed: null,
+                  wrappedItem: CommandBarButton(
+                    icon: const Icon(FluentIcons.add_friend),
+                    label: const Text('New'),
+                    onPressed: () {
+                      // TODO
+                      print('New user request');
+                    },
                   ),
-                ),
-              CommandBarBuilderItem(
-                builder: (context, mode, w) => Tooltip(
-                  displayHorizontally: false,
-                  useMousePosition: false,
-                  style: const TooltipThemeData(
-                    showDuration: Duration(milliseconds: 500),
-                    waitDuration: Duration(milliseconds: 500),
-                    preferBelow: true,
-                  ),
-                  message: "Add department",
-                  child: w,
-                ),
-                wrappedItem: CommandBarButton(
-                  icon: const Icon(FluentIcons.add),
-                  label: const Text('New'),
-                  onPressed: () {
-                    // TODO
-                    print('New department request');
-                  },
-                ),
-              ),
-              const CommandBarSeparator(),
-              CommandBarBuilderItem(
-                builder: (context, mode, w) => Tooltip(
-                  displayHorizontally: false,
-                  useMousePosition: false,
-                  style: const TooltipThemeData(
-                    showDuration: Duration(milliseconds: 500),
-                    waitDuration: Duration(milliseconds: 500),
-                    preferBelow: true,
-                  ),
-                  message: "Add user",
-                  child: w,
-                ),
-                wrappedItem: CommandBarButton(
-                  icon: const Icon(FluentIcons.add_friend),
-                  label: const Text('New'),
-                  onPressed: () {
-                    // TODO
-                    print('New user request');
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Container(width: double.infinity, height: 1, color: const Color.fromARGB(100, 175, 175, 175)),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Expanded(
-                              child: TextBox(
-                                maxLines: 1,
-                                minLines: 1,
-                                minHeight: 35,
-                                readOnly: _departments.isEmpty,
-                                enabled: _departments.isNotEmpty,
-                                textAlignVertical: TextAlignVertical.center,
-                                controller: _controllerSearch,
-                                autocorrect: false,
-                                keyboardType: () {
-                                  switch (_searchMode) {
-                                    case 'user':
-                                      return TextInputType.text;
-                                    case 'card':
-                                      return TextInputType.none;
-                                    case 'department':
-                                      return TextInputType.text;
-                                  }
-                                }(),
-                                focusNode: _focusNodeSearch,
-                                onSubmitted: (value) => _search(),
-                                placeholder: () {
-                                  switch (_searchMode) {
-                                    case 'user':
-                                      return ' Name, Surname, Username, Number';
-                                    case 'card':
-                                      return ' Value';
-                                    case 'department':
-                                      return ' Name, Number';
-                                  }
-                                }(),
-                                placeholderStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w300,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                style: const TextStyle(height: 1),
-                                suffix: GestureDetector(
-                                  onTap: _resetSearchWithClear,
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(right: 6.0, bottom: 1.5),
-                                    child: Icon(FluentIcons.status_circle_error_x, size: 20),
-                                  ),
-                                ),
-                                suffixMode: OverlayVisibilityMode.editing,
-                              ),
-                            ),
-                            Tooltip(
-                              displayHorizontally: false,
-                              useMousePosition: false,
-                              style: const TooltipThemeData(
-                                showDuration: Duration(milliseconds: 500),
-                                waitDuration: Duration(milliseconds: 500),
-                                preferBelow: true,
-                              ),
-                              message: "Search",
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
-                                child: SizedBox(
-                                  height: 34,
-                                  child: Button(
-                                    onPressed: _departments.isEmpty ? null : _search, // TODO - when search is running | possible to stop search ?
-                                    child: const Padding(
-                                      padding: EdgeInsets.only(bottom: 1.0),
-                                      child: Icon(FluentIcons.search, size: 14.0), // TODO - when search is running -> spinner
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Tooltip(
-                              displayHorizontally: false,
-                              useMousePosition: false,
-                              style: const TooltipThemeData(
-                                showDuration: Duration(milliseconds: 500),
-                                waitDuration: Duration(milliseconds: 500),
-                                preferBelow: true,
-                              ),
-                              message: "Search mode",
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
-                                child: SizedBox(
-                                  height: 34,
-                                  child: DropDownButton(
-                                    placement: FlyoutPlacement.end,
-                                    closeAfterClick: true,
-                                    disabled: _departments.isEmpty, // TODO - when search is running
-                                    leading: () {
-                                      switch (_searchMode) {
-                                        case 'user':
-                                          return const Padding(
-                                            padding: EdgeInsets.only(left: 1.0, right: 2.0, bottom: 1.5, top: 0.5),
-                                            child: SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: Icon(FluentIcons.contact, size: 15),
-                                            ),
-                                          );
-                                        case 'card':
-                                          return const Padding(
-                                            padding: EdgeInsets.only(left: 1.0, right: 2.0, bottom: 1.5, top: 0.5),
-                                            child: SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: Icon(FluentIcons.i_d_badge, size: 18),
-                                            ),
-                                          );
-                                        case 'department':
-                                          return const Padding(
-                                            padding: EdgeInsets.only(left: 1.0, right: 2.0, bottom: 1.5, top: 0.5),
-                                            child: SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: Icon(FluentIcons.external_user, size: 18),
-                                            ),
-                                          );
-                                      }
-                                    }(),
-                                    trailing: const Icon(FluentIcons.chevron_down, size: 8),
-                                    items: [
-                                      MenuFlyoutItem(
-                                        leading: const Icon(FluentIcons.contact),
-                                        selected: _searchMode == 'user',
-                                        text: const Text('Person'),
-                                        onPressed: () => _setSearchMode('user'),
-                                      ),
-                                      MenuFlyoutItem(
-                                        leading: const Icon(FluentIcons.i_d_badge),
-                                        selected: _searchMode == 'card',
-                                        text: const Text('User Card'),
-                                        onPressed: () => _setSearchMode('card'),
-                                      ),
-                                      MenuFlyoutItem(
-                                        leading: const Icon(FluentIcons.external_user),
-                                        selected: _searchMode == 'department',
-                                        text: const Text('Department'),
-                                        onPressed: () => _setSearchMode('department'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(width: double.infinity, height: 1, color: const Color.fromARGB(100, 175, 175, 175)),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: TreeView(
-                            selectionMode: TreeViewSelectionMode.single,
-                            shrinkWrap: true,
-                            onItemInvoked: null,
-                            onSelectionChanged: null,
-                            onItemExpandToggle: (item, getsExpanded) async {
-                              if (getsExpanded) {
-                                _expandList.add(item.value);
-                              } else {
-                                _expandList.remove(item.value);
-                              }
-                            },
-                            items: _departments.isEmpty
-                                ? [
-                                    TreeViewItem(
-                                      content: () {
-                                        if (_fetchingFailed) {
-                                          return const Text('Data fetch failed!', maxLines: 2, overflow: TextOverflow.ellipsis);
-                                        } else {
-                                          return const Text('Fetching data ...', maxLines: 2, overflow: TextOverflow.ellipsis);
-                                        }
-                                      }(),
-                                      expanded: false,
-                                      collapsable: false,
-                                      leading: () {
-                                        if (_fetchingFailed) {
-                                          return const Icon(FluentIcons.sync_error, size: 14, color: Colors.warningPrimaryColor);
-                                        } else {
-                                          return const SizedBox(
-                                            width: 6,
-                                            height: 20,
-                                            child: Padding(padding: EdgeInsets.all(4.0), child: ProgressRing(strokeWidth: 2.0)),
-                                          );
-                                        }
-                                      }(),
-                                    ),
-                                  ]
-                                : List<TreeViewItem>.generate(_departments.length, (index) {
-                                    assert(index >= 0);
-                                    Department root = _departments[index];
-                                    return TreeViewItem(
-                                      content: Text(root.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                      value: root.id,
-                                      expanded: _expandList.contains(root.id),
-                                      selected: _selectedElementId == root.id,
-                                      leading: const Icon(FluentIcons.archive, size: 16),
-                                      children: generateList(root),
-                                      onInvoked: (item, reason) async {
-                                        if (reason == TreeViewItemInvokeReason.pressed) {
-                                          setState(() {
-                                            _selectedElementId = _selectedElementId;
-                                            _selectedElement = _selectedElement;
-                                          });
-                                        }
-                                      },
-                                    );
-                                  }),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(flex: 0, child: Container(width: 1, color: const Color.fromARGB(100, 175, 175, 175))),
-                Expanded(
-                  flex: 2,
-                  child: () {
-                    switch (_selectedElement.runtimeType) {
-                      case Department:
-                        if (_selectedElement.isRoot) {
-                          return const SizedBox.shrink();
-                        } else {
-                          return departmentBox();
-                          // return DepartmentBox(selectedDepartment: _selectedElement);
-                        }
-                      case User:
-                        return userBox();
-                      // return UserBox(selectedUser: _selectedElement);
-                      default:
-                        return const SizedBox.shrink();
-                    }
-                  }(),
                 ),
               ],
             ),
           ),
-        ],
+        ),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(width: double.infinity, height: 1, color: const Color.fromARGB(100, 175, 175, 175)),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Expanded(
+                                child: TextBox(
+                                  maxLines: 1,
+                                  minLines: 1,
+                                  minHeight: 35,
+                                  readOnly: _departments.isEmpty,
+                                  enabled: _departments.isNotEmpty,
+                                  textAlignVertical: TextAlignVertical.center,
+                                  controller: _controllerSearch,
+                                  autocorrect: false,
+                                  keyboardType: () {
+                                    switch (_searchMode) {
+                                      case 'user':
+                                        return TextInputType.text;
+                                      case 'card':
+                                        return TextInputType.none;
+                                      case 'department':
+                                        return TextInputType.text;
+                                    }
+                                  }(),
+                                  focusNode: _focusNodeSearch,
+                                  onSubmitted: (value) => _search(),
+                                  placeholder: () {
+                                    switch (_searchMode) {
+                                      case 'user':
+                                        return ' Name, Surname, Username, Number';
+                                      case 'card':
+                                        return ' Value';
+                                      case 'department':
+                                        return ' Name, Number';
+                                    }
+                                  }(),
+                                  placeholderStyle: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w300,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  style: const TextStyle(height: 1),
+                                  suffix: GestureDetector(
+                                    onTap: _resetSearchWithClear,
+                                    child: const Padding(
+                                      padding: EdgeInsets.only(right: 6.0, bottom: 1.5),
+                                      child: Icon(FluentIcons.status_circle_error_x, size: 20),
+                                    ),
+                                  ),
+                                  suffixMode: OverlayVisibilityMode.editing,
+                                ),
+                              ),
+                              Tooltip(
+                                displayHorizontally: false,
+                                useMousePosition: false,
+                                style: const TooltipThemeData(
+                                  showDuration: Duration(milliseconds: 500),
+                                  waitDuration: Duration(milliseconds: 500),
+                                  preferBelow: true,
+                                ),
+                                message: "Search",
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: SizedBox(
+                                    height: 34,
+                                    child: Button(
+                                      onPressed: _departments.isEmpty ? null : _search, // TODO - when search is running | possible to stop search ?
+                                      child: const Padding(
+                                        padding: EdgeInsets.only(bottom: 1.0),
+                                        child: Icon(FluentIcons.search, size: 14.0), // TODO - when search is running -> spinner
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Tooltip(
+                                displayHorizontally: false,
+                                useMousePosition: false,
+                                style: const TooltipThemeData(
+                                  showDuration: Duration(milliseconds: 500),
+                                  waitDuration: Duration(milliseconds: 500),
+                                  preferBelow: true,
+                                ),
+                                message: "Search mode",
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: SizedBox(
+                                    height: 34,
+                                    child: DropDownButton(
+                                      placement: FlyoutPlacement.end,
+                                      closeAfterClick: true,
+                                      disabled: _departments.isEmpty, // TODO - when search is running
+                                      leading: () {
+                                        switch (_searchMode) {
+                                          case 'user':
+                                            return const Padding(
+                                              padding: EdgeInsets.only(left: 1.0, right: 2.0, bottom: 1.5, top: 0.5),
+                                              child: SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: Icon(FluentIcons.contact, size: 15),
+                                              ),
+                                            );
+                                          case 'card':
+                                            return const Padding(
+                                              padding: EdgeInsets.only(left: 1.0, right: 2.0, bottom: 1.5, top: 0.5),
+                                              child: SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: Icon(FluentIcons.i_d_badge, size: 18),
+                                              ),
+                                            );
+                                          case 'department':
+                                            return const Padding(
+                                              padding: EdgeInsets.only(left: 1.0, right: 2.0, bottom: 1.5, top: 0.5),
+                                              child: SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: Icon(FluentIcons.external_user, size: 18),
+                                              ),
+                                            );
+                                        }
+                                      }(),
+                                      trailing: const Icon(FluentIcons.chevron_down, size: 8),
+                                      items: [
+                                        MenuFlyoutItem(
+                                          leading: const Icon(FluentIcons.contact),
+                                          selected: _searchMode == 'user',
+                                          text: const Text('Person'),
+                                          onPressed: () => _setSearchMode('user'),
+                                        ),
+                                        MenuFlyoutItem(
+                                          leading: const Icon(FluentIcons.i_d_badge),
+                                          selected: _searchMode == 'card',
+                                          text: const Text('User Card'),
+                                          onPressed: () => _setSearchMode('card'),
+                                        ),
+                                        MenuFlyoutItem(
+                                          leading: const Icon(FluentIcons.external_user),
+                                          selected: _searchMode == 'department',
+                                          text: const Text('Department'),
+                                          onPressed: () => _setSearchMode('department'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(width: double.infinity, height: 1, color: const Color.fromARGB(100, 175, 175, 175)),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: TreeView(
+                              selectionMode: TreeViewSelectionMode.single,
+                              shrinkWrap: true,
+                              onItemInvoked: null,
+                              onSelectionChanged: null,
+                              onItemExpandToggle: (item, getsExpanded) async {
+                                if (getsExpanded) {
+                                  _expandList.add(item.value);
+                                } else {
+                                  _expandList.remove(item.value);
+                                }
+                              },
+                              items: _departments.isEmpty
+                                  ? [
+                                      TreeViewItem(
+                                        content: () {
+                                          if (_fetchingFailed) {
+                                            return const Text('Data fetch failed!', maxLines: 2, overflow: TextOverflow.ellipsis);
+                                          } else {
+                                            return const Text('Fetching data ...', maxLines: 2, overflow: TextOverflow.ellipsis);
+                                          }
+                                        }(),
+                                        expanded: false,
+                                        collapsable: false,
+                                        leading: () {
+                                          if (_fetchingFailed) {
+                                            return const Icon(FluentIcons.sync_error, size: 14, color: Colors.warningPrimaryColor);
+                                          } else {
+                                            return const SizedBox(
+                                              width: 6,
+                                              height: 20,
+                                              child: Padding(padding: EdgeInsets.all(4.0), child: ProgressRing(strokeWidth: 2.0)),
+                                            );
+                                          }
+                                        }(),
+                                      ),
+                                    ]
+                                  : List<TreeViewItem>.generate(_departments.length, (index) {
+                                      assert(index >= 0);
+                                      Department root = _departments[index];
+                                      return TreeViewItem(
+                                        content: Text(root.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                        value: root.id,
+                                        expanded: _expandList.contains(root.id),
+                                        selected: _selectedElementId == root.id,
+                                        leading: const Icon(FluentIcons.archive, size: 16),
+                                        children: generateList(root),
+                                        onInvoked: (item, reason) async {
+                                          if (reason == TreeViewItemInvokeReason.pressed) {
+                                            setState(() {
+                                              _selectedElementId = _selectedElementId;
+                                              _selectedElement = _selectedElement;
+                                            });
+                                          }
+                                        },
+                                      );
+                                    }),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(flex: 0, child: Container(width: 1, color: const Color.fromARGB(100, 175, 175, 175))),
+                  Expanded(
+                    flex: 2,
+                    child: () {
+                      switch (_selectedElement.runtimeType) {
+                        case Department:
+                          if (_selectedElement.isRoot) {
+                            return const SizedBox.shrink();
+                          } else {
+                            return departmentBox();
+                            // return DepartmentBox(selectedDepartment: _selectedElement);
+                          }
+                        case User:
+                          return userBox();
+                        // return UserBox(selectedUser: _selectedElement);
+                        default:
+                          return const SizedBox.shrink();
+                      }
+                    }(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1013,8 +1106,11 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
             ],
           ),
         ),
-        commandBar: CommandBarCard(
-          padding: const EdgeInsets.all(0),
+        // commandBar: CommandBarCard(
+        //   // padding: const EdgeInsets.all(0),
+        //   child: CommandBar(
+        commandBar: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5.0),
           child: CommandBar(
             mainAxisAlignment: MainAxisAlignment.end,
             overflowBehavior: CommandBarOverflowBehavior.noWrap,
@@ -1066,7 +1162,7 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
                         ),
                         CommandBarBuilderItem(
                           builder: (context, mode, w) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 6.0),
+                            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3.0),
                             child: SizedBox(
                               height: 32,
                               child: w,
@@ -1370,8 +1466,11 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
             ],
           ),
         ),
-        commandBar: CommandBarCard(
-          padding: const EdgeInsets.all(0),
+        // commandBar: CommandBarCard(
+        //   padding: const EdgeInsets.all(0),
+        //   child: CommandBar(
+        commandBar: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5.0),
           child: CommandBar(
             mainAxisAlignment: MainAxisAlignment.end,
             overflowBehavior: CommandBarOverflowBehavior.noWrap,
@@ -1423,7 +1522,7 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
                         ),
                         CommandBarBuilderItem(
                           builder: (context, mode, w) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 6.0),
+                            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3.0),
                             child: SizedBox(
                               height: 32,
                               child: w,
@@ -1472,6 +1571,7 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
                   ],
           ),
         ),
+        // ),
       ),
       // TODO
       // content: Padding(
