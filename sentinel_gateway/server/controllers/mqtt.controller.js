@@ -1,6 +1,6 @@
-import * as mqtt from "mqtt";
+// import * as mqtt from "mqtt";
+// import logSymbols from 'log-symbols';
 import Aedes from 'aedes';
-import logSymbols from 'log-symbols';
 import utils from '../utils/util.js';
 import auth from './auth.controller.js';
 import { cfTestService, settingService } from './mongo.controller.js';
@@ -12,7 +12,7 @@ function server() {
   aedesServer.authenticate = async (client, username, password, callback)  =>  { // TODO
     if (client.id === 'sentinel-gateway-client') {
       if (username === 'sentinel') {
-        if (password.length > 0) {
+        if (password && password.length > 0) {
           if (password.toString() === utils.getServerMachineId()) { // TODO - validate password
             return callback(null, true); // allow
           }
@@ -27,7 +27,7 @@ function server() {
 
       if (username) {
         if (username === 'hash') {
-          if (password.length > 0) { // TODO - validate  hash for client.id
+          if (password && password.length > 0) { // TODO - validate  hash for client.id
 
             // ? each device will have separated hash, which can be used as password
             
@@ -40,7 +40,7 @@ function server() {
           }
           return callback(null, false); // deny 
         } 
-        if (password.length > 0) {
+        if (password && password.length > 0) {
           return await auth.authenticateMqttAccount(username, password.toString(), callback);
         }
         return callback(null, false); // deny 
@@ -79,143 +79,191 @@ function server() {
 
   // });
 
-  // aedesServer.on('publish', function (packet, client) {
-  //   if (client) {
-  //     console.log('message from client', client.id)
-  //     if (packet && packet.payload) {
-  //       console.log('publish packet:', packet.payload.toString())
-  //     }
-  //   }
-  // });
+  aedesServer.on('publish', async function (packet, client) {
+    if (client) {
+
+      // console.log('message from client', client.id);
+      
+      // console.log(global.mqtt);
+      // console.log(global.mqtt.connectedClients);
+
+      if (packet) {
+        var topic_arr = packet.topic.split('/');
+
+        // console.log(topic_arr);
+
+        switch (topic_arr[0]) {
+          case 'car-fleet':
+
+            switch (topic_arr[2]) {
+              case 'status':
+
+                console.log(`${topic_arr[1]} | ${topic_arr[2]}: ${packet.payload.toString()}`);
+                // console.log(`${client.id} | ${topic_arr[2]}: ${packet.payload.toString()}`);
+
+                // TODO
+                global.io.of('client-app').emit('car-fleet-status', {
+                  unit_id: topic_arr[1],
+                  status: packet.payload.toString()
+                });
+                
+                break;
+              case 'realtime': // TODO
+
+                console.log(`${topic_arr[1]} | ${topic_arr[2]}: ${packet.payload.toString()}`);
+                // console.log(`${client.id} | ${topic_arr[2]}: ${packet.payload.toString()}`);
+
+                var json = JSON.parse(packet.payload.toString());
+
+                // TODO - based on topic_arr[1] find cfDevice
+                // TODO - based on cfDevice find cfCar
+
+                var with_gps = {
+                  unit_id: topic_arr[1],
+                  time: new Date(json.time * 1000),
+                  temp_int: json.temp.int,
+                  gps_signal: json.gps_signal,
+                  gps_lat: json.gps.lat,
+                  gps_lon: json.gps.lon,
+                  gps_alt: json.gps.alt,
+                  gps_speed: json.gps.speed,
+                  gps_accuracy: json.gps.accuracy,
+                  gps_time: new Date(json.gps.time * 1000)
+                };
+
+                var without_gps = {
+                  unit_id: topic_arr[1],
+                  time: new Date(json.time * 1000),
+                  temp_int: json.temp.int,
+                  gps_signal: json.gps_signal,
+                };
+
+                if (json.gps_signal) {
+                  await cfTestService.create(with_gps);
+                  global.io.of('client-app').emit('car-fleet-realtime', with_gps);
+                } else {
+                  await cfTestService.create(without_gps);
+                  global.io.of('client-app').emit('car-fleet-realtime', with_gps);
+                }
+
+                break;
+              default:
+                break;
+            }
+
+            console.log('payload:', packet.payload.toString());
+
+            break;
+          case 'xxx':
+            // ?
+            break;
+          case 'yyy':
+            // ?
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  });
 
 
   return aedesServer;
 }
 
 
-function client() {
-
-  // var mqtt_options = {
-  //   host: 'sentinel-cloud-relay.pasler.org',
-  //   port: 1883,
-  //   clientId: 'sentinel-gateway-client',
-  // }
-
-  var mqtt_options = {
-    host: 'localhost',
-    port: 1883,
-    clientId: 'sentinel-gateway-client',
-    username: 'sentinel',
-    password: utils.getServerMachineId(),
-  }
-
-  const client = mqtt.connect(mqtt_options);
-
-  client.on('connect', function () {
-    console.log(logSymbols.info, `[Mqtt] Client connected to mqtt://${mqtt_options.host}:${mqtt_options.port}/`);
-
-    global.mqtt = client;
-
-    client.subscribe('#', function (err) { // subscribe to everything
-      if (!err) {
-        console.log(logSymbols.info, '[Mqtt] Client subscribed to all topics');
-      } else {
-        console.log(`[Mqtt] Client error subscribing - ${err}`);
-      }
-    });
-  });
-
-  client.on('error', function (err) {
-    if (err) {
-      console.log(`[Mqtt] Client error - ${err}`);
-    }
-  });
-  
-  client.on('close', function () {
-    console.log('[Mqtt] Client disconnected');
-  });
-
-  client.on('reconnect', function () {
-    console.log('[Mqtt] Client reconnecting');
-  });
-
-  client.on('message', async function (topic, payload, packet) {
-    var topic_arr = topic.split('/');
-
-    switch (topic_arr[0]) {
-      case 'car-fleet':
-        switch (topic_arr[2]) {
-          case 'status':
-            console.log(`${topic_arr[1]} | ${topic_arr[2]}: ${payload.toString()}`);
-
-            // TODO
-            global.io.of('client-app').emit('car-fleet-status', {
-              unit_id: topic_arr[1],
-              status: payload.toString()
-            });
-
-            break;
-          case 'realtime': // TODO
-
-            console.log(`${topic_arr[1]} | ${topic_arr[2]}: ${payload.toString()}`);
-
-            var json = JSON.parse(payload.toString());
-
-            // TODO - based on topic_arr[1] find cfDevice
-            // TODO - based on cfDevice find cfCar
-
-            var with_gps = {
-              unit_id: topic_arr[1],
-              time: new Date(json.time * 1000),
-              temp_int: json.temp.int,
-              gps_signal: json.gps_signal,
-              gps_lat: json.gps.lat,
-              gps_lon: json.gps.lon,
-              gps_alt: json.gps.alt,
-              gps_speed: json.gps.speed,
-              gps_accuracy: json.gps.accuracy,
-              gps_time: new Date(json.gps.time * 1000)
-            };
-            var without_gps = {
-              unit_id: topic_arr[1],
-              time: new Date(json.time * 1000),
-              temp_int: json.temp.int,
-              gps_signal: json.gps_signal,
-            };
-
-            if (json.gps_signal) {
-              await cfTestService.create(with_gps);
-              global.io.of('client-app').emit('car-fleet-realtime', with_gps);
-            } else {
-              await cfTestService.create(without_gps);
-              global.io.of('client-app').emit('car-fleet-realtime', with_gps);
-            }
-
-            break;
-          default:
-            break;
-        }
-        break;
-      case 'xxx':
-        // TODO
-        break;
-      case 'yyy':
-        // TODO
-        break; 
-      default:
-        break;
-    }
-    // message is Buffer
-    // console.log(topic);
-    // console.log(payload.toString());
-    // console.log(packet);
-  });
-
-
-  
-}
+// function client() {
+//   var mqtt_options = {
+//     host: 'localhost',
+//     port: 1883,
+//     clientId: 'sentinel-gateway-client',
+//     username: 'sentinel',
+//     password: utils.getServerMachineId(),
+//   }
+//   const client = mqtt.connect(mqtt_options);
+//   client.on('connect', function () {
+//     console.log(logSymbols.info, `[Mqtt] Client connected to mqtt://${mqtt_options.host}:${mqtt_options.port}/`);
+//     // global.mqtt = client;
+//     client.subscribe('#', function (err) { // subscribe to everything
+//       if (!err) {
+//         console.log(logSymbols.info, '[Mqtt] Client subscribed to all topics');
+//       } else {
+//         console.log(`[Mqtt] Client error subscribing - ${err}`);
+//       }
+//     });
+//   });
+//   client.on('error', function (err) {
+//     if (err) {
+//       console.log(`[Mqtt] Client error - ${err}`);
+//     }
+//   });
+//   client.on('close', function () {
+//     console.log('[Mqtt] Client disconnected');
+//   });
+//   client.on('reconnect', function () {
+//     console.log('[Mqtt] Client reconnecting');
+//   });
+//   client.on('message', async function (topic, payload, packet) {
+//     var topic_arr = topic.split('/');
+//     switch (topic_arr[0]) {
+//       case 'car-fleet':
+//         switch (topic_arr[2]) {
+//           case 'status':
+//             console.log(`${topic_arr[1]} | ${topic_arr[2]}: ${payload.toString()}`);
+//             // TODO
+//             global.io.of('client-app').emit('car-fleet-status', {
+//               unit_id: topic_arr[1],
+//               status: payload.toString()
+//             });
+//             break;
+//           case 'realtime': // TODO
+//             console.log(`${topic_arr[1]} | ${topic_arr[2]}: ${payload.toString()}`);
+//             var json = JSON.parse(payload.toString());
+//             // TODO - based on topic_arr[1] find cfDevice
+//             // TODO - based on cfDevice find cfCar
+//             var with_gps = {
+//               unit_id: topic_arr[1],
+//               time: new Date(json.time * 1000),
+//               temp_int: json.temp.int,
+//               gps_signal: json.gps_signal,
+//               gps_lat: json.gps.lat,
+//               gps_lon: json.gps.lon,
+//               gps_alt: json.gps.alt,
+//               gps_speed: json.gps.speed,
+//               gps_accuracy: json.gps.accuracy,
+//               gps_time: new Date(json.gps.time * 1000)
+//             };
+//             var without_gps = {
+//               unit_id: topic_arr[1],
+//               time: new Date(json.time * 1000),
+//               temp_int: json.temp.int,
+//               gps_signal: json.gps_signal,
+//             };
+//             if (json.gps_signal) {
+//               await cfTestService.create(with_gps);
+//               global.io.of('client-app').emit('car-fleet-realtime', with_gps);
+//             } else {
+//               await cfTestService.create(without_gps);
+//               global.io.of('client-app').emit('car-fleet-realtime', with_gps);
+//             }
+//             break;
+//           default:
+//             break;
+//         }
+//         break;
+//       case 'xxx':
+//         // TODO
+//         break;
+//       case 'yyy':
+//         // TODO
+//         break; 
+//       default:
+//         break;
+//     }
+//   });
+// }
 
 export default {
-  client,
+  // client,
   server,
 };

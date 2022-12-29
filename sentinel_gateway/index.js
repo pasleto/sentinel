@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+import pjson from './package.json' assert { type: 'json' };
 import logSymbols from 'log-symbols';
 import https from 'https';
 import fs from 'fs';
@@ -22,9 +23,6 @@ import * as net from 'net';
 // import { io as socketIOClient } from 'socket.io-client';
 // import cloud from './server/controllers/cloud.controller.js';
 
-
-
-
 function onError (error) {
   if (error.syscall !== 'listen') { throw error; }
   switch (error.code) {
@@ -42,11 +40,11 @@ function onError (error) {
 }
 
 function onListening () {
-  console.log(logSymbols.info, `[Server] Server is running: https://localhost:443/`);
+  console.log(logSymbols.info, `[Server] Server is running: https://localhost:${server.address().port}/`);
 }
 
 function onMqttListening () {
-  console.log(logSymbols.info, `[Mqtt] Server is running: mqtt://localhost:1883/`);
+  console.log(logSymbols.info, `[Mqtt] Server is running: mqtt://localhost:${mqttServer.address().port}/`);
 }
 
 // if crt files provided, make them into pem files, and if chain needed, move chain at the and of cert file to create fullchain
@@ -65,7 +63,6 @@ global.serverRebootRequired = false;
 global.connectedClientApp = [];
 global.connectedAccessControl = [];
 global.connectedMaterialStorage = [];
-
 
 mongoConnect(); // mongo database connection
 cronSetup(); // cron jobs
@@ -92,7 +89,6 @@ mqttServer.on('error', onError);
 mqttServer.on('listening', onMqttListening);
 mqttServer.listen(1883);
 
-
 console.log(logSymbols.info, `----------------------------------------------------------------------------------------------------`);
-console.log(logSymbols.info, `Sentinel Gateway`);
+console.log(logSymbols.info, `[${pjson.name}] ${pjson.description} - Version: ${pjson.version} | ${pjson.author.name} (${pjson.author.url})`);
 console.log(logSymbols.info, `----------------------------------------------------------------------------------------------------`);

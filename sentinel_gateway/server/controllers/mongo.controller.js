@@ -24,7 +24,7 @@ import cfTestService from '../models/car_fleet/test/cfTest.service.js';
 import ldap from './ldap.controller.js';
 import utils from '../utils/util.js';
 
-import mqtt from './/mqtt.controller.js';
+// import mqtt from './mqtt.controller.js';
 
 function mongoConnect() {
   // mongoose.set('strictQuery', true);
@@ -57,7 +57,7 @@ async function _init() { // init database structure
   await ldap.testConnection((result) => console.log(logSymbols.info, '[Ldap]', result));
 
 
-  mqtt.client(); // ? - mqtt connection handler
+  // mqtt.client(); // ? - mqtt connection handler
 
   // https://mongoosejs.com/docs/guide.html
   // https://mongoosejs.com/docs/api.html
