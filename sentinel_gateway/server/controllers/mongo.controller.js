@@ -19,17 +19,22 @@ import msDeviceService from '../models/material_storage/device/msDevice.service.
 import msGroupService from '../models/material_storage/group/msGroup.service.js';
 import msSupplyService from '../models/material_storage/supply/msSupply.service.js';
 
+import cfTestService from '../models/car_fleet/test/cfTest.service.js';
+
 import ldap from './ldap.controller.js';
 import utils from '../utils/util.js';
 
+import mqtt from './/mqtt.controller.js';
 
 function mongoConnect() {
+  // mongoose.set('strictQuery', true);
+  // mongoose.set('strictQuery', false);
   mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sentinel')
     .then((result) => {
-      console.log(logSymbols.info, `Connected to MongoDB: ${result.connection.host}:${result.connection.port}/${result.connection.name}`);
+      console.log(logSymbols.info, `[MongoDB] Connected to ${result.connection.host}:${result.connection.port}/${result.connection.name}`);
       _init();
     })
-    .catch((err) => console.log(logSymbols.error, `Unable to connect to MongoDB database`, `\n${err}`));
+    .catch((err) => console.log(logSymbols.error, `[MongoDB] Unable to connect to database`, `\n${err}`));
 };
 
 async function _init() { // init database structure
@@ -49,7 +54,10 @@ async function _init() { // init database structure
   // console.log(global.io);
 
   await _initServerProxy();
-  await ldap.testConnection((result) => console.log(result));
+  await ldap.testConnection((result) => console.log(logSymbols.info, '[Ldap]', result));
+
+
+  mqtt.client(); // ? - mqtt connection handler
 
   // https://mongoosejs.com/docs/guide.html
   // https://mongoosejs.com/docs/api.html
@@ -204,4 +212,5 @@ export {
   msDeviceService,
   msGroupService,
   msSupplyService,
+  cfTestService,
 };

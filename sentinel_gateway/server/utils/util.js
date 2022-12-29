@@ -1,8 +1,10 @@
+import logSymbols from 'log-symbols';
 import getmac from 'getmac';
-import { SimpleCrypto } from "simple-crypto-js";
+import { SimpleCrypto } from 'simple-crypto-js';
 import bcrypt from 'bcryptjs';
 import { exec } from 'child_process';
 import crypto from 'crypto';
+import nodeMachineId from 'node-machine-id';
 import { settingService } from '../controllers/mongo.controller.js';
 
 function crypt(key, value) {
@@ -74,10 +76,10 @@ function textToNag(text) {
 async function setServerProxy(setProxy, proxy_string) { // TODO - check and run on server startup aswell - after mongo connect (in init function)
   if (setProxy) {
     // await execPromise(`export {http,https,ftp}_proxy==${proxy_string.value}`); // TODO - on linux environment
-    console.log('Proxy: set - ' + proxy_string);
+    console.log(logSymbols.info, '[Proxy] Set - ' + proxy_string);
   } else {
     // await execPromise('unset {http,https,ftp}_proxy'); // TODO - on linux environment
-    console.log('Proxy: unset');
+    console.log(logSymbols.info, '[Proxy] Unset');
   }
 }
 
@@ -96,6 +98,10 @@ async function setServerTimezone(newTz) { // TODO
 
 function getServerMacAddress() {
   return getmac().toUpperCase();
+}
+
+function getServerMachineId() {
+  return nodeMachineId.machineIdSync();
 }
 
 async function getServerHostname() {
@@ -154,6 +160,7 @@ export default {
   getServerTimezone,
   setServerTimezone,
   getServerMacAddress,
+  getServerMachineId,
   getServerHostname,
   getServerDomain,
   getServerDomainHostname,

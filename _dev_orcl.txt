@@ -1,0 +1,17 @@
+mv /home/ubuntu/sentinel/sentinel_gateway/certificates/fullchain.pem /home/ubuntu/sentinel/sentinel_gateway/certificates/fullchain.pem.local
+mv /home/ubuntu/sentinel/sentinel_gateway/certificates/privkey.pem /home/ubuntu/sentinel/sentinel_gateway/certificates/privkey.pem.local
+
+sudo ln -s /etc/letsencrypt/live/sentinel.pasler.org/fullchain.pem /home/ubuntu/sentinel/sentinel_gateway/certificates/fullchain.pem
+sudo ln -s /etc/letsencrypt/live/sentinel.pasler.org/privkey.pem /home/ubuntu/sentinel/sentinel_gateway/certificates/privkey.pem
+
+sudo /usr/local/bin/node /home/ubuntu/sentinel/sentinel_gateway/index.js
+
+cd /home/ubuntu/sentinel/sentinel_gateway
+sudo npm run dev
+
+
+sudo systemctl start sentinel-gateway-dev.service
+sudo systemctl stop sentinel-gateway-dev.service
+sudo systemctl status sentinel-gateway-dev.service
+
+

@@ -127,6 +127,16 @@ const settingInitData = [
     'value': 'cn=users,dc=example,dc=com',
     'is_protected': false
   },
+
+  {
+    'scope': 'ldap',
+    'name': 'group_mqtt_dn',
+    'friendly_name': 'MQTT Auth Group',
+    'description': 'Group for MQTT broker authentication (eg: cn=MQTT,ou=users,dc=example,dc=com)',
+    'value': '',
+    'is_protected': false
+  },
+
   {
     'scope': 'ldap',
     'name': 'attr_user_cn',

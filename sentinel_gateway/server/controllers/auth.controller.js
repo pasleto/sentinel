@@ -137,6 +137,45 @@ import { userService, settingService, cardService, msDeviceService } from './mon
 //   }
 // }
 
+async function authenticateMqttAccount(user_username, user_password, callback) {
+  try {
+    var ldap_auth = await settingService.getOne({scope: 'ldap', name: 'use_auth'});
+    var ldap_mqtt_group_dn = await settingService.getOne({scope: 'ldap', name: 'group_mqtt_dn'});
+
+    if (JSON.parse(ldap_auth.value || false)) {
+      var ad = await ldap.rootBaseDn();
+      ad.findUser(user_username, true, async function(err, ldap_user) {
+        if (err) {
+          return callback(null, false);
+        }
+        if (!ldap_user) {
+          return callback(null, false);
+        }
+        _.each(ldap_user.groups, function (group) {
+          if (group.dn === ldap_mqtt_group_dn.value) {
+            ad.authenticate(ldap_user.userPrincipalName, user_password, function(err, auth) {
+              if (err) {
+                return callback(null, false);
+              }
+              if (auth) {
+                return callback(null, true);
+              } else {
+                return callback(null, false);
+              }
+            });
+          } else {
+            return callback(null, false);
+          }
+        });
+      });
+    } else {
+      return callback(null, false);
+    }
+  } catch (error) {
+    return callback(null, false);
+  }
+}
+
 async function materialStoragePasswordAuthenticate(user_username, user_password, deviceID, callback) { // TODO
   try {
     var device = await msDeviceService.getOne({device_id: deviceID});
@@ -315,4 +354,5 @@ export default {
   materialStoragePasswordAuthenticate,
   materialStorageCardAuthenticate,
   materialStorageCardBarcodeAuthenticate,
+  authenticateMqttAccount,
 };

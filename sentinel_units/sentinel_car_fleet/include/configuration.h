@@ -2,14 +2,11 @@
 #define SerialMon                                   Serial
 #define SerialAT                                    Serial1
 #define SerialCardReader                            Serial2
-
-
-
 // ----- Generic Variables
 #define MODULE_NAME                                 "Sentinel Car Fleet"
 #define MODULE_TYPE                                 "STL-CF"
-#define MODULE_HARDWARE_VERSION                     "1.0.1"
-#define MODULE_FIRMWARE_VERSION                     "1.0.1"
+#define MODULE_HARDWARE_VERSION                     "1.0.2"
+#define MODULE_FIRMWARE_VERSION                     "1.0.2"
 #define FORMAT_FS_IF_FAILED                         true
 // ----- Default Values for Variables
 #define GSM_PIN                                     ""          // No PIN

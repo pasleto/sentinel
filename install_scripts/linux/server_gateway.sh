@@ -459,7 +459,7 @@ info "Opening needed ports in firewall ..."
 ufw allow 443/tcp 1>/dev/null
 ufw --force enable 1>/dev/null
 
-if [ ! -f "etc/systemd/system/sentinel-gateway.service" ]; then # ? - validate
+if [ ! -f "/etc/systemd/system/sentinel-gateway.service" ]; then # ? - validate
   info "Creating sentinel gateway service ..."
   echo '' >> /etc/systemd/system/sentinel-gateway.service # touch /etc/systemd/system/sentinel-gateway.service
   echo '[Unit]' >> /etc/systemd/system/sentinel-gateway.service

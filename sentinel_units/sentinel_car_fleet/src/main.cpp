@@ -481,7 +481,10 @@ const char captive_root_html[] PROGMEM = R"rawliteral(
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kblLQ0EQhz+jomg88AALiyDRKpEYIWhjEfECtUgiGLVJXi4hx+O9BAm2gq2gINp4FfoXaCtYC4KiCGInWCvaqDznJYEEMbPMzre/3Rl2Z8ESSCopvc4FqXRW8015bYvBJVvDC81000oHrpCiq3P+yQBV7fOeGjPeOs1a1c/9a82RqK5ATaPwmKJqWeFp4dm1rGryjnCXkghFhM+EHZpcUPjO1MNFfjU5XuRvk7WAbxws7cK2eAWHK1hJaClheTn2VDKnlO5jvsQaTS/4JfaJ96LjYwovNmaYYBwPQ4zK7MGJm0FZUSXfVcifJyO5iswqeTRWiZMgi0PUnFSPSoyJHpWRJG/2/29f9diwu1jd6oX6Z8N474eGbfjZMoyvI8P4OYbaJ7hMl/MzhzDyIfpWWbMfQNsGnF+VtfAuXGxCz6Ma0kIFqVbcEovB2ym0BKHzBpqWiz0r7XPyAIF1+apr2NuHATnftvILiEJn9X8wM74AAAAJcEhZcwAAHYcAAB2HAY/l8WUAAAG3SURBVCiRhdI9SNVhFMfxz//+nz+N1VDgpiXlloJIRdDQCw1R4FBE72TvcUMiTKUyK1MrJIuG1GiRsqEtMMghyBJzKDKICLEhCiJ6oaLAvA33KppGv+3wfL+H5xxOZLpUtC3C0Vx1XvvuZ38jkb038jET87AA5SjDE4xgCfpxB68whM9BnAwhwg88xwAOurp5ABzoLMIObEABZmM0ku7KYAtuat04Ou3XJybdtQmdQZzAFy3l/5cgTr4hSomTjDjJTAFq7s/6h5gRJ7+DOPmKNlXdHWjXtOZNloiuq+mZiw7c1rDie058i8eRmp5CVGAn5qAb18ThEw5hPX7iFtqdXt4PkbrePHw0OgLrsAer8A5VUqEb27ELRbKbPxyp7yvAQ6x2YvELcOrR/ByYcXJp7fh89X1H0ISSCJwduIISLFNbOnVRWWYGnuKB2tJ9KZAKZ6RCsVTYP62UZWqkQp5UOA5Zsbr4vTi0iEOj5sGVU6TmwbXicEwc6lUXf4Aw/hiHOtl7vefiywbU5RqfQyUacWkMjyZ1bnkd4wLS6EWChdiqsvDuRHSyOJbW4TJcxi9sk84f/hv5A3wVcXHcw0KKAAAAAElFTkSuQmCC" />
 <title>STL-CF Setup</title>
 <style>
-body { background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+html, body { height: 100%; min-width: 320px; }
+body { margin: 0; display: flex; flex-wrap: nowrap; flex-direction: row; overflow: hidden; background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+.container { overflow-y: auto; display: flex; flex-wrap: nowrap; flex-direction: row; width: 100%; }
+.content { padding: 10px; margin: auto 10px; width: 100%; }
 input[type="submit"] { height: 50px; cursor: pointer; background-color: #3498DB; border: none; color: #FFFFFF; padding: 15px 48px; margin: 25px auto; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; }
 form { padding: 25px 0px; }
 table { width: 100%; max-width: 400px; }
@@ -498,7 +501,8 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 </style>
 </head>
 <body>
-<center>
+<center class="container">
+<div class="content">
 <h1 class="header">STL-CF Setup</h1>
 <table>
 <tr><td class="table-header">Module type:</td><td class="table-value"><span id="type"></td></tr>
@@ -510,11 +514,9 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 <p><label class="label">Sentinel Cloud-Relay Server URL / IP</label><br><input type="text" name="server" placeholder="sentinel-cloud-relay.example.com" autocapitalize="off" required><br></p>
 <p><label class="label">Sentinel Cloud-Relay Server HTTP Port</label><br><input type="text" pattern="[0-9]{2,5}" name="httpport" placeholder="80" autocapitalize="off" required><br></p>
 <p><label class="label">Sentinel Cloud-Relay Server MQTT Port</label><br><input type="text" pattern="[0-9]{2,5}" name="mqttport" placeholder="1883" autocapitalize="off" required><br></p>
-
 <p><label class="label">MQTT Credentials</label><br><input type="checkbox" name="mqttcredentials"><br></p>
 <p class="mqtt-credentials"><label class="label">MQTT User</label><br><input type="text" name="mqttuser" autocapitalize="off"><br></p>
 <p class="mqtt-credentials"><label class="label">MQTT Password</label><br><input type="text" name="mqttpass" autocapitalize="off"><br></p>
-
 <p><label class="label">NTP Server</label><br><input type="text" name="ntp" placeholder="pool.ntp.org" autocapitalize="off" required><br></p> 
 <p><label class="label">Timezone</label><br><select name="timezone">
 <option value="Africa/Abidjan">Africa/Abidjan</option>
@@ -960,6 +962,7 @@ input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height:
 <input type="submit" value="Save & Reboot">
 <h2 class="info">You need to save the configuration and reboot the device, otherwise the device will not work</h2>
 </form>
+</div>
 </center>
 <script>
   window.onload = function async () {
@@ -1051,11 +1054,13 @@ const char captive_setup_html[] PROGMEM = R"rawliteral(
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kblLQ0EQhz+jomg88AALiyDRKpEYIWhjEfECtUgiGLVJXi4hx+O9BAm2gq2gINp4FfoXaCtYC4KiCGInWCvaqDznJYEEMbPMzre/3Rl2Z8ESSCopvc4FqXRW8015bYvBJVvDC81000oHrpCiq3P+yQBV7fOeGjPeOs1a1c/9a82RqK5ATaPwmKJqWeFp4dm1rGryjnCXkghFhM+EHZpcUPjO1MNFfjU5XuRvk7WAbxws7cK2eAWHK1hJaClheTn2VDKnlO5jvsQaTS/4JfaJ96LjYwovNmaYYBwPQ4zK7MGJm0FZUSXfVcifJyO5iswqeTRWiZMgi0PUnFSPSoyJHpWRJG/2/29f9diwu1jd6oX6Z8N474eGbfjZMoyvI8P4OYbaJ7hMl/MzhzDyIfpWWbMfQNsGnF+VtfAuXGxCz6Ma0kIFqVbcEovB2ym0BKHzBpqWiz0r7XPyAIF1+apr2NuHATnftvILiEJn9X8wM74AAAAJcEhZcwAAHYcAAB2HAY/l8WUAAAG3SURBVCiRhdI9SNVhFMfxz//+nz+N1VDgpiXlloJIRdDQCw1R4FBE72TvcUMiTKUyK1MrJIuG1GiRsqEtMMghyBJzKDKICLEhCiJ6oaLAvA33KppGv+3wfL+H5xxOZLpUtC3C0Vx1XvvuZ38jkb038jET87AA5SjDE4xgCfpxB68whM9BnAwhwg88xwAOurp5ABzoLMIObEABZmM0ku7KYAtuat04Ou3XJybdtQmdQZzAFy3l/5cgTr4hSomTjDjJTAFq7s/6h5gRJ7+DOPmKNlXdHWjXtOZNloiuq+mZiw7c1rDie058i8eRmp5CVGAn5qAb18ThEw5hPX7iFtqdXt4PkbrePHw0OgLrsAer8A5VUqEb27ELRbKbPxyp7yvAQ6x2YvELcOrR/ByYcXJp7fh89X1H0ISSCJwduIISLFNbOnVRWWYGnuKB2tJ9KZAKZ6RCsVTYP62UZWqkQp5UOA5Zsbr4vTi0iEOj5sGVU6TmwbXicEwc6lUXf4Aw/hiHOtl7vefiywbU5RqfQyUacWkMjyZ1bnkd4wLS6EWChdiqsvDuRHSyOJbW4TJcxi9sk84f/hv5A3wVcXHcw0KKAAAAAElFTkSuQmCC" />
 <title>STL-CF Setup</title>
 <style>
-body { background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+html, body { height: 100%; min-width: 320px; }
+body { margin: 0; display: flex; flex-wrap: nowrap; flex-direction: row; overflow: hidden; background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+.container { overflow-y: auto; display: flex; flex-wrap: nowrap; flex-direction: row; width: 100%; }
+.content { padding: 10px; margin: auto 10px; width: 100%; }
 .header { color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 36px; }
 .message { color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 22px; }
-.info { font-size: 16px; }
-.loader { margin: 48px auto; width: 84px; height: 84px; border-radius: 50%; position: relative; animation: rotate 1s linear infinite; }
+.loader { margin: 74px auto; width: 84px; height: 84px; border-radius: 50%; position: relative; animation: rotate 1s linear infinite; }
 .loader::before { content: ""; box-sizing: border-box; position: absolute; inset: 0px; border-radius: 50%; border: 5px solid #FFF; animation: prixClipFix 2s linear infinite; }
 @keyframes rotate { 100% { transform: rotate(360deg); } }
 @-webkit-keyframes rotate { 100% { -webkit-transform: rotate(360deg); } }
@@ -1074,10 +1079,12 @@ body { background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; col
 </style>
 </head>
 <body>
-<center>
-<h1 class="header">STL-CF Setup</h1>
+<center class="container">
+<div class="content">
+<h1 class="header">Saving configuration</h1>
 <div class="loader"></div>
-<h2 class="message">Saving configuration<br><span class="info">Device will be rebooted</span></h2>
+<h2 class="message">Device will be rebooted</h2>
+</div>
 </center>
 </body>
 </html>
@@ -1090,6 +1097,8 @@ char *dbErrorMessage = 0;
 sqlite3_stmt *dbRes;
 const char *dbTail;
 int dbRc;
+
+unsigned long currentMillis;
 
 bool hw_reboot = DEFAULT_HW_REBOOT;
 bool is_setup_done = DEFAULT_IS_SETUP_DONE;
@@ -1112,8 +1121,8 @@ bool gprs_credentials = DEFAULT_GPRS_CREDENTIALS;
 String gprs_user = DEFAULT_GPRS_USER;
 String gprs_pass = DEFAULT_GPRS_PASS;
 
-bool is_network_connected = false; // ?
-bool is_gprs_connected = false; // ?
+// bool is_network_connected = false; // ?
+// bool is_gprs_connected = false; // ?
 
 int config_button_last_state = 1;
 bool config_button_pressed = false;
@@ -1122,9 +1131,6 @@ unsigned long config_button_last_time = 0;
 unsigned long config_button_period = 5000;
 
 const int gps_period = 5000; // 10000 
-
-// Ticker gps_ticker;
-// Ticker mqtt_ticker;
 unsigned long gps_last_time = 0;
 unsigned long mqtt_check_last_time = 0;
 
@@ -1137,8 +1143,6 @@ DateTime gps_last_datetime = DateTime(2000, 1, 1, 0, 0, 0);
 
 String driver_card = "";  // ?
 
-
-unsigned long currentMillis;
 
 // ----------------------------------------------------------------------------------------------------------------
 
@@ -1194,23 +1198,25 @@ void setupEspPins() { // TODO
   pinMode(GSM_MODULE_PWR, OUTPUT);
   pinMode(GSM_MODULE_INT, INPUT);
 
-  SerialMon.println("[ESP] Success");
+  SerialMon.println(F("[ESP] Success"));
 }
 
 void setupRtc() { // Done
   if (!rtc.begin()) {
-    SerialMon.println("[RTC] Error");
+    SerialMon.println(F("[RTC] Error"));
     while (1);
   }
-  SerialMon.println("[RTC] Success");
+  SerialMon.println(F("[RTC] Success"));
   if (rtc.lostPower()) {
-    SerialMon.println("[RTC] Lost power, setting default date (1/1/2000 00:00:00)");
-     rtc.adjust(DateTime(2000, 1, 1, 0, 0, 0)); // 1.1. 1970 00:00:00
+    SerialMon.println(F("[RTC] Lost power, setting default date (1/1/2000 00:00:00)"));
+    rtc.adjust(DateTime(2000, 1, 1, 0, 0, 0)); // 1.1. 1970 00:00:00
   }
   SerialMon.print("[RTC] Temperature is: "); 
   SerialMon.print(rtc.getTemperature());
   SerialMon.println(" °C");
 }
+
+// ----------------------------------------------------------------------------------------------------------------
 
 int openDb(const char *filename, sqlite3 **db) { // Done
   dbRc = sqlite3_open(filename, db);
@@ -1223,14 +1229,14 @@ int openDb(const char *filename, sqlite3 **db) { // Done
 }
 
 static int dbCallback(void *data, int dataLength, char **colValue, char **colName) { // Done
-  SerialMon.println((const char*)data);
+  SerialMon.println(F((const char*)data));
   // no output printed - use only for data in to database
   return 0;
 }
 
 int dbExec(sqlite3 *db, const char *sql) { // Done
-  SerialMon.print("[DB] "); 
-  SerialMon.println(sql); // TODO - test
+  SerialMon.print("[DB] "); // TODO - test
+  SerialMon.println(sql); 
 
   dbRc = sqlite3_exec(db, sql, dbCallback, (void*)dbData, &dbErrorMessage);
   if (dbRc != SQLITE_OK) {
@@ -1290,21 +1296,8 @@ void loadDatabaseConfig() { // ?
   // if (openDb("/spiffs/database.db", &fs_db))
   //   return;
   // is_setup_done = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'is_setup_done'", DEFAULT_IS_SETUP_DONE);
-  // fw_version = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'fw_version'", MODULE_FIRMWARE_VERSION);
-  // wifi_hostname = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'hostname'", defaultHostname());
-  // ntp_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'ntp_server'", DEFAULT_NTP_SERVER);
-  // timezone = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone'", DEFAULT_TIMEZONE);
-  // timezone_name = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'time_zone_name'", DEFAULT_TIMEZONE_NAME);
-  // gnss_mode = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gnss_mode'", DEFAULT_GNSS_MODE);
-  // backend_server = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'backend_server'", DEFAULT_BACKEND_SERVER);
-  // http_port = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'http_port'", DEFAULT_HTTP_PORT);
-  // gprs_apn = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_apn'", DEFAULT_GPRS_APN);
-  // gprs_credentials = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'gprs_credentials'", DEFAULT_GPRS_CREDENTIALS);
-  // gprs_user = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_user'", DEFAULT_GPRS_USER);
-  // gprs_pass = loadConfigStringVariable("SELECT value FROM config WHERE variable = 'gprs_pass'", DEFAULT_GPRS_PASS);
   // sqlite3_close(fs_db);
-
-  SerialMon.println("[FS] Database Values Loaded");
+  SerialMon.println(F("[FS] Database Values Loaded"));
 }
 
 void initDatabaseFile() { // ?
@@ -1324,10 +1317,8 @@ void initDatabaseFile() { // ?
   //   "INSERT INTO config VALUES ('gprs_user','" + String(DEFAULT_GPRS_USER) + "')",
   //   "INSERT INTO config VALUES ('gprs_pass','" + String(DEFAULT_GPRS_PASS) + "')"
   // };
-
   // if (openDb("/spiffs/database.db", &fs_db))
   //   return;
-
   // for (int i = 0; i < sizeof(sqlArray)/sizeof(sqlArray[0]); i++) {
   //   dbRc = dbExec(fs_db, sqlArray[i].c_str());
   //   if (dbRc != SQLITE_OK) {
@@ -1336,10 +1327,11 @@ void initDatabaseFile() { // ?
   //   }
   //   // dbExecPrep(sqlArray[i]);
   // }
-
   // sqlite3_close(fs_db);
-  SerialMon.println("[FS] Database Structure Written Into Database File");
+  SerialMon.println(F("[FS] Database Structure Written Into Database File"));
 }
+
+// ----------------------------------------------------------------------------------------------------------------
 
 void handlePreferences() { // Done
   preferences.begin("module-config", false);
@@ -1463,401 +1455,31 @@ void handlePreferences() { // Done
   } else {
     preferences.putBool("setup_done", DEFAULT_IS_SETUP_DONE);
   }
-  SerialMon.println("[CONFIG] Preferences Loaded");
+  SerialMon.println(F("[CONFIG] Preferences Loaded"));
 }
 
 void setupFileSystem() { // Done
   if (!SPIFFS.begin(FORMAT_FS_IF_FAILED)) {
-    SerialMon.println("[FS] File System Mount Failed");
+    SerialMon.println(F("[FS] File System Mount Failed"));
     while(1);
   } else {
-    SerialMon.println("[FS] File System Mounted");
+    SerialMon.println(F("[FS] File System Mounted"));
     if (SPIFFS.exists("/database.db")) {
-      SerialMon.println("[FS] Database File Exists");
+      SerialMon.println(F("[FS] Database File Exists"));
       loadDatabaseConfig();
     } else {
-      SerialMon.println("[FS] Database File Does Not Exist");
+      SerialMon.println(F("[FS] Database File Does Not Exist"));
       File dbFile;
       dbFile = SPIFFS.open("/database.db", FILE_WRITE);
       dbFile.close();
-      SerialMon.println("[FS] Database File Created");
+      SerialMon.println(F("[FS] Database File Created"));
       initDatabaseFile();
     }
     handlePreferences();
   }
 }
 
-// void sendSMS(String recipient, String message) {
-//   bool sms_send = modem.sendSMS(recipient, message);
-//   SerialMon.print("[GSM] SMS: ");
-//   SerialMon.println(sms_send ? "Sent" : "Failed");
-// }
-
-// String getGpsJson() { // ?
-//   DynamicJsonDocument json_doc(1024);
-//   json_doc["unit_id"] = mac_address_nag;
-//   json_doc["timestamp"] = rtc.now().timestamp();
-//   json_doc["temperature"] = String(rtc.getTemperature(), 2);
-//   json_doc["gps_lat"] = String(gps_last_lat, 6); // gps_last_lat;
-//   json_doc["gps_lon"] = String(gps_last_lon, 6); // gps_last_lon;
-//   json_doc["gps_alt"] = String(gps_last_alt, 2);
-//   json_doc["gps_speed"] = String(gps_last_speed, 2);
-//   json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
-//   json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
-//   String data_out;
-//   serializeJson(json_doc, data_out);
-//   return data_out;
-// }
-
-// void sendHttpPost() {
-//   HttpClient http(client, backend_server, http_port);
-//   http.setHttpResponseTimeout(gps_period / 2);
-//   SerialMon.print("[HTTP] Connecting to ");
-//   SerialMon.print(backend_server);
-//   SerialMon.print(":");
-//   SerialMon.println(http_port);
-//   int err = http.post(DEFAULT_HTTP_GPS_ENDPOINT, "application/json", getGpsJson());
-//   if (err == 0) {
-//     int responseCode = http.responseStatusCode();
-//     String responseBody = http.responseBody();
-//     SerialMon.print("[HTTP] POST (");
-//     SerialMon.print(responseCode);
-//     SerialMon.print(") ");
-//     SerialMon.println(responseBody);
-//   } else if (err == -1) {
-//     SerialMon.println("[HTTP] POST - HTTP CONNECTION FAILED");
-//   } else if (err == -2) {
-//     SerialMon.println("[HTTP] POST - INCORECT USAGE");
-//   } else if (err == -3) {
-//     SerialMon.println("[HTTP] POST - TIMED OUT");
-//   } else if (err == -4) {
-//     SerialMon.println("[HTTP] POST - INVALID RESPONSE");
-//   }
-// }
-
-void mqttCallback(char* topic, byte* payload, unsigned int length) { // TODO
-  SerialMon.print("[MQTT] Message arrived (");
-  SerialMon.print(topic);
-  SerialMon.print(") ");
-  for (int i = 0; i < length; i++) {
-    SerialMon.print((char)payload[i]);
-  }
-  SerialMon.println();
-  // if (String(topic) == mqtt_StatusTopic) { // TODO
-  //   
-  // }
-  // ? OR
-  // String topicToProcess = topic;
-  // payload[length] = '\0';
-  // String payloadToProcess = (char*)payload;
-  // triggerAction(topicToProcess, payloadToProcess);
-}
-
-void setupMqtt() { // Done
-  mqtt.setServer(backend_server.c_str(), mqtt_port);
-  mqtt.setCallback(mqttCallback);
-  SerialMon.println("[MQTT] Setup Done");
-}
-
-void publishMqttBirthMessage() { // Done
-  SerialMon.print("[MQTT] Publishing ");
-  SerialMon.print(MQTT_AVAILABILITY_BIRTH);
-  SerialMon.print(" to ");
-  SerialMon.print("car-fleet/" + mac_address_nag + "/availability");
-  SerialMon.print(": ");
-  bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/availability").c_str(), MQTT_AVAILABILITY_BIRTH, true);
-  if (stat) {
-    SerialMon.println("OK");
-  } else {
-    SerialMon.println("Failed");
-  }
-}
-
-void publishTemperatureTopic() { // Done
-  if (mqtt.connected()) {
-    SerialMon.print("[MQTT] Publishing to ");
-    SerialMon.print("car-fleet/" + mac_address_nag + "/temperature");
-    SerialMon.print(": ");
-    bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/temperature").c_str(), String(rtc.getTemperature(), 2).c_str(), true);
-    if (stat) {
-      SerialMon.println("OK");
-    } else {
-      SerialMon.println("Failed");
-    }
-  }
-}
-
-void publishTimestampTopic() { // Done
-  if (mqtt.connected()) {
-    SerialMon.print("[MQTT] Publishing to ");
-    SerialMon.print("car-fleet/" + mac_address_nag + "/timestamp");
-    SerialMon.print(": ");
-    bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/timestamp").c_str(), rtc.now().timestamp().c_str(), true); // ?
-    if (stat) {
-      SerialMon.println("OK");
-    } else {
-      SerialMon.println("Failed");
-    }
-  }
-}
-
-void publishGpsTopic() {
-  if (mqtt.connected()) {
-    SerialMon.print("[MQTT] Publishing to ");
-    SerialMon.print("car-fleet/" + mac_address_nag + "/gps");
-    SerialMon.print(": ");
-    DynamicJsonDocument json_doc(1024);
-    json_doc["gps_lat"] = String(gps_last_lat, 6);
-    json_doc["gps_lon"] = String(gps_last_lon, 6);
-    json_doc["gps_alt"] = String(gps_last_alt, 2);
-    json_doc["gps_speed"] = String(gps_last_speed, 2);
-    json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
-    json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
-    String data_out;
-    serializeJson(json_doc, data_out);
-    bool stat = mqtt.publish(String("car-fleet/" + mac_address_nag + "/gps").c_str(), data_out.c_str(), true); // ?
-    if (stat) {
-      SerialMon.println("OK");
-    } else {
-      SerialMon.println("Failed");
-    }
-  }
-}
-
-void connectMqtt() { // Done
-  if (!mqtt.connected()) {
-    SerialMon.print("[MQTT] Connecting to ");
-    SerialMon.print(backend_server);
-    SerialMon.print(":");
-    SerialMon.print(mqtt_port);
-    SerialMon.print(" (user: ");
-    SerialMon.print(mqtt_user);
-    SerialMon.print(", pass: ");
-    SerialMon.print(mqtt_pass);
-    SerialMon.print("): ");
-    if (mqtt.connect(mac_address_nag.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), String("car-fleet/" + mac_address_nag + "/availability").c_str(), 0, true, MQTT_AVAILABILITY_LWT)) {
-      SerialMon.println("OK");
-      publishMqttBirthMessage();
-      // TODO - subscribe to needed topics
-      // ? - publish init state
-    } else {
-      SerialMon.print("Failed (");
-      SerialMon.print(mqtt.state());
-      SerialMon.println(")");
-    }
-  }
-}
-
-void handleMqttConnection() {
-  if (currentMillis - mqtt_check_last_time >= (gps_period*2)) {
-    connectMqtt();
-    mqtt_check_last_time = millis();
-  }
-  mqtt.loop();
-}
-
-
-
-void getGpsPosition() { // TODO
-  int year, month, day, hour, minute, second;
-  if (modem.getGPS(&gps_last_lat, &gps_last_lon, &gps_last_speed, &gps_last_alt, NULL, NULL, &gps_last_accuracy, &year, &month, &day, &hour, &minute, &second)) {
-    SerialMon.print("[GPS] Receiving Data - ");
-    SerialMon.println(rtc.now().timestamp());
-
-    gps_last_datetime = DateTime(year, month, day, hour, minute, second);
-    rtc.adjust(gps_last_datetime);
-    preferences.putFloat("last_lat", gps_last_lat);
-    preferences.putFloat("last_lon", gps_last_lon);
-    preferences.putFloat("last_alt", gps_last_alt);
-    preferences.putFloat("last_speed", gps_last_speed);
-    preferences.putFloat("last_accuracy", gps_last_accuracy);
-    preferences.putString("last_datetime", gps_last_datetime.timestamp());
-
-    // sendHttpPost(); // TODO - temp disable
-
-    publishGpsTopic();
-    publishTemperatureTopic();
-    publishTimestampTopic();
-
-  } else {
-    SerialMon.print("[GPS] No Signal - ");
-    SerialMon.println(rtc.now().timestamp());
-
-    publishTemperatureTopic();
-    publishTimestampTopic();
-
-  }
-}
-
-void handleGetGps() {
-  if (currentMillis - gps_last_time >= gps_period) {
-    getGpsPosition();
-    gps_last_time = millis();
-  }
-}
-
-
-void setupGsmModule() { // Done
-  digitalWrite(GSM_MODULE_POWER, HIGH); // POWER_PIN: This pin controls the power supply of the SIM7600
-  digitalWrite(GSM_MODULE_PWR, HIGH); // PWR_PIN：This Pin is the PWR-KEY of the SIM7600, The time of active low level impulse of PWRKEY pin to power on module , type 500 ms
-  delay(500);
-  digitalWrite(GSM_MODULE_PWR, LOW);
-  attachInterrupt(GSM_MODULE_INT, []() { // If SIM7600 starts normally, then set the onboard LED to flash once every 1 second
-    detachInterrupt(GSM_MODULE_INT);
-    led_ticker.attach_ms(1000, []() {
-      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
-    });
-  }, RISING);
-          
-  delay(3000); // ?
-
-  SerialAT.begin(GSM_MODULE_UART_BAUD, SERIAL_8N1, GSM_MODULE_RX, GSM_MODULE_TX);
-
-  if (digitalRead(GSM_MODULE_INT) == 0) {
-    SerialMon.println("[GSM] Waiting For Power On...");
-    // delay(15000);
-  } else {
-    detachInterrupt(GSM_MODULE_INT);
-    led_ticker.attach_ms(1000, []() {
-      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
-    });
-  }
-
-  while(digitalRead(GSM_MODULE_INT) == 0) {
-    delay(1000); // Waiting for power on
-  }
-  
-  SerialMon.print("[GSM] Initializing modem: ");
-  if (modem.init()) {
-    SerialMon.println("OK");
-  } else {
-    SerialMon.println("failed");
-  }
-
-  SerialMon.print("[GSM] Setting Network Mode: ");
-  if (modem.setNetworkMode(DEFAULT_NETWORK_MODE)) {
-    SerialMon.println("OK");
-  } else {
-    SerialMon.println("failed");
-  }
-
-  if ( GSM_PIN && modem.getSimStatus() != 3 ) {
-    SerialMon.print("[GSM] Unlocking SIM: ");
-    if (modem.simUnlock(GSM_PIN)) {
-      SerialMon.println("OK");
-    } else {
-      SerialMon.println("failed");
-    }
-  }
-
-  SerialMon.print("[GSM] Setting GNSS Mode: ");
-  String gnss_res = modem.setGNSSMode(gnss_mode, 1); // String gnss_res = modem.setGNSSMode(gnss_mode, 0);
-  if (gnss_res == "OK") {
-    SerialMon.println("OK");
-  } else {
-    SerialMon.println("failed");
-  }
-
-  SerialMon.print("[GSM] Enabling GPS: ");
-  if(modem.enableGPS()) {
-    SerialMon.println("OK");
-  } else {
-    SerialMon.println("failed");
-  }
-
-  String name = modem.getModemName();
-  SerialMon.println("[GSM] Modem Name: " + name);
-  String modemInfo = modem.getModemInfo();
-  SerialMon.println("[GSM] Modem Info: " + modemInfo);
-  SimStatus simStatus = modem.getSimStatus();
-  SerialMon.println("[GSM] SIM Status: " + String(simStatus));
-  int16_t networkMode = modem.getNetworkMode(); 
-  SerialMon.println("[GSM] Network Mode: " + String(networkMode));
-  RegStatus registrationStatus = modem.getRegistrationStatus();
-  SerialMon.println("[GSM] Registration Status: " + String(registrationStatus));
-  uint8_t gnssMode = modem.getGNSSMode();
-  SerialMon.println("[GSM] GNSS Mode: " + String(gnssMode));
-  int16_t csq = modem.getSignalQuality();
-  SerialMon.println("[GSM] Signal quality: " + String(csq));
-  String imei = modem.getIMEI();
-  SerialMon.println("[GSM] IMEI: " + imei);
-  String cop = modem.getOperator();
-  SerialMon.println("[GSM] Operator: " + cop);
-
-  SerialMon.print("[GSM] Waiting for network: ");
-  if (modem.waitForNetwork()) {
-    SerialMon.println("OK");
-  } else {
-    delay(10000);
-    SerialMon.println("failed");
-    return;
-  }
-
-  is_network_connected = modem.isNetworkConnected();
-  SerialMon.print("[GSM] Network status: ");
-  SerialMon.println(is_network_connected ? "connected" : "not connected");
-
-  SerialMon.print("[GSM] Starting GPRS (apn: " + gprs_apn);
-  SerialMon.print(", user: " + gprs_user);
-  SerialMon.print(", pass: " + gprs_pass);
-  SerialMon.print("): ");
-  if (modem.gprsConnect(gprs_apn.c_str(), gprs_user.c_str(), gprs_pass.c_str())) {
-    SerialMon.println("OK");
-  } else {
-    delay(10000);
-    SerialMon.println("failed");
-    return;
-  }
-
-  is_gprs_connected = modem.isGprsConnected();
-  SerialMon.print("[GSM] GPRS status: ");
-  SerialMon.println(is_gprs_connected ? "connected" : "not connected");
-
-  IPAddress local = modem.localIP();
-  SerialMon.println("[GSM] Local IP: " + String(local));
-  String imsi = modem.getIMSI();
-  SerialMon.println("[GSM] IMSI: " + imsi);
-  String ccid = modem.getSimCCID();
-  SerialMon.println("[GSM] CCID: " + ccid);
-
-  // sendSMS("+420xxxxxxxxx", String("Hello from ") + imei);
-
-  SerialMon.println("[GSM] Setup Done");
-}
-
-void startRide() { // TODO
-
-  // TODO
-
-  // TODO - power handling of card reader using mosfet - TURN ON
-
-}
-
-void stopRide() { // TODO
-
-  // TODO
-
-  // TODO - power handling of card reader using mosfet - TURN OFF
-
-  driver_card = "";
-
-}
-
-void onCardReaderReceive() { // TODO
-  if (is_setup_done && !hw_reboot) {
-    if (SerialCardReader.available()) {
-      driver_card = SerialCardReader.readString();
-      SerialMon.println("[READER] Card: " + driver_card);
-      // TODO - play tone
-    }
-  }
-}
-
-void setupCardReader() {
-  SerialCardReader.begin(9600, SERIAL_8N1, ESP_RX_CARD_READER, ESP_TX_CARD_READER);
-  SerialCardReader.onReceive(onCardReaderReceive);
-  SerialMon.println("[READER] Card Reader Setup Done");
-}
+// ----------------------------------------------------------------------------------------------------------------
 
 String getTimezoneValue(String timezoneName) { // Done
   String out = DEFAULT_TIMEZONE;
@@ -1970,9 +1592,9 @@ void handleWebServerSetupPost() { // Done
   }
   preferences.putBool("hw_reboot", true);
   delay(250);
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
-  SerialMon.println("[BOOT] Restarting");
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  SerialMon.println(F("[BOOT] Restarting"));
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   ESP.restart();
 }
 
@@ -1982,14 +1604,14 @@ void setupWebServer() { // Done
   webServer.on("/setup", HTTP_POST, handleWebServerSetupPost);
   webServer.onNotFound(handleWebServerRootGet);
   webServer.begin();
-  SerialMon.println("[AP] Captive Setup Done");
+  SerialMon.println(F("[AP] Captive Setup Done"));
 }
 
 void setupCaptivePortal() { // Done
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(wifi_ap_ip, wifi_ap_gw, wifi_ap_mask);
   WiFi.softAP(wifi_hostname.c_str(), NULL, 1, false, 1);
-  SerialMon.print("[AP] Created with IP Gateway ");
+  SerialMon.print(F("[AP] Created with IP Gateway "));
   SerialMon.println(WiFi.softAPIP());
   dnsServer.start(53, "*", wifi_ap_ip);
   setupWebServer();
@@ -2001,14 +1623,14 @@ void handleCaptivePortal() { // Done
 }
 
 void switchToConfigMode() { // Done
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
-  SerialMon.println("[CONFIG] Switching to config mode");
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  SerialMon.println(F("[CONFIG] Switching to config mode"));
   // TODO - play tone
   preferences.putBool("setup_done", false);
   delay(250);
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
-  SerialMon.println("[BOOT] Restarting");
-  SerialMon.println("----------------------------------------------------------------------------------------------------------------");
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  SerialMon.println(F("[BOOT] Restarting"));
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
   ESP.restart();
 }
 
@@ -2018,12 +1640,12 @@ void configButtonHandler() { // Done
     if (currentMillis - config_button_last_time >= 250) {
       if (button_current_state == LOW) {
         if (!config_button_pressed) {
-          SerialMon.println("[CONFIG] BUTTON PRESS");
+          SerialMon.println(F("[CONFIG] BUTTON PRESS")); // TODO - remove
           config_button_pressed = true;
         }
       } else {
         if (config_button_pressed) {
-          SerialMon.println("[CONFIG] BUTTON RELEASE");
+          SerialMon.println(F("[CONFIG] BUTTON RELEASE")); // TODO - remove
           config_button_active = false;
           config_button_pressed = false;
         }
@@ -2036,7 +1658,7 @@ void configButtonHandler() { // Done
       if  (!config_button_active) {
         if (config_button_pressed) {
           if ((currentMillis - config_button_last_time > config_button_period)) {
-            SerialMon.println("[CONFIG] LONG PRESS");
+            SerialMon.println(F("[CONFIG] LONG PRESS")); // TODO - remove
             config_button_active = true;
             switchToConfigMode();
           }
@@ -2045,6 +1667,409 @@ void configButtonHandler() { // Done
     }
   }
 }
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void onCardReaderReceive() { // TODO
+  if (is_setup_done && !hw_reboot) {
+    if (SerialCardReader.available()) {
+      driver_card = SerialCardReader.readString();
+      SerialMon.println("[READER] Card: " + driver_card);
+      // TODO - play tone
+    }
+  }
+}
+
+void setupCardReader() {
+  SerialCardReader.begin(9600, SERIAL_8N1, ESP_RX_CARD_READER, ESP_TX_CARD_READER);
+  SerialCardReader.onReceive(onCardReaderReceive);
+  SerialMon.println(F("[READER] Card Reader Setup Done"));
+}
+
+void startRide() { // TODO
+
+  // TODO
+
+  // TODO - power handling of card reader using mosfet - TURN ON
+
+}
+
+void stopRide() { // TODO
+
+  // TODO
+
+  // TODO - power handling of card reader using mosfet - TURN OFF
+
+  driver_card = "";
+
+}
+
+void setupGsmModule() { // Done
+  digitalWrite(GSM_MODULE_POWER, HIGH); // POWER_PIN: This pin controls the power supply of the SIM7600
+  digitalWrite(GSM_MODULE_PWR, HIGH); // PWR_PIN：This Pin is the PWR-KEY of the SIM7600, The time of active low level impulse of PWRKEY pin to power on module , type 500 ms
+  delay(500);
+  digitalWrite(GSM_MODULE_PWR, LOW);
+  attachInterrupt(GSM_MODULE_INT, []() { // If SIM7600 starts normally, then set the onboard LED to flash once every 1 second
+    detachInterrupt(GSM_MODULE_INT);
+    led_ticker.attach_ms(1000, []() {
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
+    });
+  }, RISING);
+          
+  delay(3000); // ?
+
+  SerialAT.begin(GSM_MODULE_UART_BAUD, SERIAL_8N1, GSM_MODULE_RX, GSM_MODULE_TX);
+
+  if (digitalRead(GSM_MODULE_INT) == 0) {
+    SerialMon.println(F("[GSM] Waiting For Power On..."));
+  } else {
+    detachInterrupt(GSM_MODULE_INT);
+    led_ticker.attach_ms(1000, []() {
+      digitalWrite(ESP_LED, !digitalRead(ESP_LED));
+    });
+  }
+
+  while(digitalRead(GSM_MODULE_INT) == 0) {
+    delay(1000); // Waiting for power on
+  }
+  
+  SerialMon.print(F("[GSM] Initializing modem: "));
+  if (modem.init()) {
+    SerialMon.println(F("OK"));
+  } else {
+    SerialMon.println(F("failed"));
+  }
+
+  SerialMon.print(F("[GSM] Setting Network Mode: "));
+  if (modem.setNetworkMode(DEFAULT_NETWORK_MODE)) {
+    SerialMon.println(F("OK"));
+  } else {
+    SerialMon.println(F("failed"));
+  }
+
+  if ( GSM_PIN && modem.getSimStatus() != 3 ) {
+    SerialMon.print(F("[GSM] Unlocking SIM: "));
+    if (modem.simUnlock(GSM_PIN)) {
+      SerialMon.println(F("OK"));
+    } else {
+      SerialMon.println(F("failed"));
+    }
+  }
+
+  SerialMon.print(F("[GSM] Setting GNSS Mode: "));
+  String gnss_res = modem.setGNSSMode(gnss_mode, 1); // String gnss_res = modem.setGNSSMode(gnss_mode, 0);
+  if (gnss_res == "OK") {
+    SerialMon.println(F("OK"));
+  } else {
+    SerialMon.println(F("failed"));
+  }
+
+  SerialMon.print(F("[GSM] Enabling GPS: "));
+  if(modem.enableGPS()) {
+    SerialMon.println(F("OK"));
+  } else {
+    SerialMon.println(F("failed"));
+  }
+
+  String name = modem.getModemName();
+  SerialMon.println("[GSM] Modem Name: " + name);
+  String modemInfo = modem.getModemInfo();
+  SerialMon.println("[GSM] Modem Info: " + modemInfo);
+  SimStatus simStatus = modem.getSimStatus();
+  SerialMon.println("[GSM] SIM Status: " + String(simStatus));
+  int16_t networkMode = modem.getNetworkMode(); 
+  SerialMon.println("[GSM] Network Mode: " + String(networkMode));
+  RegStatus registrationStatus = modem.getRegistrationStatus();
+  SerialMon.println("[GSM] Registration Status: " + String(registrationStatus));
+  uint8_t gnssMode = modem.getGNSSMode();
+  SerialMon.println("[GSM] GNSS Mode: " + String(gnssMode));
+  int16_t csq = modem.getSignalQuality();
+  SerialMon.println("[GSM] Signal quality: " + String(csq));
+  String imei = modem.getIMEI();
+  SerialMon.println("[GSM] IMEI: " + imei);
+  String cop = modem.getOperator();
+  SerialMon.println("[GSM] Operator: " + cop);
+
+  SerialMon.print(F("[GSM] Waiting for network: "));
+  if (modem.waitForNetwork()) {
+    SerialMon.println(F("OK"));
+  } else {
+    delay(10000);
+    SerialMon.println(F("failed"));
+    return;
+  }
+
+  bool is_network_connected = modem.isNetworkConnected();
+  SerialMon.print(F("[GSM] Network status: "));
+  SerialMon.println(F(is_network_connected ? "connected" : "not connected"));
+
+  SerialMon.print("[GSM] Starting GPRS (apn: " + gprs_apn);
+  SerialMon.print(", user: " + gprs_user);
+  SerialMon.print(", pass: " + gprs_pass);
+  SerialMon.print("): ");
+  if (modem.gprsConnect(gprs_apn.c_str(), gprs_user.c_str(), gprs_pass.c_str())) {
+    SerialMon.println(F("OK"));
+  } else {
+    delay(10000);
+    SerialMon.println(F("failed"));
+    return;
+  }
+
+  bool is_gprs_connected = modem.isGprsConnected();
+  SerialMon.print(F("[GSM] GPRS status: "));
+  SerialMon.println(F(is_gprs_connected ? "connected" : "not connected"));
+
+  IPAddress local = modem.localIP();
+  SerialMon.println("[GSM] Local IP: " + String(local));
+  String imsi = modem.getIMSI();
+  SerialMon.println("[GSM] IMSI: " + imsi);
+  String ccid = modem.getSimCCID();
+  SerialMon.println("[GSM] CCID: " + ccid);
+
+  // sendSMS("+420xxxxxxxxx", String("Hello from ") + imei);
+
+  SerialMon.println(F("[GSM] Setup Done"));
+}
+
+// void sendSMS(String recipient, String message) {
+//   bool sms_send = modem.sendSMS(recipient, message);
+//   SerialMon.print("[GSM] SMS: ");
+//   SerialMon.println(sms_send ? "Sent" : "Failed");
+// }
+
+// String getGpsJson() { // ?
+//   DynamicJsonDocument json_doc(1024);
+//   json_doc["unit_id"] = mac_address_nag;
+//   json_doc["timestamp"] = rtc.now().timestamp();
+//   json_doc["temperature"] = String(rtc.getTemperature(), 2);
+//   json_doc["gps_lat"] = String(gps_last_lat, 6); // gps_last_lat;
+//   json_doc["gps_lon"] = String(gps_last_lon, 6); // gps_last_lon;
+//   json_doc["gps_alt"] = String(gps_last_alt, 2);
+//   json_doc["gps_speed"] = String(gps_last_speed, 2);
+//   json_doc["gps_accuracy"] = String(gps_last_accuracy, 2);
+//   json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
+//   String data_out;
+//   serializeJson(json_doc, data_out);
+//   return data_out;
+// }
+
+// void sendHttpPost() {
+//   HttpClient http(client, backend_server, http_port);
+//   http.setHttpResponseTimeout(gps_period / 2);
+//   SerialMon.print("[HTTP] Connecting to ");
+//   SerialMon.print(backend_server);
+//   SerialMon.print(":");
+//   SerialMon.println(http_port);
+//   int err = http.post(DEFAULT_HTTP_GPS_ENDPOINT, "application/json", getGpsJson());
+//   if (err == 0) {
+//     int responseCode = http.responseStatusCode();
+//     String responseBody = http.responseBody();
+//     SerialMon.print("[HTTP] POST (");
+//     SerialMon.print(responseCode);
+//     SerialMon.print(") ");
+//     SerialMon.println(responseBody);
+//   } else if (err == -1) {
+//     SerialMon.println("[HTTP] POST - HTTP CONNECTION FAILED");
+//   } else if (err == -2) {
+//     SerialMon.println("[HTTP] POST - INCORECT USAGE");
+//   } else if (err == -3) {
+//     SerialMon.println("[HTTP] POST - TIMED OUT");
+//   } else if (err == -4) {
+//     SerialMon.println("[HTTP] POST - INVALID RESPONSE");
+//   }
+// }
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) { // TODO
+  SerialMon.print("[MQTT] Message arrived (");
+  SerialMon.print(topic);
+  SerialMon.print(") ");
+  for (int i = 0; i < length; i++) {
+    SerialMon.print(F((char)payload[i]));
+  }
+  SerialMon.println();
+  // if (String(topic) == mqtt_StatusTopic) { // TODO
+  //   
+  // }
+  // ? OR
+  // String topicToProcess = topic;
+  // payload[length] = '\0';
+  // String payloadToProcess = (char*)payload;
+  // triggerAction(topicToProcess, payloadToProcess);
+}
+
+void setupMqtt() { // Done
+  mqtt.setServer(backend_server.c_str(), mqtt_port);
+  mqtt.setCallback(mqttCallback);
+  mqtt.setBufferSize(1024); // TODO
+  SerialMon.println(F("[MQTT] Setup Done"));
+}
+
+double round2(float value) {
+  return (int)(value * 100 + 0.5) / 100.0;
+}
+
+float nonNegative(float value) {
+  // if (value >= 0.0) {
+  //   return value;
+  // } else {
+  //   return 0.00;
+  // }
+  if (value < 0.0) {
+    return 0.00;
+  } else {
+    return value;
+  }
+}
+
+void publishMqttBirthMessage() { // ?
+  if (mqtt.connected()) {
+    if (!mqtt.publish(String("car-fleet/" + mac_address_nag + "/status").c_str(), MQTT_AVAILABILITY_BIRTH, /*true*/ false)) {
+      SerialMon.println("[MQTT] Failed publish " + String(MQTT_AVAILABILITY_BIRTH) + " to: car-fleet/" + mac_address_nag + "/status");
+    }
+  }
+}
+
+// void publishGpsTopic() {
+//   if (mqtt.connected()) {
+//     DynamicJsonDocument json_doc(1024);
+//     json_doc["gps_lat"] = serialized(String(gps_last_lat, 6));
+//     json_doc["gps_lon"] = serialized(String(gps_last_lon, 6));
+//     json_doc["gps_alt"] = serialized(String(gps_last_alt, 2));
+//     json_doc["gps_speed"] = serialized(String(gps_last_speed, 2));
+//     json_doc["gps_accuracy"] = serialized(String(gps_last_accuracy, 2));
+//     json_doc["gps_timestamp"] = gps_last_datetime.timestamp();
+//     String data_out;
+//     serializeJson(json_doc, data_out);
+//     if (!mqtt.publish(String("car-fleet/" + mac_address_nag + "/gps").c_str(), data_out.c_str(), true)) {
+//       SerialMon.println("[MQTT] Failed publish to: car-fleet/" + mac_address_nag + "/gps");
+//     }
+//   }
+// }
+
+String getDataJson(bool gps_signal) {
+  DynamicJsonDocument json_doc(1024);
+  json_doc["time"] = rtc.now().unixtime();
+  // json_doc["temp_int"] = round2(rtc.getTemperature());
+  JsonObject temp_data = json_doc.createNestedObject("temp");
+  temp_data["int"] = round2(rtc.getTemperature());
+  // temp_data["ext"] = round2(20); // ?
+  json_doc["gps_signal"] = gps_signal;
+  JsonObject gps_data = json_doc.createNestedObject("gps");
+  gps_data["lat"] = gps_last_lat; // gps_data["lat"] = serialized(String(gps_last_lat, 6));
+  gps_data["lon"] = gps_last_lon; // gps_data["lon"] = serialized(String(gps_last_lon, 6));
+  gps_data["alt"] = round2(gps_last_alt); // gps_data["alt"] = serialized(String(gps_last_alt, 2));
+  gps_data["speed"] = round2(nonNegative(gps_last_speed)); // gps_data["speed"] = serialized(String(gps_last_speed, 2));
+  gps_data["accuracy"] = round2(gps_last_accuracy); // gps_data["accuracy"] = serialized(String(gps_last_accuracy, 2));
+  gps_data["time"] = gps_last_datetime.unixtime();
+  // JsonObject car_data = json_doc.createNestedObject("car");
+  // car_data["val1"] = "TODO";
+  // car_data["val2"] = "TODO";
+  // car_data["val3"] = "TODO";
+  String data_out;
+  serializeJson(json_doc, data_out);
+
+  return data_out;
+}
+
+void publishRealtimeData(String data_out /*bool gps_signal*/) { // ? buffer set to 1024 instead of 256 bytes
+  if (mqtt.connected()) {
+    // DynamicJsonDocument json_doc(1024);
+    // json_doc["time"] = rtc.now().unixtime();
+    // // json_doc["temp_int"] = round2(rtc.getTemperature());
+    // JsonObject temp_data = json_doc.createNestedObject("temp");
+    // temp_data["int"] = round2(rtc.getTemperature());
+    // // temp_data["ext"] = round2(20); // ?
+    // json_doc["gps_signal"] = gps_signal;
+    // JsonObject gps_data = json_doc.createNestedObject("gps");
+    // gps_data["lat"] = gps_last_lat; // gps_data["lat"] = serialized(String(gps_last_lat, 6));
+    // gps_data["lon"] = gps_last_lon; // gps_data["lon"] = serialized(String(gps_last_lon, 6));
+    // gps_data["alt"] = round2(gps_last_alt); // gps_data["alt"] = serialized(String(gps_last_alt, 2));
+    // gps_data["speed"] = round2(nonNegative(gps_last_speed)); // gps_data["speed"] = serialized(String(gps_last_speed, 2));
+    // gps_data["accuracy"] = round2(gps_last_accuracy); // gps_data["accuracy"] = serialized(String(gps_last_accuracy, 2));
+    // gps_data["time"] = gps_last_datetime.unixtime();
+    // // JsonObject car_data = json_doc.createNestedObject("car");
+    // // car_data["val1"] = "TODO";
+    // // car_data["val2"] = "TODO";
+    // // car_data["val3"] = "TODO";
+    // String data_out;
+    // serializeJson(json_doc, data_out);
+    if (!mqtt.publish(String("car-fleet/" + mac_address_nag + "/realtime").c_str(), data_out.c_str(), /*true*/ false)) {
+      SerialMon.println("[MQTT] Failed publish to: car-fleet/" + mac_address_nag + "/realtime");
+
+      // ? save to db
+    }
+  }
+  else {
+    // : save to DB
+  }
+}
+
+void connectMqtt() { // ?
+  if (!mqtt.connected()) {
+    if (mqtt.connect(mac_address_nag.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), String("car-fleet/" + mac_address_nag + "/status").c_str(), 0, /*true*/ false, MQTT_AVAILABILITY_LWT)) {
+      publishMqttBirthMessage();
+      // TODO - subscribe to needed topics
+      // ? - publish init state
+    } else {
+      SerialMon.print("[MQTT] Failed to connect (");
+      SerialMon.print(mqtt.state());
+      SerialMon.println(")");
+    }
+  }
+}
+
+void handleMqttConnection() {
+  if (currentMillis - mqtt_check_last_time >= (gps_period*2)) {
+    mqtt_check_last_time = millis();
+    connectMqtt();
+  }
+  mqtt.loop();
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// void handleGsmState() { // TODO
+//   // if (!modem.isNetworkConnected()) { // network connection lost
+//   // }
+//   // if (!modem.isGprsConnected()) { // gprs internet disconnected
+//   // }
+// }
+
+void getGpsPosition() { // TODO
+  int year, month, day, hour, minute, second;
+  if (modem.getGPS(&gps_last_lat, &gps_last_lon, &gps_last_speed, &gps_last_alt, NULL, NULL, &gps_last_accuracy, &year, &month, &day, &hour, &minute, &second)) {
+    gps_last_datetime = DateTime(year, month, day, hour, minute, second);
+    preferences.putFloat("last_lat", gps_last_lat);
+    preferences.putFloat("last_lon", gps_last_lon);
+    preferences.putFloat("last_alt", gps_last_alt);
+    preferences.putFloat("last_speed", gps_last_speed);
+    preferences.putFloat("last_accuracy", gps_last_accuracy);
+    preferences.putString("last_datetime", gps_last_datetime.timestamp());
+    rtc.adjust(gps_last_datetime);
+
+    // publishMqttBirthMessage();
+    publishRealtimeData(getDataJson(true));
+    // publishRealtimeData(true);
+    // TODO - publish car monitor data
+    // sendHttpPost();
+  } else {
+    // publishMqttBirthMessage();
+    publishRealtimeData(getDataJson(false));
+    // publishRealtimeData(false);
+    // TODO - publish car monitor data
+  }
+}
+
+void handleGetGps() {
+  if (currentMillis - gps_last_time >= gps_period) {
+    gps_last_time = millis();
+    getGpsPosition();
+  }
+}
+
+// ----------------------------------------------------------------------------------------------------------------
 
 // void core0Task( void * parameter ) { // TODO
 //   SerialMon.print("[CORE_");
@@ -2094,10 +2119,6 @@ void setup() {
       led_ticker.detach();
       digitalWrite(ESP_LED, LOW); // module LED -> ON
       setupMqtt();
-      // SerialMon.println(F("[GPS] Starting Scheduler"));
-      // gps_ticker.attach_ms(gps_period, getGpsPosition);
-      // SerialMon.println("[MQTT] Starting Scheduler");
-      // mqtt_ticker.attach_ms(gps_period*2, connectMqtt);
     }
   } else {
     led_ticker.attach_ms(200, []() {
@@ -2125,13 +2146,13 @@ void setup() {
 
 void loop() { // This is Core 1
   currentMillis = millis();
-
   if (is_setup_done) {
-    configButtonHandler(); // ?
+    configButtonHandler();
     if (!hw_reboot) {
       handleMqttConnection();
-
       handleGetGps();
+      // TODO
+      // handleGsmState();
     }
   } 
   else {

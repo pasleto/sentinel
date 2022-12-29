@@ -15,8 +15,15 @@ import { cronSetup } from './server/controllers/cron.controller.js';
 import filesRoutes from './server/routes/files.js';
 import apiRoutes from './server/routes/api.js';
 
-import { io as socketIOClient } from 'socket.io-client';
-import cloud from './server/controllers/cloud.controller.js';
+// import aedes from 'aedes';
+import mqtt from './server/controllers/mqtt.controller.js';
+import * as net from 'net';
+
+// import { io as socketIOClient } from 'socket.io-client';
+// import cloud from './server/controllers/cloud.controller.js';
+
+
+
 
 function onError (error) {
   if (error.syscall !== 'listen') { throw error; }
@@ -35,7 +42,11 @@ function onError (error) {
 }
 
 function onListening () {
-  console.log(logSymbols.info, `Server is running: https://localhost:443/`);
+  console.log(logSymbols.info, `[Server] Server is running: https://localhost:443/`);
+}
+
+function onMqttListening () {
+  console.log(logSymbols.info, `[Mqtt] Server is running: mqtt://localhost:1883/`);
 }
 
 // if crt files provided, make them into pem files, and if chain needed, move chain at the and of cert file to create fullchain
@@ -45,12 +56,16 @@ const certificate = fs.readFileSync('./certificates/fullchain.pem', 'utf8');
 const app = express();
 const server = https.createServer({ key: privateKey, cert: certificate }, app);
 const io = new Server(server);
+const aedesServer = mqtt.server();
+const mqttServer = net.createServer(aedesServer.handle);
 
+global.mqtt = aedesServer;
 global.io = io;
 global.serverRebootRequired = false;
 global.connectedClientApp = [];
 global.connectedAccessControl = [];
 global.connectedMaterialStorage = [];
+
 
 mongoConnect(); // mongo database connection
 cronSetup(); // cron jobs
@@ -67,9 +82,17 @@ app.use(client.frontendHostingHandler); // Frontend Hosting - failover route
 
 socket.socketHandler(io);
 
-cloud.socketHandler(socketIOClient); // TODO - cloud relay test
+// cloud.socketHandler(socketIOClient); // TODO - cloud relay test
 
 server.on('error', onError);
 server.on('listening', onListening);
 server.listen(443);
-// server.listen(8443); // TODO - cloud relay test
+
+mqttServer.on('error', onError);
+mqttServer.on('listening', onMqttListening);
+mqttServer.listen(1883);
+
+
+console.log(logSymbols.info, `----------------------------------------------------------------------------------------------------`);
+console.log(logSymbols.info, `Sentinel Gateway`);
+console.log(logSymbols.info, `----------------------------------------------------------------------------------------------------`);

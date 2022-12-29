@@ -18,10 +18,11 @@ const apiGenerator = (time, index) => {
   var year = time.getFullYear();
   var month = pad(time.getMonth() + 1);
   var day = pad(time.getDate());
-  return `${year}/${month}/${day}-(${index})-api.log`;
+  // return `${year}/${month}/${day}-(${index})-api.log`;
+  return `${year}_${month}_${day}-(${index})-api.log`;
 };
 
-var apiLogStream = rfs.createStream(apiGenerator(), {
+var apiLogStream = rfs.createStream(apiGenerator, {
   interval: '1d',
   path: resolve('logs/api')
 });
@@ -34,10 +35,11 @@ const filesGenerator = (time, index) => {
   var year = time.getFullYear();
   var month = pad(time.getMonth() + 1);
   var day = pad(time.getDate());
-  return `${year}/${month}/${day}-(${index})-files.log`;
+  // return `${year}/${month}/${day}-(${index})-files.log`;
+  return `${year}_${month}_${day}-(${index})-files.log`;
 };
 
-var filesLogStream = rfs.createStream(filesGenerator(), {
+var filesLogStream = rfs.createStream(filesGenerator, {
   interval: '1d',
   path: resolve('logs/files')
 });
@@ -50,10 +52,11 @@ const clientGenerator = (time, index) => {
   var year = time.getFullYear();
   var month = pad(time.getMonth() + 1);
   var day = pad(time.getDate());
-  return `${year}/${month}/${day}-(${index})-client.log`;
+  // return `${year}/${month}/${day}-(${index})-client.log`;
+  return `${year}_${month}_${day}-(${index})-client.log`;
 };
 
-var clientLogStream = rfs.createStream(clientGenerator(), {
+var clientLogStream = rfs.createStream(clientGenerator, {
   interval: '1d',
   path: resolve('logs/client')
 });

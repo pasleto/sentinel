@@ -152,7 +152,8 @@ async function allUserSync() { // TODO - validate | after or before this run cle
     var unsortedDepartment = await departmentService.getOne({ department_number: '01_sentinel_unsorted_department' });
     var disabledDepartment = await departmentService.getOne({ department_number: '02_sentinel_disabled_department' });
     var deletedDepartment = await departmentService.getOne({ department_number: '03_sentinel_deleted_department' });
-    var existingLdapUsers = await userService.get({ is_ldap_user: true }, { ldap_sid: 1 });
+    // var existingLdapUsers = await userService.get({ is_ldap_user: true }, { ldap_sid: 1 });
+    var existingLdapUsers = await userService.get(false, false, { is_ldap_user: true }, { ldap_sid: 1 });
     
     _.each(existingLdapUsers, async (ldapUser) => {
       ad.userExists({ filter: `objectSid=${ldapUser.ldap_sid}` }, '*', async function(err, exists) {

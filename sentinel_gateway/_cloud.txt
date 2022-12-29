@@ -1,0 +1,5 @@
+gsm -> mqtt in cloud <- on prem stl-gateway
+
+gsm -> company public ip -> port forwarding on firewall -> on prem mqtt <- on prem stl-gateway
+
+gsm -> 
