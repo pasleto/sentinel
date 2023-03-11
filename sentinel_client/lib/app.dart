@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+
 import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
 import 'package:provider/provider.dart';
 
@@ -11,6 +12,9 @@ import 'package:sentinel_client/routes/screens/root.dart' as root_screens; // im
 
 import 'package:sentinel_client/services/socket_service.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+
+// import 'package:flutter/foundation.dart';
+// import 'package:universal_html/html.dart' as html;
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -25,6 +29,12 @@ class App extends StatelessWidget {
     SocketState socketState = context.read<SocketState>();
 
     if (authToken.token.isNotEmpty && authToken.token != 'init') {
+      // if (kIsWeb) {
+      //   SocketService.init('${html.window.location.origin}/${appConstants.namespace}', authToken.token); // TODO
+      // } else {
+      //   SocketService.init('${appConstants.backendServer}/${appConstants.namespace}', authToken.token);
+      // }
+
       SocketService.init('${appConstants.backendServer}/${appConstants.namespace}', authToken.token);
       Socket socket = SocketService.socket;
 

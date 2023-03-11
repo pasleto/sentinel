@@ -131,8 +131,8 @@ class AppTheme extends DisposableProvider {
 }
 
 AccentColor get systemAccentColor {
-  // if ((defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.android) && !kIsWeb) {
-  if (defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.android || kIsWeb) {
+  if ((defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.android) && !kIsWeb) {
+    // if (defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.android || kIsWeb) {
     debugPrint('ACCENT COLOR: ${SystemTheme.accentColor.accent.toString()}');
     return AccentColor.swatch({
       'darkest': SystemTheme.accentColor.darkest,

@@ -1,0 +1,17 @@
+uint16_t fuelSystemStatus();
+float engineLoad();
+float rpm();
+int32_t kph();
+float mph();
+float throttle();
+uint16_t runTime();
+float fuelLevel();
+uint16_t distTravelWithMIL();
+uint8_t warmUpsSinceCodesCleared();
+uint16_t distSinceCodesCleared();
+float ambientAirTemp();
+uint16_t timeRunWithMIL();
+uint16_t timeSinceCodesCleared();
+float torque();
+float batteryVoltage(void);
+int8_t get_vin_blocking(char vin[]);

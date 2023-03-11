@@ -1,0 +1,1983 @@
+#include "configuration.h" // project configuration file
+#include <Arduino.h>
+
+#include <Preferences.h>
+#include <ETH.h>
+#include <Wiegand.h>
+#include <WebServer.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <sqlite3.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <ESPmDNS.h>
+#include <NetBIOS.h>
+#include <RTClib.h>
+#include <Adafruit_MCP23X17.h>
+#include <Ticker.h>
+#include <PubSubClient.h>
+// #include <DNSServer.h>
+
+// ----------------------------------------------------------------------------------------------------------------
+/*
+
+TODO
+
+*/
+// ----------------------------------------------------------------------------------------------------------------
+
+Preferences preferences;
+Wiegand wg_1;
+Wiegand wg_2;
+RTC_DS3231 rtc;
+sqlite3 *fs_db;
+// DNSServer dnsServer;
+WebServer webServer(80);
+Adafruit_MCP23X17 mcp;
+WiFiClient ethClient;
+PubSubClient mqtt(ethClient);
+// Ticker ticker;
+
+IPAddress default_ip(192,168,11,1); // ?
+IPAddress default_gw(192,168,11,1); // ?
+IPAddress default_mask(255,255,255,0); // ?
+
+const char captive_favicon[] PROGMEM = {
+0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 
+0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x10, 0x08, 0x06, 0x00, 0x00, 0x00, 0x26, 0x94, 0x4E, 
+0x3A, 0x00, 0x00, 0x01, 0x82, 0x69, 0x43, 0x43, 0x50, 0x73, 0x52, 0x47, 0x42, 0x20, 0x49, 0x45, 
+0x43, 0x36, 0x31, 0x39, 0x36, 0x36, 0x2D, 0x32, 0x2E, 0x31, 0x00, 0x00, 0x28, 0x91, 0x75, 0x91, 
+0xB9, 0x4B, 0x43, 0x41, 0x10, 0x87, 0x3F, 0xA3, 0xA2, 0x68, 0x3C, 0xF0, 0x00, 0x0B, 0x8B, 0x20, 
+0xD1, 0x2A, 0x91, 0x18, 0x21, 0x68, 0x63, 0x11, 0xF1, 0x02, 0xB5, 0x48, 0x22, 0x18, 0xB5, 0x49, 
+0x5E, 0x2E, 0x21, 0xC7, 0xE3, 0xBD, 0x04, 0x09, 0xB6, 0x82, 0xAD, 0xA0, 0x20, 0xDA, 0x78, 0x15, 
+0xFA, 0x17, 0x68, 0x2B, 0x58, 0x0B, 0x82, 0xA2, 0x08, 0x62, 0x27, 0x58, 0x2B, 0xDA, 0xA8, 0x3C, 
+0xE7, 0x25, 0x81, 0x04, 0x31, 0xB3, 0xCC, 0xCE, 0xB7, 0xBF, 0xDD, 0x19, 0x76, 0x67, 0xC1, 0x12, 
+0x48, 0x2A, 0x29, 0xBD, 0xCE, 0x05, 0xA9, 0x74, 0x56, 0xF3, 0x4D, 0x79, 0x6D, 0x8B, 0xC1, 0x25, 
+0x5B, 0xC3, 0x0B, 0xCD, 0x74, 0xD3, 0x4A, 0x07, 0xAE, 0x90, 0xA2, 0xAB, 0x73, 0xFE, 0xC9, 0x00, 
+0x55, 0xED, 0xF3, 0x9E, 0x1A, 0x33, 0xDE, 0x3A, 0xCD, 0x5A, 0xD5, 0xCF, 0xFD, 0x6B, 0xCD, 0x91, 
+0xA8, 0xAE, 0x40, 0x4D, 0xA3, 0xF0, 0x98, 0xA2, 0x6A, 0x59, 0xE1, 0x69, 0xE1, 0xD9, 0xB5, 0xAC, 
+0x6A, 0xF2, 0x8E, 0x70, 0x97, 0x92, 0x08, 0x45, 0x84, 0xCF, 0x84, 0x1D, 0x9A, 0x5C, 0x50, 0xF8, 
+0xCE, 0xD4, 0xC3, 0x45, 0x7E, 0x35, 0x39, 0x5E, 0xE4, 0x6F, 0x93, 0xB5, 0x80, 0x6F, 0x1C, 0x2C, 
+0xED, 0xC2, 0xB6, 0x78, 0x05, 0x87, 0x2B, 0x58, 0x49, 0x68, 0x29, 0x61, 0x79, 0x39, 0xF6, 0x54, 
+0x32, 0xA7, 0x94, 0xEE, 0x63, 0xBE, 0xC4, 0x1A, 0x4D, 0x2F, 0xF8, 0x25, 0xF6, 0x89, 0xF7, 0xA2, 
+0xE3, 0x63, 0x0A, 0x2F, 0x36, 0x66, 0x98, 0x60, 0x1C, 0x0F, 0x43, 0x8C, 0xCA, 0xEC, 0xC1, 0x89, 
+0x9B, 0x41, 0x59, 0x51, 0x25, 0xDF, 0x55, 0xC8, 0x9F, 0x27, 0x23, 0xB9, 0x8A, 0xCC, 0x2A, 0x79, 
+0x34, 0x56, 0x89, 0x93, 0x20, 0x8B, 0x43, 0xD4, 0x9C, 0x54, 0x8F, 0x4A, 0x8C, 0x89, 0x1E, 0x95, 
+0x91, 0x24, 0x6F, 0xF6, 0xFF, 0x6F, 0x5F, 0xF5, 0xD8, 0xB0, 0xBB, 0x58, 0xDD, 0xEA, 0x85, 0xFA, 
+0x67, 0xC3, 0x78, 0xEF, 0x87, 0x86, 0x6D, 0xF8, 0xD9, 0x32, 0x8C, 0xAF, 0x23, 0xC3, 0xF8, 0x39, 
+0x86, 0xDA, 0x27, 0xB8, 0x4C, 0x97, 0xF3, 0x33, 0x87, 0x30, 0xF2, 0x21, 0xFA, 0x56, 0x59, 0xB3, 
+0x1F, 0x40, 0xDB, 0x06, 0x9C, 0x5F, 0x95, 0xB5, 0xF0, 0x2E, 0x5C, 0x6C, 0x42, 0xCF, 0xA3, 0x1A, 
+0xD2, 0x42, 0x05, 0xA9, 0x56, 0xDC, 0x12, 0x8B, 0xC1, 0xDB, 0x29, 0xB4, 0x04, 0xA1, 0xF3, 0x06, 
+0x9A, 0x96, 0x8B, 0x3D, 0x2B, 0xED, 0x73, 0xF2, 0x00, 0x81, 0x75, 0xF9, 0xAA, 0x6B, 0xD8, 0xDB, 
+0x87, 0x01, 0x39, 0xDF, 0xB6, 0xF2, 0x0B, 0x88, 0x42, 0x67, 0xF5, 0x7F, 0x30, 0x33, 0xBE, 0x00, 
+0x00, 0x00, 0x09, 0x70, 0x48, 0x59, 0x73, 0x00, 0x00, 0x1D, 0x87, 0x00, 0x00, 0x1D, 0x87, 0x01, 
+0x8F, 0xE5, 0xF1, 0x65, 0x00, 0x00, 0x01, 0xB7, 0x49, 0x44, 0x41, 0x54, 0x28, 0x91, 0x85, 0xD2, 
+0x3D, 0x48, 0xD5, 0x61, 0x14, 0xC7, 0xF1, 0xCF, 0xFF, 0xFE, 0x9F, 0x3F, 0x8D, 0xD5, 0x50, 0xE0, 
+0xA6, 0x25, 0xE5, 0x96, 0x82, 0x48, 0x45, 0xD0, 0xD0, 0x0B, 0x0D, 0x51, 0xE0, 0x50, 0x44, 0xEF, 
+0x64, 0xEF, 0x71, 0x43, 0x22, 0x4C, 0xA5, 0x32, 0x2B, 0x53, 0x2B, 0x24, 0x8B, 0x86, 0xD4, 0x68, 
+0x91, 0xB2, 0xA1, 0x2D, 0x30, 0xC8, 0x21, 0xC8, 0x12, 0x73, 0x28, 0x32, 0x88, 0x08, 0xB1, 0x21, 
+0x0A, 0x22, 0x7A, 0xA1, 0xA2, 0xC0, 0xBC, 0x0D, 0xF7, 0x2A, 0x9A, 0x46, 0xBF, 0xED, 0xF0, 0x7C, 
+0xBF, 0x87, 0xE7, 0x1C, 0x4E, 0x64, 0xBA, 0x54, 0xB4, 0x2D, 0xC2, 0xD1, 0x5C, 0x75, 0x5E, 0xFB, 
+0xEE, 0x67, 0x7F, 0x23, 0x91, 0xBD, 0x37, 0xF2, 0x31, 0x13, 0xF3, 0xB0, 0x00, 0xE5, 0x28, 0xC3, 
+0x13, 0x8C, 0x60, 0x09, 0xFA, 0x71, 0x07, 0xAF, 0x30, 0x84, 0xCF, 0x41, 0x9C, 0x0C, 0x21, 0xC2, 
+0x0F, 0x3C, 0xC7, 0x00, 0x0E, 0xBA, 0xBA, 0x79, 0x00, 0x1C, 0xE8, 0x2C, 0xC2, 0x0E, 0x6C, 0x40, 
+0x01, 0x66, 0x63, 0x34, 0x92, 0xEE, 0xCA, 0x60, 0x0B, 0x6E, 0x6A, 0xDD, 0x38, 0x3A, 0xED, 0xD7, 
+0x27, 0x26, 0xDD, 0xB5, 0x09, 0x9D, 0x41, 0x9C, 0xC0, 0x17, 0x2D, 0xE5, 0xFF, 0x97, 0x20, 0x4E, 
+0xBE, 0x21, 0x4A, 0x89, 0x93, 0x8C, 0x38, 0xC9, 0x4C, 0x01, 0x6A, 0xEE, 0xCF, 0xFA, 0x87, 0x98, 
+0x11, 0x27, 0xBF, 0x83, 0x38, 0xF9, 0x8A, 0x36, 0x55, 0xDD, 0x1D, 0x68, 0xD7, 0xB4, 0xE6, 0x4D, 
+0x96, 0x88, 0xAE, 0xAB, 0xE9, 0x99, 0x8B, 0x0E, 0xDC, 0xD6, 0xB0, 0xE2, 0x7B, 0x4E, 0x7C, 0x8B, 
+0xC7, 0x91, 0x9A, 0x9E, 0x42, 0x54, 0x60, 0x27, 0xE6, 0xA0, 0x1B, 0xD7, 0xC4, 0xE1, 0x13, 0x0E, 
+0x61, 0x3D, 0x7E, 0xE2, 0x16, 0xDA, 0x9D, 0x5E, 0xDE, 0x0F, 0x91, 0xBA, 0xDE, 0x3C, 0x7C, 0x34, 
+0x3A, 0x02, 0xEB, 0xB0, 0x07, 0xAB, 0xF0, 0x0E, 0x55, 0x52, 0xA1, 0x1B, 0xDB, 0xB1, 0x0B, 0x45, 
+0xB2, 0x9B, 0x3F, 0x1C, 0xA9, 0xEF, 0x2B, 0xC0, 0x43, 0xAC, 0x76, 0x62, 0xF1, 0x0B, 0x70, 0xEA, 
+0xD1, 0xFC, 0x1C, 0x98, 0x71, 0x72, 0x69, 0xED, 0xF8, 0x7C, 0xF5, 0x7D, 0x47, 0xD0, 0x84, 0x92, 
+0x08, 0x9C, 0x1D, 0xB8, 0x82, 0x12, 0x2C, 0x53, 0x5B, 0x3A, 0x75, 0x51, 0x59, 0x66, 0x06, 0x9E, 
+0xE2, 0x81, 0xDA, 0xD2, 0x7D, 0x29, 0x90, 0x0A, 0x67, 0xA4, 0x42, 0xB1, 0x54, 0xD8, 0x3F, 0xAD, 
+0x94, 0x65, 0x6A, 0xA4, 0x42, 0x9E, 0x54, 0x38, 0x0E, 0x59, 0xB1, 0xBA, 0xF8, 0xBD, 0x38, 0xB4, 
+0x88, 0x43, 0xA3, 0xE6, 0xC1, 0x95, 0x53, 0xA4, 0xE6, 0xC1, 0xB5, 0xE2, 0x70, 0x4C, 0x1C, 0xEA, 
+0x55, 0x17, 0x7F, 0x80, 0x30, 0xFE, 0x18, 0x87, 0x3A, 0xD9, 0x7B, 0xBD, 0xE7, 0xE2, 0xCB, 0x06, 
+0xD4, 0xE5, 0x1A, 0x9F, 0x43, 0x25, 0x1A, 0x71, 0x69, 0x0C, 0x8F, 0x26, 0x75, 0x6E, 0x79, 0x1D, 
+0xE3, 0x02, 0xD2, 0xE8, 0x45, 0x82, 0x85, 0xD8, 0xAA, 0xB2, 0xF0, 0xEE, 0x44, 0x74, 0xB2, 0x38, 
+0x96, 0xD6, 0xE1, 0x32, 0x5C, 0xC6, 0x2F, 0x6C, 0x93, 0xCE, 0x1F, 0xFE, 0x1B, 0xF9, 0x03, 0x7C, 
+0x15, 0x71, 0x71, 0xDC, 0xC3, 0x42, 0x8A, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 
+0x42, 0x60, 0x82
+};
+
+const char captive_root_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<meta name = "viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kblLQ0EQhz+jomg88AALiyDRKpEYIWhjEfECtUgiGLVJXi4hx+O9BAm2gq2gINp4FfoXaCtYC4KiCGInWCvaqDznJYEEMbPMzre/3Rl2Z8ESSCopvc4FqXRW8015bYvBJVvDC81000oHrpCiq3P+yQBV7fOeGjPeOs1a1c/9a82RqK5ATaPwmKJqWeFp4dm1rGryjnCXkghFhM+EHZpcUPjO1MNFfjU5XuRvk7WAbxws7cK2eAWHK1hJaClheTn2VDKnlO5jvsQaTS/4JfaJ96LjYwovNmaYYBwPQ4zK7MGJm0FZUSXfVcifJyO5iswqeTRWiZMgi0PUnFSPSoyJHpWRJG/2/29f9diwu1jd6oX6Z8N474eGbfjZMoyvI8P4OYbaJ7hMl/MzhzDyIfpWWbMfQNsGnF+VtfAuXGxCz6Ma0kIFqVbcEovB2ym0BKHzBpqWiz0r7XPyAIF1+apr2NuHATnftvILiEJn9X8wM74AAAAJcEhZcwAAHYcAAB2HAY/l8WUAAAG3SURBVCiRhdI9SNVhFMfxz//+nz+N1VDgpiXlloJIRdDQCw1R4FBE72TvcUMiTKUyK1MrJIuG1GiRsqEtMMghyBJzKDKICLEhCiJ6oaLAvA33KppGv+3wfL+H5xxOZLpUtC3C0Vx1XvvuZ38jkb038jET87AA5SjDE4xgCfpxB68whM9BnAwhwg88xwAOurp5ABzoLMIObEABZmM0ku7KYAtuat04Ou3XJybdtQmdQZzAFy3l/5cgTr4hSomTjDjJTAFq7s/6h5gRJ7+DOPmKNlXdHWjXtOZNloiuq+mZiw7c1rDie058i8eRmp5CVGAn5qAb18ThEw5hPX7iFtqdXt4PkbrePHw0OgLrsAer8A5VUqEb27ELRbKbPxyp7yvAQ6x2YvELcOrR/ByYcXJp7fh89X1H0ISSCJwduIISLFNbOnVRWWYGnuKB2tJ9KZAKZ6RCsVTYP62UZWqkQp5UOA5Zsbr4vTi0iEOj5sGVU6TmwbXicEwc6lUXf4Aw/hiHOtl7vefiywbU5RqfQyUacWkMjyZ1bnkd4wLS6EWChdiqsvDuRHSyOJbW4TJcxi9sk84f/hv5A3wVcXHcw0KKAAAAAElFTkSuQmCC" />
+<title>STL-CF Setup</title>
+<style>
+html, body { height: 100%; min-width: 320px; }
+body { margin: 0; display: flex; flex-wrap: nowrap; flex-direction: row; overflow: hidden; background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+.container { overflow-y: auto; display: flex; flex-wrap: nowrap; flex-direction: row; width: 100%; }
+.content { padding: 10px; margin: auto 10px; width: 100%; }
+input[type="submit"] { height: 50px; cursor: pointer; background-color: #3498DB; border: none; color: #FFFFFF; padding: 15px 48px; margin: 25px auto; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; }
+form { padding: 25px 0px; }
+table { width: 100%; max-width: 400px; }
+.table-header { width: 50%; text-align: left; }
+.table-value { width: 50%; text-align: right; }
+.header { width: 100%; max-width: 400px; color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 36px; }
+.info { width: 100%; max-width: 400px; color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 12px; }
+.label { font-family: Times New Roman }
+input[type="text"], input[type="password"], select { height: 30px; width: 100%; max-width: 400px; padding: 5px 10px; margin: 8px auto; border: 2px solid #3498DB; border-radius: 4px; box-sizing: border-box; }
+select { cursor: pointer; }
+input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height: 20px; }
+.mqtt-credentials { display: none; }
+.mqtt-credentials input[type="text"], input[type="password"] { width: 85%; max-width: 340px; }
+.ip-config { display: none; }
+.ip-config input[type="text"], input[type="password"] { width: 85%; max-width: 340px; }
+</style>
+</head>
+<body>
+<center class="container">
+<div class="content">
+<h1 class="header">STL-AC Setup</h1>
+<table>
+<tr><td class="table-header">Module type:</td><td class="table-value"><span id="type"></td></tr>
+<tr><td class="table-header">Firmware version:</td><td class="table-value"><span id="firmware"></td></tr>
+<tr><td class="table-header">Unit ID:</td><td class="table-value"><span id="unit"></span></td></tr>
+<tr><td class="table-header">MAC Address:</td><td class="table-value"><span id="mac"></span></td></tr>
+</table>
+<form id="form1" action="/" method="POST">
+<p><label class="label">Hostname</label><br><input type="text" name="hostname" autocapitalize="off" required><br></p> 
+<p><label class="label">Static IP (default is DHCP)</label><br><input type="checkbox" name="staticip"><br></p>
+<p class="ip-config"><label class="label">IP Address</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="ip" placeholder="192.168.1.100" autocapitalize="off"><br></p>
+<p class="ip-config"><label class="label">Subnet Mask</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="mask" placeholder="255.255.255.0" autocapitalize="off"><br></p>
+<p class="ip-config"><label class="label">Gateway IP Address</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="gateway" placeholder="192.168.1.1" autocapitalize="off"><br></p>
+<p class="ip-config"><label class="label">DNS Server IP Address</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="dns" placeholder="192.168.1.1" autocapitalize="off"><br></p>
+<p><label class="label">Server URL / IP</label><br><input type="text" name="server" placeholder="sentinel.example.com" autocapitalize="off" required><br></p>
+<p><label class="label">Server MQTT Port</label><br><input type="text" pattern="[0-9]{2,5}" name="mqttport" placeholder="1883" autocapitalize="off" required><br></p>
+<p><label class="label">MQTT Credentials</label><br><input type="checkbox" name="mqttcredentials"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT User</label><br><input type="text" name="mqttuser" autocapitalize="off"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT Password</label><br><input type="password" name="mqttpass" autocapitalize="off"><br></p>
+<p><label class="label">NTP Server URL / IP</label><br><input type="text" name="ntp" placeholder="pool.ntp.org" autocapitalize="off" required><br></p> 
+<p><label class="label">Button Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="btntimeout">
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<p><label class="label">Lock Sensor</label><br><input type="checkbox" name="locksensor"><br></p>
+<p><label class="label">Reader Buzzer Timeout (Buzzer On in Milliseconds)</label><br><select name="wgbuzzertimeout">
+<option value="100">100</option>
+<option value="150">150</option>
+<option value="200">200</option>
+<option value="250">250</option>
+<option value="300">300</option>
+<option value="350">350</option>
+<option value="400">400</option>
+<option value="450">450</option>
+<option value="500">500</option>
+</select><br></p>
+<p><label class="label">Reader 1 Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="wg1timeout">
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<!-- <p><label class="label">Reader 1 Secure</label><br><input type="checkbox" name="wg1secure"><br></p> -->
+<p><label class="label">Reader 1 Reverse (Byte Order)</label><br><input type="checkbox" name="wg1reverse"><br></p>
+<p><label class="label">Reader 1 Silent (Buzzer Disable)</label><br><input type="checkbox" name="wg1silent"><br></p>
+<p><label class="label">Reader 2 Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="wg2timeout">
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<!-- <p><label class="label">Reader 2 Secure</label><br><input type="checkbox" name="wg2secure"><br></p> -->
+<p><label class="label">Reader 2 Reverse (Byte Order)</label><br><input type="checkbox" name="wg2reverse"><br></p>
+<p><label class="label">Reader 2 Silent (Buzzer Disable)</label><br><input type="checkbox" name="wg2silent"><br></p>
+<input type="submit" value="Save & Reboot">
+<h2 class="info">You need to save the configuration and reboot the device, otherwise the device will not work</h2>
+</form>
+</div>
+</center>
+<script>
+  window.onload = function async () {
+    fetch("http://" + location.host + "/config").then((response) => response.json()).then((json) => {
+      var type = document.getElementById("type");
+      type.innerHTML = json.module_type;
+      var fw = document.getElementById("firmware");
+      fw.innerHTML = json.firmware;
+      var unit = document.getElementById("unit");
+      unit.innerHTML = json.unit_id;
+      var mac = document.getElementById("mac");
+      mac.innerHTML = json.mac_address;
+      var form1 = document.getElementById("form1");
+      form1.hostname.value = json.eth_hostname;
+      form1.staticip.checked = json.ip_static;
+      if (json.ip_static) {
+        var ipconfig = document.getElementsByClassName('ip-config');
+        for(i = 0; i < ipconfig.length; i++) {
+          ipconfig[i].style.display = 'block';
+        }
+        form1.ip.required = true;
+        form1.mask.required = true;
+        form1.gateway.required = true;
+        form1.dns.required = true;
+      }
+      form1.ip.value = json.ip_static_ip;
+      form1.mask.value = json.ip_static_mask;
+      form1.gateway.value = json.ip_static_gw;
+      form1.dns.value = json.ip_static_dns;
+      form1.server.value = json.server;
+      form1.mqttport.value = json.mqtt_port;
+      form1.mqttcredentials.checked = json.mqtt_credentials;
+      if (json.mqtt_credentials) {
+        var mqttcred = document.getElementsByClassName('mqtt-credentials');
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      }
+      form1.mqttuser.value = json.mqtt_user;
+      form1.mqttpass.value = json.mqtt_pass;
+      form1.ntp.value = json.ntp;
+      form1.locksensor.checked = json.lock_sensor;
+      form1.wgbuzzertimeout.value = json.wg_buzzer_timeout;
+      form1.btntimeout.value = json.btn_timeout;
+      form1.wg1timeout.value = json.wg_1_timeout;
+      // form1.wg1secure.checked = json.wg_1_secure
+      form1.wg1reverse.checked = json.wg_1_reverse
+      form1.wg1silent.checked = json.wg_1_silent;
+      form1.wg2timeout.value = json.wg_2_timeout;
+      // form1.wg2secure.checked = json.wg_2_secure
+      form1.wg2reverse.checked = json.wg_2_reverse
+      form1.wg2silent.checked = json.wg_2_silent;
+    });
+    var form1 = document.getElementById("form1");
+    var mqttcred = document.getElementsByClassName('mqtt-credentials');
+    form1.mqttcredentials.onclick = function () {
+      if (this.form.mqttcredentials.checked) {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      } else {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'none';
+        }
+        form1.mqttuser.required = false;
+        form1.mqttpass.required = false;
+      }
+    }
+    var ipconfig = document.getElementsByClassName('ip-config');
+    form1.staticip.onclick = function () {
+      if (this.form.staticip.checked) {
+        for(i = 0; i < ipconfig.length; i++) {
+          ipconfig[i].style.display = 'block';
+        }
+        form1.ip.required = true;
+        form1.mask.required = true;
+        form1.gateway.required = true;
+        form1.dns.required = true;
+      } else {
+        for(i = 0; i < ipconfig.length; i++) {
+          ipconfig[i].style.display = 'none';
+        }
+        form1.ip.required = false;
+        form1.mask.required = false;
+        form1.gateway.required = false;
+        form1.dns.required = false;
+      }
+    }
+  }
+</script>
+</body>
+</html>
+)rawliteral";
+
+const char captive_setup_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<meta name = "viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kblLQ0EQhz+jomg88AALiyDRKpEYIWhjEfECtUgiGLVJXi4hx+O9BAm2gq2gINp4FfoXaCtYC4KiCGInWCvaqDznJYEEMbPMzre/3Rl2Z8ESSCopvc4FqXRW8015bYvBJVvDC81000oHrpCiq3P+yQBV7fOeGjPeOs1a1c/9a82RqK5ATaPwmKJqWeFp4dm1rGryjnCXkghFhM+EHZpcUPjO1MNFfjU5XuRvk7WAbxws7cK2eAWHK1hJaClheTn2VDKnlO5jvsQaTS/4JfaJ96LjYwovNmaYYBwPQ4zK7MGJm0FZUSXfVcifJyO5iswqeTRWiZMgi0PUnFSPSoyJHpWRJG/2/29f9diwu1jd6oX6Z8N474eGbfjZMoyvI8P4OYbaJ7hMl/MzhzDyIfpWWbMfQNsGnF+VtfAuXGxCz6Ma0kIFqVbcEovB2ym0BKHzBpqWiz0r7XPyAIF1+apr2NuHATnftvILiEJn9X8wM74AAAAJcEhZcwAAHYcAAB2HAY/l8WUAAAG3SURBVCiRhdI9SNVhFMfxz//+nz+N1VDgpiXlloJIRdDQCw1R4FBE72TvcUMiTKUyK1MrJIuG1GiRsqEtMMghyBJzKDKICLEhCiJ6oaLAvA33KppGv+3wfL+H5xxOZLpUtC3C0Vx1XvvuZ38jkb038jET87AA5SjDE4xgCfpxB68whM9BnAwhwg88xwAOurp5ABzoLMIObEABZmM0ku7KYAtuat04Ou3XJybdtQmdQZzAFy3l/5cgTr4hSomTjDjJTAFq7s/6h5gRJ7+DOPmKNlXdHWjXtOZNloiuq+mZiw7c1rDie058i8eRmp5CVGAn5qAb18ThEw5hPX7iFtqdXt4PkbrePHw0OgLrsAer8A5VUqEb27ELRbKbPxyp7yvAQ6x2YvELcOrR/ByYcXJp7fh89X1H0ISSCJwduIISLFNbOnVRWWYGnuKB2tJ9KZAKZ6RCsVTYP62UZWqkQp5UOA5Zsbr4vTi0iEOj5sGVU6TmwbXicEwc6lUXf4Aw/hiHOtl7vefiywbU5RqfQyUacWkMjyZ1bnkd4wLS6EWChdiqsvDuRHSyOJbW4TJcxi9sk84f/hv5A3wVcXHcw0KKAAAAAElFTkSuQmCC" />
+<title>STL-CF Setup</title>
+<style>
+html, body { height: 100%; min-width: 320px; }
+body { margin: 0; display: flex; flex-wrap: nowrap; flex-direction: row; overflow: hidden; background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+.container { overflow-y: auto; display: flex; flex-wrap: nowrap; flex-direction: row; width: 100%; }
+.content { padding: 10px; margin: auto 10px; width: 100%; }
+.header { color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 36px; }
+.message { color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 22px; }
+.info { font-size: 16px; }
+.loader { margin: 74px auto; width: 84px; height: 84px; border-radius: 50%; position: relative; animation: rotate 1s linear infinite; }
+.loader::before { content: ""; box-sizing: border-box; position: absolute; inset: 0px; border-radius: 50%; border: 5px solid #FFF; animation: prixClipFix 2s linear infinite; }
+@keyframes rotate { 100% { transform: rotate(360deg); } }
+@-webkit-keyframes rotate { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes prixClipFix {
+0% { clip-path: polygon(50% 50%,0 0,0 0,0 0,0 0,0 0); }
+25% { clip-path: polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0); }
+50% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%); }
+75% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%); }
+100% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0); } }
+@-webkit-keyframes prixClipFix {
+0% { -webkit-clip-path: polygon(50% 50%,0 0,0 0,0 0,0 0,0 0); }
+25% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0); }
+50% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%); }
+75% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%); }
+100% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0); } }
+</style>
+</head>
+<body onload="setTimeout(function() {window.top.close();},3000)">
+<center class="container">
+<div class="content">
+<h1 class="header">Saving configuration</h1>
+<div class="loader"></div>
+<h2 class="message">Device will be rebooted</h2>
+</div>
+</center>
+</body>
+</html>
+)rawliteral";
+
+// ----------------------------------------------------------------------------------------------------------------
+
+const char* dbData = "Callback function called";
+char *dbErrorMessage = 0;
+sqlite3_stmt *dbRes;
+const char *dbTail;
+int dbRc;
+
+unsigned long currentMillis;
+
+Ticker setup_led_ticker; // ?
+Ticker wg_1_buzzer_ticker;
+Ticker wg_2_buzzer_ticker;
+Ticker ntp_ticker;
+
+bool is_setup_done = DEFAULT_IS_SETUP_DONE;
+String backend_server = DEFAULT_BACKEND_SERVER;
+int mqtt_port = DEFAULT_MQTT_PORT;
+bool mqtt_credentials = DEFAULT_MQTT_CREDENTIALS;
+String mqtt_user = DEFAULT_MQTT_USER;
+String mqtt_pass = DEFAULT_MQTT_PASS;
+String ntp_server = DEFAULT_NTP_SERVER;
+String timezone = DEFAULT_TIMEZONE;
+String timezone_name = DEFAULT_TIMEZONE_NAME;
+bool lock_sensor = DEFAULT_LOCK_SENSOR;
+int button_timeout = DEFAULT_BUTTON_TIMEOUT;
+int wg_buzzer_timeout = DEFAULT_WG_BUZZER_TIMEOUT;
+// bool wg_1_secure = DEFAULT_WG_SECURE;
+bool wg_1_reverse = DEFAULT_WG_REVERSE;
+bool wg_1_silent = DEFAULT_WG_SILENT;
+int wg_1_timeout = DEFAULT_WG_TIMEOUT;
+// bool wg_2_secure = DEFAULT_WG_SECURE; 
+bool wg_2_reverse = DEFAULT_WG_REVERSE;
+bool wg_2_silent = DEFAULT_WG_SILENT;
+int wg_2_timeout = DEFAULT_WG_TIMEOUT; 
+
+bool wg_1_tamper_alarm;
+bool wg_2_tamper_alarm;
+
+const int button_debounce = 250;
+const int lock_sensor_debounce = 250;
+const int wg_error_timeout = 1500; // ?
+const int wg_panic_timeout = 1500; // ?
+
+String fw_version = MODULE_FIRMWARE_VERSION;
+String mac_address_raw;
+String mac_address_nag;
+String eth_hostname;
+IPAddress eth_ip_address;
+bool eth_connected = false;
+
+bool ip_static = DEFAULT_DHCP_STATIC; // ? 
+String ip_static_ip = DEFAULT_DHCP_IP; // ?
+String ip_static_mask = DEFAULT_DHCP_MASK; // ?
+String ip_static_gw = DEFAULT_DHCP_GW; // ?
+String ip_static_dns = DEFAULT_DHCP_DNS; // ?
+
+const int mqtt_check_period = 10000;
+unsigned long mqtt_check_last_time = 0;
+
+bool wg_1_connected = false;
+bool wg_1_halt = false;
+bool wg_1_success = false;
+bool wg_1_error = false;
+bool wg_1_panic = false;
+bool wg_2_connected = false;
+bool wg_2_halt = false;
+bool wg_2_success = false;
+bool wg_2_error = false;
+bool wg_2_panic = false;
+
+int lock_sensor_state;
+int lock_sensor_last_state = 3; // TODO - this will only inform on boot when its closed, nothing for openned
+unsigned long lock_sensor_last_time = 0;
+
+unsigned long wg_1_last_time = 0;
+unsigned long wg_2_last_time = 0;
+
+bool button_halt = false;
+bool button_success = false;
+int button_state;
+int button_last_state = 1; // HIGH
+unsigned long button_press_last_time = 0;
+unsigned long button_last_time = 0;
+
+// int config_button_last_state = 1;
+// bool config_button_pressed = false;
+// bool config_button_active = false;
+// unsigned long config_button_last_time = 0;
+// unsigned long config_button_period = 5000;
+
+// const int mcp_int_debounce = 250; // ?
+// bool mcp_int_trigger = false; // ?
+// int mcp_int_state; // ?
+// int mcp_int_last_state = 1; // HIGH // ?
+// unsigned long mcp_int_trigger_last_time = 0; // ?
+// unsigned long mcp_int_last_time = 0; // ?
+
+
+const int wg_tamper_debounce = 250; // ?
+
+bool wg_1_tamper_trigger = true; // TODO - check state on boot -> this set to true only detects if NORMAL, nothing for ALARM
+int wg_1_tamper_state;
+// int wg_1_tamper_last_state = 1; // HIGH
+int wg_1_tamper_last_state = 3; // ? default is invalid state, to get real state after boot
+unsigned long wg_1_tamper_trigger_last_time = 0;
+
+bool wg_2_tamper_trigger = true; // TODO
+// int wg_2_tamper_state;
+int wg_2_tamper_state = LOW; // TODO
+// int wg_2_tamper_last_state = 1; // HIGH
+int wg_2_tamper_last_state = 3; // ? default is invalid state, to get real state after boot
+unsigned long wg_2_tamper_trigger_last_time = 0;
+
+// ----------------------------------------------------------------------------------------------------------------
+
+String mac2String(byte ar[]) { 
+  String s;
+  for (byte i = 0; i < 6; ++i) {
+    char buf[3];
+    sprintf(buf, "%02X", ar[i]); // J-M-L: slight modification, added the 0 in the format for padding 
+    s += buf;
+    if (i < 5) s += ':';
+  }
+  return s;
+}
+
+String defaultHostname() { 
+  uint64_t esp_id = ESP.getEfuseMac();
+  String mac_address = mac2String((byte*) &esp_id);
+  mac_address.replace(":", "");
+  String hostname = MODULE_TYPE + String('-') + mac_address;
+  return hostname;
+}
+
+void setupUnitVariables() {
+  uint64_t esp_id = ESP.getEfuseMac();
+  String mac_address = mac2String((byte*) &esp_id);
+  mac_address_raw = mac_address;
+  mac_address.replace(":", "");
+  mac_address_nag = mac_address;
+  eth_hostname = defaultHostname();
+}
+
+void setupEspPins() {
+  pinMode(ESP_WG_1_D0, INPUT);
+  pinMode(ESP_WG_1_D1, INPUT);
+  pinMode(ESP_WG_2_D0, INPUT);
+  pinMode(ESP_WG_2_D1, INPUT);
+  pinMode(ESP_LOCK_SENSOR, INPUT); // external input pull-up resistor
+  pinMode(ESP_BUTTON, INPUT); // external input pull-up resistor
+  pinMode(ESP_MCP_INT, INPUT); // external pull-up
+
+  // TODO
+
+  SerialMon.println(F("[ESP] Success"));
+}
+
+void setupMcpPins() { // TODO
+  if (!mcp.begin_I2C(MCP_ADDR)) {
+    SerialMon.println(F("[MCP] Error"));
+    while (1);
+  }
+  mcp.pinMode(MCP_LOCK_TRIGGER, OUTPUT);
+  mcp.digitalWrite(MCP_LOCK_TRIGGER, HIGH); // OFF
+
+  mcp.pinMode(MCP_WG_1_GREEN_LED, OUTPUT);
+  mcp.digitalWrite(MCP_WG_1_GREEN_LED, LOW); // ON
+  mcp.pinMode(MCP_WG_1_RED_LED, OUTPUT);
+  mcp.digitalWrite(MCP_WG_1_RED_LED, LOW); // ON
+  mcp.pinMode(MCP_WG_1_BUZZER, OUTPUT);
+  mcp.digitalWrite(MCP_WG_1_BUZZER, HIGH); // OFF
+  mcp.pinMode(MCP_WG_2_GREEN_LED, OUTPUT);
+  mcp.digitalWrite(MCP_WG_2_GREEN_LED, LOW); // ON
+  mcp.pinMode(MCP_WG_2_RED_LED, OUTPUT);
+  mcp.digitalWrite(MCP_WG_2_RED_LED, LOW); // ON
+  mcp.pinMode(MCP_WG_2_BUZZER, OUTPUT);
+  mcp.digitalWrite(MCP_WG_2_BUZZER, HIGH); // OFF
+
+  // TODO
+
+  mcp.setupInterrupts(true, false, LOW);
+  mcp.pinMode(MCP_WG_1_TAMPER, INPUT); // TODO external resistor - pull-up vs pull-down 
+  mcp.pinMode(MCP_WG_2_TAMPER, INPUT); // TODO external resistor - pull-up vs pull-down 
+  mcp.setupInterruptPin(MCP_WG_1_TAMPER, CHANGE);
+  mcp.setupInterruptPin(MCP_WG_2_TAMPER, CHANGE);
+
+  // TODO
+
+  SerialMon.println(F("[MCP] Success"));
+}
+
+void updateNtpTime() {
+  configTzTime(timezone.c_str(), ntp_server.c_str(), NULL, NULL);
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    SerialMon.print(F("[NTP] Received Time - "));
+    SerialMon.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    rtc.adjust(DateTime(timeinfo.tm_year+1900, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec));
+    SerialMon.print(F("[RTC] Time Updated - "));
+    SerialMon.println(rtc.now().timestamp());
+  }
+}
+
+void setupRtc() {
+  if (!rtc.begin()) {
+    SerialMon.println(F("[RTC] Error"));
+    while (1);
+  }
+  SerialMon.println(F("[RTC] Success"));
+  if (rtc.lostPower()) {
+    SerialMon.println(F("[RTC] Lost power, setting default date (1/1/2000 00:00:00)"));
+    rtc.adjust(DateTime(2000, 1, 1, 0, 0, 0)); // 1.1. 1970 00:00:00
+  }
+  SerialMon.print("[RTC] Temperature is: "); 
+  SerialMon.print(rtc.getTemperature());
+  SerialMon.println(" °C");
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void openLock() {
+  mcp.digitalWrite(MCP_LOCK_TRIGGER, LOW); // ON
+  SerialMon.println("[DEBUG] Lock - Open");
+}
+
+void closeLock() {
+  mcp.digitalWrite(MCP_LOCK_TRIGGER, HIGH); // OFF
+  SerialMon.println("[DEBUG] Lock - Close");
+}
+
+void wg_1_buzzer_on() {
+  // if (!wg_1_silent && wg_1_connected) mcp.digitalWrite(MCP_WG_1_BUZZER, LOW); // ON
+  if (!wg_1_silent && wg_1_connected) {
+    mcp.digitalWrite(MCP_WG_1_BUZZER, LOW); // ON
+    SerialMon.println("[DEBUG] WG_1 Buzzer - ON");
+    wg_1_buzzer_ticker.once_ms(wg_buzzer_timeout, []() { 
+      mcp.digitalWrite(MCP_WG_1_BUZZER, HIGH); // OFF
+      SerialMon.println("[DEBUG] WG_1 Buzzer - OFF");
+    });
+  }
+}
+
+// void wg_1_buzzer_off() {
+//   if (!wg_1_silent && wg_1_connected) mcp.digitalWrite(MCP_WG_1_BUZZER, HIGH); // OFF
+// }
+
+void wg_1_red_led_on() {
+  if (wg_1_connected) mcp.digitalWrite(MCP_WG_1_RED_LED, LOW); // ON
+}
+
+void wg_1_red_led_off() {
+  if (wg_1_connected) mcp.digitalWrite(MCP_WG_1_RED_LED, HIGH); // OFF
+}
+
+void wg_1_green_led_on() {
+  if (wg_1_connected) mcp.digitalWrite(MCP_WG_1_GREEN_LED, LOW); // ON
+}
+
+void wg_1_green_led_off() {
+  if (wg_1_connected) mcp.digitalWrite(MCP_WG_1_GREEN_LED, HIGH); // OFF
+}
+
+void wg_2_buzzer_on() {
+  // if (!wg_2_silent && wg_2_connected) mcp.digitalWrite(MCP_WG_2_BUZZER, LOW); // ON
+  if (!wg_2_silent && wg_2_connected) {
+    mcp.digitalWrite(MCP_WG_2_BUZZER, LOW); // ON
+    SerialMon.println("[DEBUG] WG_2 Buzzer - ON");
+    wg_2_buzzer_ticker.once_ms(wg_buzzer_timeout, []() { 
+      mcp.digitalWrite(MCP_WG_2_BUZZER, HIGH); // OFF
+      SerialMon.println("[DEBUG] WG_2 Buzzer - OFF");
+    });
+  }
+}
+
+void wg_2_red_led_on() {
+  if (wg_2_connected) mcp.digitalWrite(MCP_WG_2_RED_LED, LOW); // ON
+}
+
+void wg_2_red_led_off() {
+  if (wg_2_connected) mcp.digitalWrite(MCP_WG_2_RED_LED, HIGH); // OFF
+}
+
+void wg_2_green_led_on() {
+  if (wg_2_connected) mcp.digitalWrite(MCP_WG_2_GREEN_LED, LOW); // ON
+}
+
+void wg_2_green_led_off() {
+  if (wg_2_connected) mcp.digitalWrite(MCP_WG_2_GREEN_LED, HIGH); // OFF
+}
+
+void wg_1_error_status() {
+  wg_1_last_time = currentMillis;
+  wg_1_halt = true;
+  wg_1_error = true;
+  wg_1_red_led_on();
+  SerialMon.println("[DEBUG] WG_1 Error Status");
+}
+
+void wg_1_panic_status() {
+  wg_1_last_time = currentMillis;
+  wg_1_halt = true;
+  wg_1_panic = true;
+  wg_1_red_led_on();
+  wg_1_green_led_on();
+  SerialMon.println("[DEBUG] WG_1 Panic Status");
+}
+
+void wg_1_success_status() { // ? - handle wg2
+  wg_1_last_time = currentMillis;
+  wg_1_halt = true;
+  wg_2_halt = true;
+  wg_1_success = true;
+  button_halt = true;
+  if (wg_1_error) { // ? - not possible, needed?
+    wg_1_error = false;
+    wg_1_red_led_off();
+  }
+  if (wg_1_panic) { // ? - not possible, needed?
+    wg_1_panic = false;
+    wg_1_red_led_off();
+  }
+  if (wg_2_error) {
+    wg_2_error = false;
+    wg_2_red_led_off();
+  }
+  if (wg_2_panic) {
+    wg_2_panic = false;
+    wg_2_red_led_off();
+  }
+  wg_1_green_led_on();
+      wg_2_green_led_on();
+  openLock();
+  SerialMon.println("[DEBUG] WG_1 Success Status");
+}
+
+void wg_2_error_status() {
+  wg_2_last_time = currentMillis;
+  wg_2_halt = true;
+  wg_2_error = true;
+  wg_2_red_led_on();
+}
+
+void wg_2_panic_status() {
+  wg_2_last_time = currentMillis;
+  wg_2_halt = true;
+  wg_2_panic = true;
+  wg_2_red_led_on();
+  wg_2_green_led_on();
+}
+
+void wg_2_success_status() { // ? - handle wg2
+  wg_2_last_time = currentMillis;
+  wg_2_halt = true;
+  wg_1_halt = true;
+  wg_2_success = true;
+  button_halt = true;
+  if (wg_2_error) { // ? - not possible, needed?
+    wg_2_error = false;
+    wg_2_red_led_off();
+  }
+  if (wg_2_panic) { // ? - not possible, needed?
+    wg_2_panic = false;
+    wg_2_red_led_off();
+  }
+  if (wg_1_error) {
+    wg_1_error = false;
+    wg_1_red_led_off();
+  }
+  if (wg_1_panic) {
+    wg_1_panic = false;
+    wg_1_red_led_off();
+  }
+  wg_2_green_led_on();
+      wg_1_green_led_on();
+  openLock();
+}
+
+void button_success_status() {
+  button_last_time = currentMillis;
+  button_halt = true;
+  button_success = true;
+  wg_1_halt = true;
+  wg_2_halt = true;
+  if (wg_1_error) {
+    wg_1_error = false;
+    wg_1_red_led_off();
+  }
+  if (wg_1_panic) {
+    wg_1_panic = false;
+    wg_1_red_led_off();
+  }
+  if (wg_2_error) {
+    wg_2_error = false;
+    wg_2_red_led_off();
+  }
+  if (wg_2_panic) {
+    wg_2_panic = false;
+    wg_2_red_led_off();
+  }
+  wg_1_green_led_on();
+  wg_2_green_led_on();
+  openLock();
+  SerialMon.println("[DEBUG] Button Success Status");
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void lock_sensor_state_handler() { // TODO
+  int lock_sensor_current_state = digitalRead(ESP_LOCK_SENSOR);
+  if (lock_sensor_current_state != lock_sensor_last_state) {
+    lock_sensor_last_time = currentMillis;
+  }
+  if ((currentMillis - lock_sensor_last_time) >= lock_sensor_debounce) {
+    if (lock_sensor_current_state != lock_sensor_state) {
+      lock_sensor_state = lock_sensor_current_state;
+      if (lock_sensor_state == LOW) {
+        SerialMon.println("[DEBUG] Lock Sensor - Opened");
+      }
+      if (lock_sensor_state == HIGH) {
+        SerialMon.println("[DEBUG] Lock Sensor - Closed");
+      }
+    }
+  }
+  lock_sensor_last_state = lock_sensor_current_state;
+}
+
+void button_press_state_handler() { // TODO
+  int button_current_state = digitalRead(ESP_BUTTON);
+  if (button_current_state != button_last_state) {
+    button_press_last_time = currentMillis;
+  }
+  if ((currentMillis - button_press_last_time) >= button_debounce) {
+    if (button_current_state != button_state) {
+      button_state = button_current_state;
+      if (button_state == LOW) {
+        button_success_status();
+        SerialMon.println("[DEBUG] Button - Pressed");
+      }
+    }
+  }
+  button_last_state = button_current_state;
+}
+
+void button_state_handler() { // ? redo into ticker ?
+  if (button_success && (currentMillis - button_last_time >= button_timeout)) {
+    closeLock();
+    wg_1_green_led_off();
+    wg_2_green_led_off();
+    button_success = false;
+    button_halt = false;
+    wg_1_halt = false;
+    wg_2_halt = false;
+  }
+}
+
+void wg_1_tamper_state_handler() { // TODO
+  // SerialMon.print("[DEBUG] WG_1 TAMPER: ");
+  // if (mcp.digitalRead(MCP_WG_1_TAMPER) == LOW) {
+  //   SerialMon.println("ALARM");
+  //   wg_1_tamper_alarm = true;
+  // } 
+  // if (mcp.digitalRead(MCP_WG_1_TAMPER) == HIGH) {
+  //   SerialMon.println("NORMAL");
+  //   wg_1_tamper_alarm = false;
+  // }
+  if (wg_1_tamper_trigger) {
+    int wg_1_tamper_current_state = mcp.digitalRead(MCP_WG_1_TAMPER);
+    if (wg_1_tamper_current_state != wg_1_tamper_last_state) {
+      wg_1_tamper_trigger_last_time = currentMillis;
+    }
+    if ((currentMillis - wg_1_tamper_trigger_last_time) >= wg_tamper_debounce) {
+      if (wg_1_tamper_current_state != wg_1_tamper_state) {
+        wg_1_tamper_state = wg_1_tamper_current_state;
+        if (wg_1_tamper_state == LOW) {
+          SerialMon.println("[DEBUG] WG_1 TAMPER: ALARM");
+          wg_1_tamper_alarm = true;
+        }
+        if (wg_1_tamper_state == HIGH) {
+          SerialMon.println("[DEBUG] WG_1 TAMPER: NORMAL");
+          wg_1_tamper_alarm = false;
+        }
+        wg_1_tamper_trigger = false;
+      }
+    }
+    wg_1_tamper_last_state = wg_1_tamper_current_state;
+  }
+}
+
+void wg_1_state_changed(bool plugged, const char* param) {
+  // int reader_id = atoi(param); // ?
+  if (plugged) {
+    wg_1_connected = true;
+    wg_1_green_led_off();
+    wg_1_red_led_off();
+    SerialMon.println(F("[WG_1] Connected"));
+  } else {
+    wg_1_green_led_on();
+    wg_1_red_led_on();
+    wg_1_connected = false;
+    SerialMon.println(F("[WG_1] Disconnected"));
+  }
+}
+
+void wg_1_receive_error(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBits, const char* param) {
+  // ? - sometimes gets 1bits / 00 -> filter this out
+  // int reader_id = atoi(param); // ?
+  wg_1_panic_status();
+  SerialMon.print("[WG_1_DEBUG] Error Received: "); // TODO
+  SerialMon.print(Wiegand::DataErrorStr(error));
+  SerialMon.print(" - Raw data: ");
+  SerialMon.print(rawBits);
+  SerialMon.print("bits / ");
+  uint8_t bytes = (rawBits+7)/8;
+  for (int i=0; i<bytes; i++) {
+    SerialMon.print(rawData[i] >> 4, 16);
+    SerialMon.print(rawData[i] & 0xF, 16);
+  }
+  SerialMon.println();
+}
+
+void wg_1_receive_success(uint8_t* data, uint8_t bits, const char* param) { // TODO
+  // int reader_id = atoi(param); // ?
+  wg_1_buzzer_on();
+  String timestamp = rtc.now().timestamp();
+  String incomingData; // TODO - get rid off strings
+  uint8_t bytes = (bits+7)/8;
+  if (wg_1_reverse) {
+    for (int i=bytes; i>0; i--) {
+      incomingData.concat(String(data[i-1] >> 4, 16));        // Serial.print(data[i] >> 4, 16);
+      incomingData.concat(String(data[i-1] & 0xF, 16));       // Serial.print(data[i] & 0xF, 16);
+    }
+  } else {
+    for (int i=0; i<bytes; i++) {
+      incomingData.concat(String(data[i] >> 4, 16));        // Serial.print(data[i] >> 4, 16);
+      incomingData.concat(String(data[i] & 0xF, 16));       // Serial.print(data[i] & 0xF, 16);
+    }
+  }
+  incomingData.toUpperCase();
+  // findCard(timestamp, incomingData); // TODO
+  SerialMon.print("[WG_1_DEBUG] Success (");
+  SerialMon.print(timestamp);
+  SerialMon.print(") - ");
+  SerialMon.println(incomingData);
+}
+
+void wg_1_setup() {
+  wg_1.onReceive(wg_1_receive_success, "1");
+  wg_1.onReceiveError(wg_1_receive_error, "1");
+  wg_1.onStateChange(wg_1_state_changed, "1");
+  wg_1.begin(Wiegand::LENGTH_ANY, true);
+  SerialMon.println(F("[WG_1] Started"));
+}
+
+void wg_1_handler() {
+  wg_1.flush(); // Checks for pending messages
+  wg_1.setPin0State(digitalRead(ESP_WG_1_D0)); // Check for changes on the the wiegand input pins
+  wg_1.setPin1State(digitalRead(ESP_WG_1_D1));
+}
+
+void wg_1_state_handler() { // ? - handle wg2
+  if (wg_1_success && (currentMillis - wg_1_last_time >= wg_1_timeout)) {
+    closeLock();
+    wg_1_green_led_off();
+    wg_2_green_led_off();
+    wg_1_success = false;
+    wg_1_halt = false;
+    wg_2_halt = false;
+    button_halt = false;
+  }
+  if (wg_1_error && (currentMillis - wg_1_last_time >= wg_error_timeout)) {
+    wg_1_red_led_off();
+    wg_1_error = false;
+    wg_1_halt = false;
+  }
+  if (wg_1_panic && (currentMillis - wg_1_last_time >= wg_panic_timeout)) {
+    wg_1_red_led_off();
+    wg_1_green_led_off();
+    wg_1_panic = false;
+    wg_1_halt = false;
+  }
+}
+
+void wg_2_tamper_state_handler() { // TODO
+  // SerialMon.print("[DEBUG] WG_2 TAMPER: ");
+  // if (mcp.digitalRead(MCP_WG_2_TAMPER) == LOW) {
+  //   SerialMon.println("ALARM");
+  //   wg_2_tamper_alarm = true;
+  // } 
+  // if (mcp.digitalRead(MCP_WG_2_TAMPER) == HIGH) {
+  //   SerialMon.println("NORMAL");
+  //   wg_2_tamper_alarm = false;
+  // }
+  if (wg_2_tamper_trigger) {
+    int wg_2_tamper_current_state = mcp.digitalRead(MCP_WG_2_TAMPER);
+    if (wg_2_tamper_current_state != wg_2_tamper_last_state) {
+      wg_2_tamper_trigger_last_time = currentMillis;
+    }
+    if ((currentMillis - wg_2_tamper_trigger_last_time) >= wg_tamper_debounce) {
+      if (wg_2_tamper_current_state != wg_2_tamper_state) {
+        wg_2_tamper_state = wg_2_tamper_current_state;
+        if (wg_2_tamper_state == LOW) {
+          SerialMon.println("[DEBUG] WG_2 TAMPER: ALARM");
+          wg_2_tamper_alarm = true;
+        }
+        if (wg_2_tamper_state == HIGH) {
+          SerialMon.println("[DEBUG] WG_2 TAMPER: NORMAL");
+          wg_2_tamper_alarm = false;
+        }
+        wg_2_tamper_trigger = false;
+      }
+    }
+    wg_2_tamper_last_state = wg_2_tamper_current_state;
+  }
+}
+
+void wg_2_state_changed(bool plugged, const char* param) {
+  if (plugged) {
+    wg_2_connected = true;
+    wg_2_green_led_off();
+    wg_2_red_led_off();
+    SerialMon.println(F("[WG_2] Connected"));
+  } else {
+    wg_2_green_led_on();
+    wg_2_red_led_on();
+    wg_2_connected = false;
+    SerialMon.println(F("[WG_2] Disconnected"));
+  }
+}
+
+void wg_2_receive_error(Wiegand::DataError error, uint8_t* rawData, uint8_t rawBits, const char* param) {
+  wg_2_panic_status();
+  SerialMon.print("[WG_2_DEBUG] Error Received: "); // TODO
+  SerialMon.print(Wiegand::DataErrorStr(error));
+  SerialMon.print(" - Raw data: ");
+  SerialMon.print(rawBits);
+  SerialMon.print("bits / ");
+  uint8_t bytes = (rawBits+7)/8;
+  for (int i=0; i<bytes; i++) {
+    SerialMon.print(rawData[i] >> 4, 16);
+    SerialMon.print(rawData[i] & 0xF, 16);
+  }
+  SerialMon.println();
+}
+
+void wg_2_receive_success(uint8_t* data, uint8_t bits, const char* param) { // TODO
+  wg_2_buzzer_on();
+  String timestamp = rtc.now().timestamp();
+  String incomingData; // TODO - get rid off strings
+  uint8_t bytes = (bits+7)/8;
+  if (wg_2_reverse) {
+    for (int i=bytes; i>0; i--) {
+      incomingData.concat(String(data[i-1] >> 4, 16));        // Serial.print(data[i] >> 4, 16);
+      incomingData.concat(String(data[i-1] & 0xF, 16));       // Serial.print(data[i] & 0xF, 16);
+    }
+  } else {
+    for (int i=0; i<bytes; i++) {
+      incomingData.concat(String(data[i] >> 4, 16));        // Serial.print(data[i] >> 4, 16);
+      incomingData.concat(String(data[i] & 0xF, 16));       // Serial.print(data[i] & 0xF, 16);
+    }
+  }
+  incomingData.toUpperCase();
+  // findCard(timestamp, incomingData); // TODO
+  SerialMon.print("[WG_2_DEBUG] Success (");
+  SerialMon.print(timestamp);
+  SerialMon.print(") - ");
+  SerialMon.println(incomingData);
+}
+
+void wg_2_setup() {
+  wg_2.onReceive(wg_2_receive_success, "2");
+  wg_2.onReceiveError(wg_2_receive_error, "2");
+  wg_2.onStateChange(wg_2_state_changed, "2");
+  wg_2.begin(Wiegand::LENGTH_ANY, true);
+  SerialMon.println(F("[WG_2] Started"));
+}
+
+void wg_2_handler() {
+  wg_2.flush(); // Checks for pending messages
+  wg_2.setPin0State(digitalRead(ESP_WG_2_D0)); // Check for changes on the the wiegand input pins
+  wg_2.setPin1State(digitalRead(ESP_WG_2_D1));
+}
+
+void wg_2_state_handler() { // ? - handle wg2
+  if (wg_2_success && (currentMillis - wg_2_last_time >= wg_2_timeout)) {
+    closeLock();
+    wg_2_green_led_off();
+    wg_1_green_led_off();
+    wg_2_success = false;
+    wg_2_halt = false;
+    wg_1_halt = false;
+    button_halt = false;
+  }
+  if (wg_2_error && (currentMillis - wg_2_last_time >= wg_error_timeout)) {
+    wg_2_red_led_off();
+    wg_2_error = false;
+    wg_2_halt = false;
+  }
+  if (wg_2_panic && (currentMillis - wg_2_last_time >= wg_panic_timeout)) {
+    wg_2_red_led_off();
+    wg_2_green_led_off();
+    wg_2_panic = false;
+    wg_2_halt = false;
+  }
+}
+
+void mcp_int_trigger_handler() { // TODO
+  // int mcp_int_current_state = digitalRead(ESP_MCP_INT); // ?
+  // if (mcp_int_current_state != mcp_int_last_state) {
+  //   mcp_int_trigger_last_time = currentMillis;
+  // }
+  // if ((currentMillis - mcp_int_trigger_last_time) >= mcp_int_debounce) {
+  //   if (mcp_int_current_state != mcp_int_state) {
+  //     mcp_int_state = mcp_int_current_state;
+  //     if (mcp_int_state == LOW) {
+  //       mcp_int_last_time = currentMillis;
+  //       mcp_int_trigger = true;
+  //       switch (mcp.getLastInterruptPin()) {
+  //         case MCP_WG_1_TAMPER:
+  //           wg_1_check_tamper_state();
+  //           break;
+  //         case MCP_WG_2_TAMPER:
+  //           wg_2_check_tamper_state();
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //     }
+  //   }
+  // }
+  // mcp_int_last_state = mcp_int_current_state;
+  if (digitalRead(ESP_MCP_INT) == LOW) {
+    switch (mcp.getLastInterruptPin()) {
+      case MCP_WG_1_TAMPER:
+        // wg_1_check_tamper_state();
+        if (!wg_1_tamper_trigger) wg_1_tamper_trigger = true;
+        break;
+      case MCP_WG_2_TAMPER:
+        // wg_2_check_tamper_state();
+        if (!wg_2_tamper_trigger) wg_2_tamper_trigger = true;
+        break;
+      default:
+        break;
+    }
+    // mcp.clearInterrupts();
+  }
+}
+
+// void mcp_int_clear_handler() { // ?
+//   if (mcp_int_trigger && (currentMillis - mcp_int_last_time >= mcp_int_debounce)) {
+//     mcp_int_trigger = false;
+//     mcp.clearInterrupts();
+//   }
+// }
+
+// ----------------------------------------------------------------------------------------------------------------
+
+int openDb(const char *filename, sqlite3 **db) { 
+  dbRc = sqlite3_open(filename, db);
+  if (dbRc) {
+    SerialMon.print("[DB] Can't open database: ");
+    SerialMon.println(sqlite3_errmsg(*db));
+    return dbRc;
+  } 
+  return dbRc;
+}
+
+static int dbCallback(void *data, int dataLength, char **colValue, char **colName) { 
+  SerialMon.println(F((const char*)data));
+  // no output printed - use only for data in to database
+  return 0;
+}
+
+int dbExec(sqlite3 *db, const char *sql) { 
+  SerialMon.print("[DB] "); // TODO - test
+  SerialMon.println(sql);
+  dbRc = sqlite3_exec(db, sql, dbCallback, (void*)dbData, &dbErrorMessage);
+  if (dbRc != SQLITE_OK) {
+    SerialMon.print("[DB] SQL error (");
+    SerialMon.print(dbRc);
+    SerialMon.print("): ");
+    SerialMon.println(dbErrorMessage);
+    sqlite3_free(dbErrorMessage);
+  } 
+  return dbRc;
+}
+
+// void dbExecPrep(String sql) {
+//   dbRc = sqlite3_prepare_v2(fs_db, sql.c_str(), strlen(sql.c_str()), &dbRes, &dbTail);
+//   if (dbRc != SQLITE_OK) {
+//     SerialMon.print("[DB] Failed to update data: ");
+//     SerialMon.println(sqlite3_errmsg(fs_db));
+//   }
+//   if (sqlite3_step(dbRes) != SQLITE_DONE) {
+//     SerialMon.print("[DB] ERROR executing stmt (");
+//     SerialMon.print(sqlite3_step(dbRes));
+//     SerialMon.print("): ");
+//     SerialMon.println(sqlite3_errmsg(fs_db)); // TODO
+//   }
+//   sqlite3_finalize(dbRes);
+// }
+
+// String loadConfigStringVariable(String sql, String default_value) { // TODO - how to check when column value is null => set column not null
+//   dbRc = sqlite3_prepare_v2(fs_db, sql.c_str(), strlen(sql.c_str()), &dbRes, &dbTail); // sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &dbRes, &dbTail) || sqlite3_prepare_v2(fs_db, sql.c_str(), 1000, &res, &tail)
+//   if (dbRc != SQLITE_OK) {
+//     SerialMon.print("Failed to fetch data: ");
+//     SerialMon.println(sqlite3_errmsg(fs_db));
+//     return default_value;
+//   }
+//   while (sqlite3_step(dbRes) == SQLITE_ROW) {
+//     return (const char *) sqlite3_column_text(dbRes, 0);
+//   }
+//   sqlite3_finalize(dbRes);
+//   return default_value; // failover if no rows
+// }
+
+// int loadConfigIntVariable(String sql, int default_value) { // TODO - how to check when column value is null => set column not null
+//   dbRc = sqlite3_prepare_v2(fs_db, sql.c_str(), strlen(sql.c_str()), &dbRes, &dbTail); // sqlite3_prepare_v2(fs_db, sql.c_str(), -1, &dbRes, &dbTail) || sqlite3_prepare_v2(fs_db, sql.c_str(), 1000, &res, &tail)
+//   if (dbRc != SQLITE_OK) {
+//     SerialMon.print("Failed to fetch data: ");
+//     SerialMon.println(sqlite3_errmsg(fs_db));
+//     return default_value;
+//   }
+//   while (sqlite3_step(dbRes) == SQLITE_ROW) {
+//     return sqlite3_column_int(dbRes, 0);
+//   }
+//   sqlite3_finalize(dbRes);
+//   return default_value; // failover if no rows
+// }
+
+void loadDatabaseConfig() { // ?
+  // if (openDb("/spiffs/database.db", &fs_db))
+  //   return;
+  // is_setup_done = loadConfigIntVariable("SELECT value FROM config WHERE variable = 'is_setup_done'", DEFAULT_IS_SETUP_DONE);
+  // sqlite3_close(fs_db);
+  SerialMon.println(F("[FS] Database Values Loaded"));
+}
+
+void initDatabaseFile() { // TODO
+  // String sqlArray[] = {
+  //   "CREATE TABLE IF NOT EXISTS config (variable TEXT, value)",
+  //   "INSERT INTO config VALUES ('is_setup_done','" + String(DEFAULT_IS_SETUP_DONE) + "')",
+  //   "INSERT INTO config VALUES ('fw_version','" + String(MODULE_FIRMWARE_VERSION) + "')",
+  //   "INSERT INTO config VALUES ('hostname','" + defaultHostname() + "')",
+  //   "INSERT INTO config VALUES ('ntp_server','" + String(DEFAULT_NTP_SERVER) + "')",
+  //   "INSERT INTO config VALUES ('time_zone_name','" + String(DEFAULT_TIMEZONE_NAME) + "')",
+  //   "INSERT INTO config VALUES ('time_zone','" + String(DEFAULT_TIMEZONE) + "')",
+  //   "INSERT INTO config VALUES ('gnss_mode','" + String(DEFAULT_GNSS_MODE) + "')",
+  //   "INSERT INTO config VALUES ('backend_server','" + String(DEFAULT_BACKEND_SERVER) + "')",
+  //   "INSERT INTO config VALUES ('http_port','" + String(DEFAULT_HTTP_PORT) + "')",
+  //   "INSERT INTO config VALUES ('gprs_apn','" + String(DEFAULT_GPRS_APN) + "')",
+  //   "INSERT INTO config VALUES ('gprs_credentials','" + String(DEFAULT_GPRS_CREDENTIALS) + "')",
+  //   "INSERT INTO config VALUES ('gprs_user','" + String(DEFAULT_GPRS_USER) + "')",
+  //   "INSERT INTO config VALUES ('gprs_pass','" + String(DEFAULT_GPRS_PASS) + "')"
+  // };
+  // if (openDb("/spiffs/database.db", &fs_db))
+  //   return;
+  // for (int i = 0; i < sizeof(sqlArray)/sizeof(sqlArray[0]); i++) {
+  //   dbRc = dbExec(fs_db, sqlArray[i].c_str());
+  //   if (dbRc != SQLITE_OK) {
+  //     sqlite3_close(fs_db);
+  //     return;
+  //   }
+  //   // dbExecPrep(sqlArray[i]);
+  // }
+  // sqlite3_close(fs_db);
+  SerialMon.println(F("[FS] Database Structure Written Into Database File"));
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void db_find_card() { // TODO
+
+}
+
+void db_add_card() { // TODO
+
+}
+
+void db_remove_card() { // TODO
+
+}
+
+void db_insert_card_log() { // TODO
+
+}
+
+void db_insert_button_log() { // TODO
+
+}
+
+void db_insert_door_log() { // TODO
+
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) { // TODO
+  SerialMon.print("[MQTT] Message arrived (");
+  SerialMon.print(topic);
+  SerialMon.print(") ");
+  for (int i = 0; i < length; i++) {
+    SerialMon.print(F((char)payload[i]));
+  }
+  SerialMon.println();
+  // if (String(topic) == mqtt_StatusTopic) { // TODO
+  //   
+  // }
+  // ? OR
+  // String topicToProcess = topic;
+  // payload[length] = '\0';
+  // String payloadToProcess = (char*)payload;
+  // triggerAction(topicToProcess, payloadToProcess);
+}
+
+void setupMqtt() {
+  mqtt.setServer(backend_server.c_str(), mqtt_port);
+  mqtt.setCallback(mqttCallback);
+  mqtt.setBufferSize(1024); // TODO
+  SerialMon.println(F("[MQTT] Setup Done"));
+}
+
+void publishMqttBirthMessage() { // ?
+  if (mqtt.connected()) {
+    if (!mqtt.publish(String("access-control/" + mac_address_nag + "/status").c_str(), MQTT_AVAILABILITY_BIRTH, true /*false*/)) {
+      SerialMon.println("[MQTT] Failed publish " + String(MQTT_AVAILABILITY_BIRTH) + " to: access-control/" + mac_address_nag + "/status");
+    }
+  }
+}
+
+void publishTestData(String data_out) { // TODO
+  if (mqtt.connected()) {
+    if (!mqtt.publish(String("access-control/" + mac_address_nag + "/test").c_str(), data_out.c_str(), true /*false*/)) {
+      SerialMon.println("[MQTT] Failed publish to: access-control/" + mac_address_nag + "/test");
+    }
+  } 
+  // else {}
+}
+
+void connectMqtt() { // ?
+  if (!mqtt.connected()) {
+    if (mqtt.connect(mac_address_nag.c_str(), mqtt_user.c_str(), mqtt_pass.c_str(), String("access-control/" + mac_address_nag + "/status").c_str(), 0, true /*false*/, MQTT_AVAILABILITY_LWT)) {
+      publishMqttBirthMessage();
+      // TODO - subscribe to needed topics
+      // ? - publish init state
+    } else {
+      SerialMon.print("[MQTT] Failed to connect (");
+      SerialMon.print(mqtt.state());
+      SerialMon.println(")");
+    }
+  }
+}
+
+void handleMqttConnection() {
+  if (currentMillis - mqtt_check_last_time >= mqtt_check_period) {
+    mqtt_check_last_time = currentMillis;
+    connectMqtt();
+  }
+  mqtt.loop();
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// String getTimezoneValue(String timezoneName) {
+//   String out = DEFAULT_TIMEZONE;
+//   for (int x = 0; x <= sizeof(tzArray)/sizeof(tzArray[0]); x++) {
+//     if (timezoneName == tzArray[x].name) {
+//       out = tzArray[x].value;
+//     }
+//   }
+//   return out;
+// }
+
+void handleDatabase() { // TODO
+  // String sqlArray[] = {
+  //   // "CREATE TABLE IF NOT EXISTS cards (card_hex TEXT)",
+  //   // "CREATE TABLE IF NOT EXISTS cards (card_hex TEXT, PRIMARY KEY( card_hex ))"
+  // };
+
+  // if (openDb("/spiffs/database.db", &fs_db))
+  //   return;
+  // for (int i = 0; i < sizeof(sqlArray)/sizeof(sqlArray[0]); i++) {
+  //   dbRc = dbExec(fs_db, sqlArray[i].c_str());
+  //   if (dbRc != SQLITE_OK) {
+  //     sqlite3_close(fs_db);
+  //     return;
+  //   }
+  //   // dbExecPrep(sqlArray[i]);
+  // }
+  // sqlite3_close(fs_db);
+  SerialMon.println(F("[CONFIG] Database Loaded"));
+}
+
+void handlePreferences() {
+  preferences.begin("module-config", false);
+  if (preferences.isKey("fw_version")) {
+    fw_version = preferences.getString("fw_version");
+  } else {
+    preferences.putString("fw_version", MODULE_FIRMWARE_VERSION);
+  }
+  if (preferences.isKey("ip_static")) {
+    ip_static = preferences.getBool("ip_static");
+  } else {
+    preferences.putBool("ip_static", DEFAULT_DHCP_STATIC);
+  }
+  if (preferences.isKey("ip_static_ip")) {
+    ip_static_ip = preferences.getString("ip_static_ip");
+  } else {
+    preferences.putString("ip_static_ip", DEFAULT_DHCP_IP);
+  }
+  if (preferences.isKey("ip_static_mask")) {
+    ip_static_mask = preferences.getString("ip_static_mask");
+  } else {
+    preferences.putString("ip_static_mask", DEFAULT_DHCP_MASK);
+  }
+  if (preferences.isKey("ip_static_gw")) {
+    ip_static_gw = preferences.getString("ip_static_gw");
+  } else {
+    preferences.putString("ip_static_gw", DEFAULT_DHCP_GW);
+  }
+  if (preferences.isKey("ip_static_dns")) {
+    ip_static_dns = preferences.getString("ip_static_dns");
+  } else {
+    preferences.putString("ip_static_dns", DEFAULT_DHCP_DNS);
+  }
+  if (preferences.isKey("eth_hostname")) {
+    eth_hostname = preferences.getString("eth_hostname");
+  } else {
+    preferences.putString("eth_hostname", defaultHostname());
+  }
+  if (preferences.isKey("btn_timeout")) {
+    button_timeout = preferences.getInt("btn_timeout");
+  } else {
+    preferences.putInt("btn_timeout", DEFAULT_BUTTON_TIMEOUT);
+  }
+  if (preferences.isKey("lock_sensor")) {
+    lock_sensor = preferences.getBool("lock_sensor");
+  } else {
+    preferences.putBool("lock_sensor", DEFAULT_LOCK_SENSOR);
+  }
+  if (preferences.isKey("wg_bz_timeout")) {
+    wg_buzzer_timeout = preferences.getInt("wg_bz_timeout");
+  } else {
+    preferences.putInt("wg_bz_timeout", DEFAULT_WG_BUZZER_TIMEOUT);
+  }
+  if (preferences.isKey("wg_1_timeout")) {
+    wg_1_timeout = preferences.getInt("wg_1_timeout");
+  } else {
+    preferences.putInt("wg_1_timeout", DEFAULT_WG_TIMEOUT);
+  }
+  // if (preferences.isKey("wg_1_secure")) {
+  //   wg_1_secure = preferences.getBool("wg_1_secure");
+  // } else {
+  //   preferences.putBool("wg_1_secure", DEFAULT_WG_SECURE);
+  // }
+  if (preferences.isKey("wg_1_reverse")) {
+    wg_1_reverse = preferences.getBool("wg_1_reverse");
+  } else {
+    preferences.putBool("wg_1_reverse", DEFAULT_WG_REVERSE);
+  }
+  if (preferences.isKey("wg_1_silent")) {
+    wg_1_silent = preferences.getBool("wg_1_silent");
+  } else {
+    preferences.putBool("wg_1_silent", DEFAULT_WG_REVERSE);
+  }
+  if (preferences.isKey("wg_2_timeout")) {
+    wg_2_timeout = preferences.getInt("wg_2_timeout");
+  } else {
+    preferences.putInt("wg_2_timeout", DEFAULT_WG_TIMEOUT);
+  }
+  // if (preferences.isKey("wg_2_secure")) {
+  //   wg_2_secure = preferences.getBool("wg_2_secure");
+  // } else {
+  //   preferences.putBool("wg_2_secure", DEFAULT_WG_SECURE);
+  // }
+  if (preferences.isKey("wg_2_reverse")) {
+    wg_2_reverse = preferences.getBool("wg_2_reverse");
+  } else {
+    preferences.putBool("wg_2_reverse", DEFAULT_WG_REVERSE);
+  }
+  if (preferences.isKey("wg_2_silent")) {
+    wg_2_silent = preferences.getBool("wg_2_silent");
+  } else {
+    preferences.putBool("wg_2_silent", DEFAULT_WG_REVERSE);
+  }
+  if (preferences.isKey("ntp_server")) {
+    ntp_server = preferences.getString("ntp_server");
+  } else {
+    preferences.putString("ntp_server", DEFAULT_NTP_SERVER);
+  }
+  if (preferences.isKey("time_zone")) {
+    timezone = preferences.getString("time_zone");
+  } else {
+    preferences.putString("time_zone", DEFAULT_TIMEZONE);
+  }
+  if (preferences.isKey("tz_name")) {
+    timezone_name = preferences.getString("tz_name");
+  } else {
+    preferences.putString("tz_name", DEFAULT_TIMEZONE_NAME);
+  }
+  if (preferences.isKey("server")) {
+    backend_server = preferences.getString("server");
+  } else {
+    preferences.putString("server", DEFAULT_BACKEND_SERVER);
+  }
+  if (preferences.isKey("mqtt_port")) {
+    mqtt_port = preferences.getInt("mqtt_port");
+  } else {
+    preferences.putInt("mqtt_port", DEFAULT_MQTT_PORT);
+  }
+  if (preferences.isKey("mqtt_cred")) {
+    mqtt_credentials = preferences.getBool("mqtt_cred");
+  } else {
+    preferences.putBool("mqtt_cred", DEFAULT_MQTT_CREDENTIALS);
+  }
+  if (preferences.isKey("mqtt_user")) {
+    mqtt_user = preferences.getString("mqtt_user");
+  } else {
+    preferences.putString("mqtt_user", DEFAULT_MQTT_USER);
+  }
+  if (preferences.isKey("mqtt_pass")) {
+    mqtt_pass = preferences.getString("mqtt_pass");
+  } else {
+    preferences.putString("mqtt_pass", DEFAULT_MQTT_PASS);
+  }
+  if (preferences.isKey("setup_done")) {
+    is_setup_done = preferences.getBool("setup_done");
+  } else {
+    preferences.putBool("setup_done", DEFAULT_IS_SETUP_DONE);
+  }
+  SerialMon.println(F("[CONFIG] Preferences Loaded"));
+}
+
+void setupFileSystem() {
+  if (!SPIFFS.begin(FORMAT_FS_IF_FAILED)) {
+    SerialMon.println(F("[FS] File System Mount Failed"));
+    while(1);
+  } else {
+    SerialMon.println(F("[FS] File System Mounted"));
+    if (SPIFFS.exists("/database.db")) {
+      SerialMon.println(F("[FS] Database File Exists"));
+      loadDatabaseConfig();
+    } else {
+      SerialMon.println(F("[FS] Database File Does Not Exist"));
+      File dbFile;
+      dbFile = SPIFFS.open("/database.db", FILE_WRITE);
+      dbFile.close();
+      SerialMon.println(F("[FS] Database File Created"));
+      initDatabaseFile();
+    }
+    // if (!SPIFFS.exists("/database.db")) { // TODO
+    //   SerialMon.println(F("[FS] Database File Does Not Exist"));
+    //   File dbFile;
+    //   dbFile = SPIFFS.open("/database.db", FILE_WRITE);
+    //   dbFile.close();
+    //   SerialMon.println(F("[FS] Database File Created"));
+    // }
+    handleDatabase(); // TODO
+    handlePreferences();
+  }
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void handleWebServerFaviconGet() {
+  webServer.send_P(200, "image/x-icon", captive_favicon, sizeof(captive_favicon));
+}
+
+void handleWebServerRootGet() {
+  webServer.send_P(200, "text/html", captive_root_html);
+}
+
+void handleWebServerConfigGet() { // TODO
+  DynamicJsonDocument json_doc(1024);
+  json_doc["module_type"] = MODULE_TYPE;
+  json_doc["firmware"] = fw_version;
+  json_doc["unit_id"] = mac_address_nag;
+  json_doc["mac_address"] = mac_address_raw;
+  json_doc["server"] = backend_server;
+  json_doc["mqtt_port"] = mqtt_port;
+  json_doc["mqtt_credentials"] = mqtt_credentials;
+  json_doc["mqtt_user"] = mqtt_user;
+  json_doc["mqtt_pass"] = mqtt_pass;
+  json_doc["ntp"] = ntp_server;
+  json_doc["eth_hostname"] = eth_hostname;
+  json_doc["ip_static"] = ip_static;
+  json_doc["ip_static_ip"] = ip_static_ip;
+  json_doc["ip_static_mask"] = ip_static_mask;
+  json_doc["ip_static_gw"] = ip_static_gw;
+  json_doc["ip_static_dns"] = ip_static_dns;
+  json_doc["btn_timeout"] = button_timeout;
+  json_doc["lock_sensor"] = lock_sensor;
+  json_doc["wg_buzzer_timeout"] = wg_buzzer_timeout;
+  json_doc["wg_1_timeout"] = wg_1_timeout;
+  // json_doc["wg_1_secure"] = wg_1_secure;
+  json_doc["wg_1_reverse"] = wg_1_reverse;
+  json_doc["wg_1_silent"] = wg_1_silent;
+  json_doc["wg_2_timeout"] = wg_2_timeout;
+  // json_doc["wg_2_secure"] = wg_2_secure;
+  json_doc["wg_2_reverse"] = wg_2_reverse;
+  json_doc["wg_2_silent"] = wg_2_silent;
+  String data_out;
+  serializeJson(json_doc, data_out);
+  webServer.send(200, "application/json", data_out);
+}
+
+void handleWebServerRootPost() { // TODO
+  webServer.send_P(200, "text/html", captive_setup_html);
+  if (webServer.arg("server") != backend_server) {
+    preferences.putString("server", webServer.arg("server"));
+  }
+  if(webServer.arg("staticip") == "on") {
+    if (!ip_static) {
+      preferences.putBool("ip_static", true);
+    }
+    if (webServer.arg("ip") != ip_static_ip) {
+      preferences.putString("ip_static_ip", webServer.arg("ip"));
+    }
+    if (webServer.arg("mask") != ip_static_mask) {
+      preferences.putString("ip_static_mask", webServer.arg("mask"));
+    }
+    if (webServer.arg("gateway") != ip_static_gw) {
+      preferences.putString("ip_static_gw", webServer.arg("gateway"));
+    }
+    if (webServer.arg("dns") != ip_static_dns) {
+      preferences.putString("ip_static_dns", webServer.arg("dns"));
+    }
+  } else {
+    if (ip_static) {
+      preferences.putBool("ip_static", false);
+    }
+    if (String(DEFAULT_DHCP_IP)  != ip_static_ip) {
+      preferences.putString("ip_static_ip", DEFAULT_DHCP_IP);
+    }
+    if (String(DEFAULT_DHCP_MASK)  != ip_static_mask) {
+      preferences.putString("ip_static_mask", DEFAULT_DHCP_MASK);
+    }
+    if (String(DEFAULT_DHCP_GW)  != ip_static_gw) {
+      preferences.putString("ip_static_gw", DEFAULT_DHCP_GW);
+    }
+    if (String(DEFAULT_DHCP_DNS)  != ip_static_dns) {
+      preferences.putString("ip_static_dns", DEFAULT_DHCP_DNS);
+    }
+  }
+  if (webServer.arg("mqttport") != String(mqtt_port)) {
+    preferences.putInt("mqtt_port", webServer.arg("mqttport").toInt());
+  }
+  if(webServer.arg("mqttcredentials") == "on") {
+    if (!mqtt_credentials) {
+      preferences.putBool("mqtt_cred", true);
+    }
+    if (webServer.arg("mqttuser") != mqtt_user) {
+      preferences.putString("mqtt_user", webServer.arg("mqttuser"));
+    }
+    if (webServer.arg("mqttpass") != mqtt_pass) {
+      preferences.putString("mqtt_pass", webServer.arg("mqttpass"));
+    }
+  } else {
+    if (mqtt_credentials) {
+      preferences.putBool("mqtt_cred", false);
+    }
+    if (String(DEFAULT_MQTT_USER) != mqtt_user) {
+      preferences.putString("mqtt_user", DEFAULT_MQTT_USER);
+    }
+    if (String(DEFAULT_MQTT_PASS) != mqtt_pass) {
+      preferences.putString("mqtt_pass", DEFAULT_MQTT_PASS);
+    }
+  }
+  if (webServer.arg("ntp") != ntp_server) {
+    preferences.putString("ntp_server", webServer.arg("ntp"));
+  }
+  if (webServer.arg("hostname") != eth_hostname) {
+    preferences.putString("eth_hostname", webServer.arg("hostname"));
+  }
+  if (webServer.arg("btntimeout") != String(button_timeout)) {
+    preferences.putInt("btn_timeout", webServer.arg("btntimeout").toInt());
+  }
+  if (webServer.arg("locksensor") == "on") {
+    if (!lock_sensor) preferences.putBool("lock_sensor", true);
+  } else {
+    if (lock_sensor) preferences.putBool("lock_sensor", false);
+  }
+  if (webServer.arg("wgbuzzertimeout") != String(wg_buzzer_timeout)) {
+    preferences.putInt("wg_bz_timeout", webServer.arg("wgbuzzertimeout").toInt());
+  }
+  if (webServer.arg("wg1timeout") != String(wg_1_timeout)) {
+    preferences.putInt("wg_1_timeout", webServer.arg("wg1timeout").toInt());
+  }
+  // if (webServer.arg("wg1secure") == "on") {
+  //   if (!wg_1_secure) preferences.putBool("wg_1_secure", true);
+  // } else {
+  //   if (wg_1_secure) preferences.putBool("wg_1_secure", false);
+  // }
+  if (webServer.arg("wg1reverse") == "on") {
+    if (!wg_1_reverse) preferences.putBool("wg_1_reverse", true);
+  } else {
+    if (wg_1_reverse) preferences.putBool("wg_1_reverse", false);
+  }
+  if (webServer.arg("wg1silent") == "on") {
+    if (!wg_1_silent) preferences.putBool("wg_1_silent", true);
+  } else {
+    if (wg_1_silent) preferences.putBool("wg_1_silent", false);
+  }
+  if (webServer.arg("wg2timeout") != String(wg_2_timeout)) {
+    preferences.putInt("wg_2_timeout", webServer.arg("wg2timeout").toInt());
+  }
+  // if (webServer.arg("wg2secure") == "on") {
+  //   if (!wg_2_secure) preferences.putBool("wg_2_secure", true);
+  // } else {
+  //   if (wg_2_secure) preferences.putBool("wg_2_secure", false);
+  // }
+  if (webServer.arg("wg2reverse") == "on") {
+    if (!wg_2_reverse) preferences.putBool("wg_2_reverse", true);
+  } else {
+    if (wg_2_reverse) preferences.putBool("wg_2_reverse", false);
+  }
+  if (webServer.arg("wg2silent") == "on") {
+    if (!wg_2_silent) preferences.putBool("wg_2_silent", true);
+  } else {
+    if (wg_2_silent) preferences.putBool("wg_2_silent", false);
+  }
+  if (!is_setup_done) {
+    preferences.putBool("setup_done", true);
+  }
+  delay(250);
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  SerialMon.println(F("[BOOT] Restarting"));
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  ESP.restart();
+}
+
+void setupWebServer() { // TODO
+  webServer.on("/favicon.ico", HTTP_GET, handleWebServerFaviconGet);
+  webServer.on("/", HTTP_GET, handleWebServerRootGet);
+  webServer.on("/", HTTP_POST, handleWebServerRootPost);
+  webServer.on("/config", HTTP_GET, handleWebServerConfigGet);
+  webServer.onNotFound(handleWebServerRootGet);
+  webServer.begin();
+  SerialMon.println(F("[WEB] Web Server Setup Done"));
+}
+
+// void setupCaptivePortal() {
+//   WiFi.mode(WIFI_AP);
+//   WiFi.softAPConfig(wifi_ap_ip, wifi_ap_gw, wifi_ap_mask);
+//   WiFi.softAP(wifi_hostname.c_str(), NULL, 1, false, 1);
+//   SerialMon.print(F("[AP] Created with IP Gateway "));
+//   SerialMon.println(WiFi.softAPIP());
+//   dnsServer.start(53, "*", wifi_ap_ip);
+//   setupWebServer();
+// }
+
+// void handleCaptivePortal() {
+//   webServer.handleClient();
+//   dnsServer.processNextRequest();
+// }
+
+// void switchToConfigMode() { // TODO
+//   SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+//   SerialMon.println(F("[CONFIG] Switching to config mode"));
+//   preferences.putBool("setup_done", false);
+//   SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+//   SerialMon.println(F("[BOOT] Restarting"));
+//   SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+//   ESP.restart();
+// }
+
+// void configButtonHandler() { // TODO
+//   int button_current_state = HIGH; // digitalRead(ESP_WIFI_BUTTON); // TODO - config button pin
+//   if (button_current_state != config_button_last_state) {
+//     if (currentMillis - config_button_last_time >= 250) {
+//       if (button_current_state == LOW) {
+//         if (!config_button_pressed) {
+//           SerialMon.println(F("[CONFIG] BUTTON PRESS")); // TODO - remove
+//           config_button_pressed = true;
+//         }
+//       } else {
+//         if (config_button_pressed) {
+//           SerialMon.println(F("[CONFIG] BUTTON RELEASE")); // TODO - remove
+//           config_button_active = false;
+//           config_button_pressed = false;
+//         }
+//       }
+//       config_button_last_state = button_current_state;
+//       config_button_last_time = currentMillis;
+//     }
+//   } else {
+//     if (button_current_state == LOW) {
+//       if  (!config_button_active) {
+//         if (config_button_pressed) {
+//           if ((currentMillis - config_button_last_time > config_button_period)) {
+//             SerialMon.println(F("[CONFIG] LONG PRESS")); // TODO - remove
+//             config_button_active = true;
+//             switchToConfigMode();
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
+
+void handleEthernetStart() {
+  SerialMon.println(F("[ETH] Started"));
+  ETH.setHostname(eth_hostname.c_str());
+  if (MDNS.begin(eth_hostname.c_str())) {
+    SerialMon.println(F("[MDNS] Started"));
+  } else {
+    SerialMon.println(F("[MDNS] Error"));
+  }
+  if (NBNS.begin(eth_hostname.c_str())) {
+    SerialMon.println(F("[NBNS] Started"));
+  } else {
+    SerialMon.println(F("[NBNS] Error"));
+  }
+}
+
+void handleEthernetConnect() {
+  SerialMon.println(F("[ETH] Connected"));
+}
+
+void handleEthernetDHCP() {
+  SerialMon.print(F("[ETH] Hostname: "));
+  SerialMon.print(ETH.getHostname());
+  SerialMon.print(F(" | MAC: "));
+  SerialMon.print(ETH.macAddress());
+  SerialMon.print(F(" | IPv4: "));
+  SerialMon.print(ETH.localIP());
+  if (ETH.fullDuplex()) SerialMon.print(F(" | FULL_DUPLEX"));
+  SerialMon.print(F(" | "));
+  SerialMon.print(ETH.linkSpeed());
+  SerialMon.println(F("Mbps"));
+  eth_connected = true;
+  eth_ip_address = ETH.localIP();
+}
+
+void handleEthernetDisconnect() {
+  SerialMon.println(F("[ETH] Disconnected"));
+  eth_connected = false;
+}
+
+void handleEthernetStop() {
+  SerialMon.println(F("[ETH] Stopped"));
+  eth_connected = false;
+}
+
+void WiFiEvent(WiFiEvent_t event) {
+  switch (event) {
+    case ARDUINO_EVENT_ETH_START:
+      handleEthernetStart();
+      break;
+    case ARDUINO_EVENT_ETH_CONNECTED:
+      handleEthernetConnect();
+      break;
+    case ARDUINO_EVENT_ETH_GOT_IP:
+      handleEthernetDHCP();
+      updateNtpTime(); // sync NTP immediately
+      ntp_ticker.attach(3600, []() { // sync NTP every hour
+        updateNtpTime();
+      });
+      break;
+    case ARDUINO_EVENT_ETH_DISCONNECTED:
+      ntp_ticker.detach();
+      handleEthernetDisconnect();
+      break;
+    case ARDUINO_EVENT_ETH_STOP:
+      handleEthernetStop();
+      break;
+    default:
+      break;
+  }
+}
+
+void setupEthernet() {
+  WiFi.onEvent(WiFiEvent);
+  // TODO - if dhcp or static -> default should be static with default values
+  // ? - if setup is done -> if not yet setup startup dns server
+  IPAddress ip, mask, gw, dns;
+  if(ip.fromString(ip_static_ip)) {
+    if(mask.fromString(ip_static_mask)) {
+      if(gw.fromString(ip_static_gw)) {
+        if(dns.fromString(ip_static_dns)) {
+          ETH.config(ip, mask, gw, dns);
+        }
+      }
+    }
+  }
+  ETH.begin(ESP_ETH_PHY_ADDR, ESP_ETH_PHY_POWER, ESP_ETH_PHY_MDC, ESP_ETH_PHY_MDIO, ESP_ETH_PHY_TYPE, ESP_ETH_CLK_MODE);
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void core0Task( void * parameter ) {
+  // SerialMon.print("[CORE_");
+  // SerialMon.print(xPortGetCoreID());
+  // SerialMon.println("] Task Started");
+  for( ;; ){
+    if (eth_connected) webServer.handleClient();
+    if (is_setup_done) {
+      // configButtonHandler(); // ?
+      if (eth_connected) handleMqttConnection();
+    } 
+    // else {}
+  }
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void setup() {
+  SerialMon.begin(9600);
+  SerialMon.println();
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  SerialMon.println("[Module Unit Name] " + String(MODULE_NAME) + " (" + String(MODULE_TYPE) + ")");
+  SerialMon.println("[Hardware Version] " + String(MODULE_HARDWARE_VERSION));
+  SerialMon.println("[Firmware Version] " + String(MODULE_FIRMWARE_VERSION));
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  // ----------------------------------------------------------------------------------------------------------------
+  setupEspPins();
+  Wire.setPins(ESP_SDA, ESP_SCL);
+  setupMcpPins();
+  sqlite3_initialize();
+  setupUnitVariables();
+  setupFileSystem();
+  setupRtc();
+  setupEthernet();
+  setupWebServer();
+  setupMqtt();
+  // ----------------------------------------------------------------------------------------------------------------
+  // SerialMon.println(F("[BOOT] Delaying for reader boot ..."));
+  // delay(27500);
+  wg_1_setup();
+  wg_2_setup();
+  if (!is_setup_done) {
+    setup_led_ticker.attach_ms(500, []() {
+      mcp.digitalWrite(MCP_WG_1_GREEN_LED, mcp.digitalRead(MCP_WG_1_GREEN_LED));
+      mcp.digitalWrite(MCP_WG_2_GREEN_LED, mcp.digitalRead(MCP_WG_2_GREEN_LED));
+    });
+  }
+  // ----------------------------------------------------------------------------------------------------------------
+  SerialMon.println(F("[BOOT] Completed"));
+  SerialMon.println(F("----------------------------------------------------------------------------------------------------------------"));
+  // ----------------------------------------------------------------------------------------------------------------
+  xTaskCreatePinnedToCore(core0Task, "Core0Task", 10000, NULL, tskIDLE_PRIORITY, NULL, 0);
+  // ----------------------------------------------------------------------------------------------------------------
+}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+void loop() { // This is Core 1
+  currentMillis = millis();
+  if (is_setup_done) {
+    mcp_int_trigger_handler(); // ?
+    // mcp_int_clear_handler(); // ?
+    wg_1_tamper_state_handler();
+    wg_2_tamper_state_handler();
+    if (!wg_1_connected || (!wg_1_halt && wg_1_connected)) wg_1_handler();
+    if (!wg_2_connected || (!wg_2_halt && wg_2_connected)) wg_2_handler();
+    if (wg_1_halt && wg_1_connected) wg_1_state_handler();
+    if (wg_2_halt && wg_2_connected) wg_2_state_handler();
+    if (!button_halt) button_press_state_handler();
+    if (button_halt) button_state_handler();
+    if (lock_sensor) lock_sensor_state_handler();
+  } 
+  // else { }
+}
+
+// ----------------------------------------------------------------------------------------------------------------

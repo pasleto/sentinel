@@ -1,0 +1,393 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<meta name = "viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kblLQ0EQhz+jomg88AALiyDRKpEYIWhjEfECtUgiGLVJXi4hx+O9BAm2gq2gINp4FfoXaCtYC4KiCGInWCvaqDznJYEEMbPMzre/3Rl2Z8ESSCopvc4FqXRW8015bYvBJVvDC81000oHrpCiq3P+yQBV7fOeGjPeOs1a1c/9a82RqK5ATaPwmKJqWeFp4dm1rGryjnCXkghFhM+EHZpcUPjO1MNFfjU5XuRvk7WAbxws7cK2eAWHK1hJaClheTn2VDKnlO5jvsQaTS/4JfaJ96LjYwovNmaYYBwPQ4zK7MGJm0FZUSXfVcifJyO5iswqeTRWiZMgi0PUnFSPSoyJHpWRJG/2/29f9diwu1jd6oX6Z8N474eGbfjZMoyvI8P4OYbaJ7hMl/MzhzDyIfpWWbMfQNsGnF+VtfAuXGxCz6Ma0kIFqVbcEovB2ym0BKHzBpqWiz0r7XPyAIF1+apr2NuHATnftvILiEJn9X8wM74AAAAJcEhZcwAAHYcAAB2HAY/l8WUAAAG3SURBVCiRhdI9SNVhFMfxz//+nz+N1VDgpiXlloJIRdDQCw1R4FBE72TvcUMiTKUyK1MrJIuG1GiRsqEtMMghyBJzKDKICLEhCiJ6oaLAvA33KppGv+3wfL+H5xxOZLpUtC3C0Vx1XvvuZ38jkb038jET87AA5SjDE4xgCfpxB68whM9BnAwhwg88xwAOurp5ABzoLMIObEABZmM0ku7KYAtuat04Ou3XJybdtQmdQZzAFy3l/5cgTr4hSomTjDjJTAFq7s/6h5gRJ7+DOPmKNlXdHWjXtOZNloiuq+mZiw7c1rDie058i8eRmp5CVGAn5qAb18ThEw5hPX7iFtqdXt4PkbrePHw0OgLrsAer8A5VUqEb27ELRbKbPxyp7yvAQ6x2YvELcOrR/ByYcXJp7fh89X1H0ISSCJwduIISLFNbOnVRWWYGnuKB2tJ9KZAKZ6RCsVTYP62UZWqkQp5UOA5Zsbr4vTi0iEOj5sGVU6TmwbXicEwc6lUXf4Aw/hiHOtl7vefiywbU5RqfQyUacWkMjyZ1bnkd4wLS6EWChdiqsvDuRHSyOJbW4TJcxi9sk84f/hv5A3wVcXHcw0KKAAAAAElFTkSuQmCC" />
+<title>STL-CF Setup</title>
+<style>
+html, body { height: 100%; min-width: 320px; }
+body { margin: 0; display: flex; flex-wrap: nowrap; flex-direction: row; overflow: hidden; background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+.container { overflow-y: auto; display: flex; flex-wrap: nowrap; flex-direction: row; width: 100%; }
+.content { padding: 10px; margin: auto 10px; width: 100%; }
+input[type="submit"] { height: 50px; cursor: pointer; background-color: #3498DB; border: none; color: #FFFFFF; padding: 15px 48px; margin: 25px auto; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; }
+form { padding: 25px 0px; }
+table { width: 100%; max-width: 400px; }
+.table-header { width: 50%; text-align: left; }
+.table-value { width: 50%; text-align: right; }
+.header { width: 100%; max-width: 400px; color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 36px; }
+.info { width: 100%; max-width: 400px; color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 12px; }
+.label { font-family: Times New Roman }
+input[type="text"], input[type="password"], select { height: 30px; width: 100%; max-width: 400px; padding: 5px 10px; margin: 8px auto; border: none; border-radius: 4px; box-sizing: border-box; }
+select { cursor: pointer; }
+input[type="checkbox"] { cursor: pointer; margin: 8px auto; width: 20px; height: 20px; }
+.mqtt-credentials { display: none; }
+.mqtt-credentials input[type="text"], input[type="password"] { width: 85%; max-width: 340px; }
+.ip-config { display: none; }
+.ip-config input[type="text"], input[type="password"] { width: 85%; max-width: 340px; }
+.tls-use { display: none; }
+.cert-validate { display: none; }
+.password-change { display: none; }
+textarea {  resize: none; width: 100%; max-width: 400px; padding: 5px 10px; margin: 8px auto; border: none; border-radius: 4px; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<center class="container">
+<div class="content">
+<h1 class="header">STL-AC Setup</h1>
+<table>
+<tr><td class="table-header">Module type:</td><td class="table-value"><span id="type" /></td></tr>
+<tr><td class="table-header">Firmware version:</td><td class="table-value"><span id="firmware" /></td></tr>
+<tr><td class="table-header">Unit ID:</td><td class="table-value"><span id="unit" /></td></tr>
+<tr><td class="table-header">MAC Address:</td><td class="table-value"><span id="mac" /></td></tr>
+</table>
+<form id="form1" action="/" method="POST">
+<p><label class="label">Change Device Admin Password</label><br><input type="checkbox" name="devicepasswordchange"><br></p>
+<p class="password-change"><label class="label">Device Admin Password</label><br><input type="password" name="devicepassword" autocapitalize="off" id="device_password_field"><br></p> 
+<p class="password-change"><label class="label">Device Admin Password Check</label><br><input type="password" name="devicepasswordcheck" autocapitalize="off" oninput="check_device_password_match(this)"><br></p> 
+<p><label class="label">Hostname</label><br><input type="text" pattern="^[a-zA-Z\d]{0,}[a-zA-Z\d-]{0,}[a-zA-Z\d]{1,}$" maxlength="62" name="hostname" autocapitalize="off" required><br></p>
+<p><label class="label">Static IP (default is DHCP)</label><br><input type="checkbox" name="staticip"><br></p>
+<p class="ip-config"><label class="label">IP Address</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="ip" placeholder="192.168.1.100" autocapitalize="off"><br></p>
+<p class="ip-config"><label class="label">Subnet Mask</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="mask" placeholder="255.255.255.0" autocapitalize="off"><br></p>
+<p class="ip-config"><label class="label">Gateway IP Address</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="gateway" placeholder="192.168.1.1" autocapitalize="off"><br></p>
+<p class="ip-config"><label class="label">DNS Server IP Address</label><br><input type="text" pattern="(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" name="dns" placeholder="192.168.1.1" autocapitalize="off"><br></p>
+<p><label class="label">MQTT Server URL / IP</label><br><input type="text" name="mqttserver" placeholder="mqtt.example.com" autocapitalize="off" required><br></p>
+<p><label class="label">MQTT Server Port</label><br><input type="text" pattern="[0-9]{2,5}" name="mqttport" placeholder="1883" autocapitalize="off" required><br></p>
+<p><label class="label">MQTT Server TLS</label><br><input type="checkbox" name="ssluse"><br></p>
+<p class="tls-use"><label class="label">MQTT Server Certificate Validation</label><br><input type="checkbox" name="sslvalidate"><br></p>
+<p class="cert-validate"><label class="label">MQTT Server Root Certificate</label><br><textarea id="ssl-cert-input" name="sslcertificate" autocapitalize="off" rows="15" oninput="trim_certificate(this)"></textarea><br></p>
+<p><label class="label">MQTT Credentials</label><br><input type="checkbox" name="mqttcredentials"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT User</label><br><input type="text" name="mqttuser" autocapitalize="off"><br></p>
+<p class="mqtt-credentials"><label class="label">MQTT Password</label><br><input type="password" name="mqttpass" autocapitalize="off"><br></p>
+<p><label class="label">NTP Server URL / IP</label><br><input type="text" name="ntp" placeholder="pool.ntp.org" autocapitalize="off" required><br></p> 
+<p><label class="label">Button 1 Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="btn1timeout">
+<option value="1000">1000</option>
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<p><label class="label">Button 2 Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="btn2timeout">
+<option value="1000">1000</option>
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<p><label class="label">Door 1 Sensor (Open / Closed Sensor)</label><br><input type="checkbox" name="door1sensor"><br></p>
+<p><label class="label">Door 2 Sensor (Open / Closed Sensor)</label><br><input type="checkbox" name="door2sensor"><br></p>
+<p><label class="label">Reader 1 Buzzer Timeout (Buzzer On in Milliseconds)</label><br><select name="wg1buzzertimeout">
+<option value="100">100</option>
+<option value="150">150</option>
+<option value="200">200</option>
+<option value="250">250</option>
+<option value="300">300</option>
+<option value="350">350</option>
+<option value="400">400</option>
+<option value="450">450</option>
+<option value="500">500</option>
+</select><br></p>
+<p><label class="label">Reader 1 Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="wg1timeout">
+<option value="1000">1000</option>
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<p><label class="label">Reader 1 Reverse (Byte Order)</label><br><input type="checkbox" name="wg1reverse"><br></p>
+<p><label class="label">Reader 1 Silent (Buzzer Disable)</label><br><input type="checkbox" name="wg1silent"><br></p>
+<p><label class="label">Reader 2 Buzzer Timeout (Buzzer On in Milliseconds)</label><br><select name="wg2buzzertimeout">
+<option value="100">100</option>
+<option value="150">150</option>
+<option value="200">200</option>
+<option value="250">250</option>
+<option value="300">300</option>
+<option value="350">350</option>
+<option value="400">400</option>
+<option value="450">450</option>
+<option value="500">500</option>
+</select><br></p>
+<p><label class="label">Reader 2 Lock Timeout (Lock Open Time in Milliseconds)</label><br><select name="wg2timeout">
+<option value="1000">1000</option>
+<option value="2000">2000</option>
+<option value="3000">3000</option>
+<option value="4000">4000</option>
+<option value="5000">5000</option>
+<option value="6000">6000</option>
+<option value="7000">7000</option>
+<option value="8000">8000</option>
+<option value="9000">9000</option>
+<option value="10000">10000</option>
+<option value="11000">11000</option>
+<option value="12000">12000</option>
+<option value="13000">13000</option>
+<option value="14000">14000</option>
+<option value="15000">15000</option>
+<option value="16000">16000</option>
+<option value="17000">17000</option>
+<option value="18000">18000</option>
+<option value="19000">19000</option>
+<option value="20000">20000</option>
+<option value="21000">21000</option>
+<option value="22000">22000</option>
+<option value="23000">23000</option>
+<option value="24000">24000</option>
+<option value="25000">25000</option>
+<option value="26000">26000</option>
+<option value="27000">27000</option>
+<option value="28000">28000</option>
+<option value="29000">29000</option>
+<option value="30000">30000</option>
+</select><br></p>
+<p><label class="label">Reader 2 Reverse (Byte Order)</label><br><input type="checkbox" name="wg2reverse"><br></p>
+<p><label class="label">Reader 2 Silent (Buzzer Disable)</label><br><input type="checkbox" name="wg2silent"><br></p>
+<input type="submit" value="Save & Reboot">
+<h2 class="info">You need to save the configuration and reboot the device, otherwise the device will not work</h2>
+</form>
+</div>
+</center>
+<script>
+  window.onload = function async () {
+    fetch("http://" + location.host + "/config").then((response) => response.json()).then((json) => {
+      var type = document.getElementById("type");
+      type.innerHTML = json.module_type;
+      var fw = document.getElementById("firmware");
+      fw.innerHTML = json.firmware;
+      var unit = document.getElementById("unit");
+      unit.innerHTML = json.unit_id;
+      var mac = document.getElementById("mac");
+      mac.innerHTML = json.mac_address;
+      var form1 = document.getElementById("form1");
+      form1.hostname.value = json.eth_hostname;
+      form1.staticip.checked = json.ip_static;
+      if (json.ip_static) {
+        var ipconfig = document.getElementsByClassName('ip-config');
+        for(i = 0; i < ipconfig.length; i++) {
+          ipconfig[i].style.display = 'block';
+        }
+        form1.ip.required = true;
+        form1.mask.required = true;
+        form1.gateway.required = true;
+        form1.dns.required = true;
+      }
+      form1.ip.value = json.ip_static_ip;
+      form1.mask.value = json.ip_static_mask;
+      form1.gateway.value = json.ip_static_gw;
+      form1.dns.value = json.ip_static_dns;
+      form1.mqttserver.value = json.mqtt_server;
+      form1.mqttport.value = json.mqtt_port;
+      form1.mqttcredentials.checked = json.mqtt_credentials;
+      if (json.mqtt_credentials) {
+        var mqttcred = document.getElementsByClassName('mqtt-credentials');
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      }
+      form1.mqttuser.value = json.mqtt_user;
+      form1.mqttpass.value = json.mqtt_pass;
+      form1.ntp.value = json.ntp;
+      form1.door1sensor.checked = json.door_1_sensor;
+      form1.door2sensor.checked = json.door_2_sensor;
+      form1.wg1buzzertimeout.value = json.wg_1_buzzer_timeout;
+      form1.wg2buzzertimeout.value = json.wg_2_buzzer_timeout;
+      form1.btn1timeout.value = json.btn_1_timeout;
+      form1.btn2timeout.value = json.btn_2_timeout;
+      form1.wg1timeout.value = json.wg_1_timeout;
+      form1.wg1reverse.checked = json.wg_1_reverse
+      form1.wg1silent.checked = json.wg_1_silent;
+      form1.wg2timeout.value = json.wg_2_timeout;
+      form1.wg2reverse.checked = json.wg_2_reverse
+      form1.wg2silent.checked = json.wg_2_silent;
+    });
+    var form1 = document.getElementById("form1");
+    var passwordchange = document.getElementsByClassName('password-change');
+    form1.devicepasswordchange.onclick = function () {
+      if (this.form.devicepasswordchange.checked) {
+        for(i = 0; i < passwordchange.length; i++) {
+          passwordchange[i].style.display = 'block';
+        }
+        form1.devicepassword.required = true;
+        form1.devicepasswordcheck.required = true;
+      } else {
+        for(i = 0; i < passwordchange.length; i++) {
+          passwordchange[i].style.display = 'none';
+        }
+        form1.devicepassword.required = false;
+        form1.devicepasswordcheck.required = false;
+      }
+    }
+    var mqttcred = document.getElementsByClassName('mqtt-credentials');
+    form1.mqttcredentials.onclick = function () {
+      if (this.form.mqttcredentials.checked) {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'block';
+        }
+        form1.mqttuser.required = true;
+        form1.mqttpass.required = true;
+      } else {
+        for(i = 0; i < mqttcred.length; i++) {
+          mqttcred[i].style.display = 'none';
+        }
+        form1.mqttuser.required = false;
+        form1.mqttpass.required = false;
+      }
+    }
+    var ipconfig = document.getElementsByClassName('ip-config');
+    form1.staticip.onclick = function () {
+      if (this.form.staticip.checked) {
+        for(i = 0; i < ipconfig.length; i++) {
+          ipconfig[i].style.display = 'block';
+        }
+        form1.ip.required = true;
+        form1.mask.required = true;
+        form1.gateway.required = true;
+        form1.dns.required = true;
+      } else {
+        for(i = 0; i < ipconfig.length; i++) {
+          ipconfig[i].style.display = 'none';
+        }
+        form1.ip.required = false;
+        form1.mask.required = false;
+        form1.gateway.required = false;
+        form1.dns.required = false;
+      }
+    }
+    var tlsuse = document.getElementsByClassName('tls-use');
+    var certvalidate = document.getElementsByClassName('cert-validate');
+    form1.ssluse.onclick = function () {
+      if (this.form.ssluse.checked) {
+        for(i = 0; i < tlsuse.length; i++) {
+          tlsuse[i].style.display = 'block';
+        }
+        if (this.form.sslvalidate.checked) {
+          for(i = 0; i < certvalidate.length; i++) {
+            certvalidate[i].style.display = 'block';
+          }
+          form1.sslcertificate.required = true;
+        }
+      } else {
+        for(i = 0; i < tlsuse.length; i++) {
+          tlsuse[i].style.display = 'none';
+        }
+        for(i = 0; i < certvalidate.length; i++) {
+          certvalidate[i].style.display = 'none';
+        }
+        form1.sslcertificate.required = false;
+      }
+    }
+    form1.sslvalidate.onclick = function () {
+      if (this.form.sslvalidate.checked) {
+        for(i = 0; i < certvalidate.length; i++) {
+          certvalidate[i].style.display = 'block';
+        }
+        form1.sslcertificate.required = true;
+        document.getElementById('ssl-cert-input').setScaledFont(0.188);
+      } else {
+        for(i = 0; i < certvalidate.length; i++) {
+          certvalidate[i].style.display = 'none';
+        }
+        form1.sslcertificate.required = false;
+      }
+    }
+  }
+  function check_device_password_match(input) {
+    if (input.value != document.getElementById('device_password_field').value) {
+      input.setCustomValidity('Password fields must match!');
+    } else {
+      input.setCustomValidity('');
+    }
+  }
+  function trim_certificate(input) {
+    // document.getElementById('ssl-cert-input').value = input.value.trim().replaceAll("\n", "");
+    input;
+  }
+  document.getElementById('ssl-cert-input').setScaledFont = function (f) {
+    var s = this.offsetWidth;
+    var fs = s * f;
+    this.style.fontSize = fs + '%';
+    return this
+  };
+  document.getElementById('ssl-cert-input').setScaledFont(0.188);
+  window.onresize = function () {
+    document.getElementById('ssl-cert-input').setScaledFont(0.188);
+  }
+</script>
+</body>
+</html>

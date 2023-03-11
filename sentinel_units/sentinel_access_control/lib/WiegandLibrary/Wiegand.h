@@ -17,12 +17,12 @@ public:
     static const uint8_t TIMEOUT = 25;
 
     /**
-     * 34-bit is the maximum I've seen used for Wiegand
+     * 34-bit is the maximum I've seen used for Wiegand // TODO
      */
     static const uint8_t MAX_BITS = 64;
 
     /**
-     * 34-bit is the maximum I've seen used for Wiegand
+     * 34-bit is the maximum I've seen used for Wiegand // TODO
      */
     static const uint8_t MAX_BYTES = ((MAX_BITS + 7)/8);
 

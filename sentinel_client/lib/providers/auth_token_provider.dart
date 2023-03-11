@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sentinel_client/providers/disposable_provider.dart';
 import 'package:sentinel_client/services/storage_service.dart';
@@ -33,7 +34,8 @@ class AuthToken extends DisposableProvider {
     try {
       var response = await http.post(
         Uri.parse('$server/api/$namespace/login-password'),
-        // Uri.parse('https://localhost:443/api/client-app/login-password'), // ? - this should be only /api/client-app/login-password on production
+        // kIsWeb ? Uri.parse('/api/$namespace/login-password') : Uri.parse('$server/api/$namespace/login-password'),
+        // Uri.parse('https://localhost:443/api/client-app/login-password'), // ? - this should be only /api/client-app/login-password on production while using web
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

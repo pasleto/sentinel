@@ -1,24 +1,82 @@
-rsa keypair end-to-end encryption
+CREATE TABLE IF NOT EXISTS cards_1 (value TEXT PRIMARY KEY, has_validity BOOLEAN NOT NULL DEFAULT 0, valid_since NUMERIC, valid_until NUMERIC) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS events_1 (timestamp NUMERIC NOT NULL DEFAULT (cast(strftime('%s','now') as int)), state TEXT NOT NULL, initiator TEXT NOT NULL, card_value TEXT);
+CREATE TRIGGER IF NOT EXISTS cards_1_insert_trigger BEFORE INSERT ON cards_1 BEGIN SELECT CASE WHEN (NEW.has_validity = 1 AND (NEW.valid_since ISNULL OR NEW.valid_until ISNULL OR NEW.valid_until <= NEW.valid_since)) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE TRIGGER IF NOT EXISTS events_1_insert_trigger BEFORE INSERT ON events_1 BEGIN SELECT CASE WHEN (NEW.initiator = 'READER' AND NEW.card_value ISNULL) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
 
-generate keypair on esp32
+REPLACE INTO cards_1(value) VALUES('A4DCCC1D');
+REPLACE INTO cards_1(value) VALUES('04C2B401');
 
-on socket connection
-	receive server public key
-	send esp public key to server
+SELECT COUNT(*) FROM cards_1 WHERE value = 'xxx';
+SELECT * FROM cards_1;
+DELETE FROM cards_1 WHERE value = 'bbb';
+REPLACE INTO cards_1(value) VALUES('xxx');
+REPLACE INTO cards_1(value, has_validity) VALUES('yyy', 0);
+REPLACE INTO cards_1(value, has_validity, valid_since, valid_until) VALUES('zzz', 1, 1, 2);
+REPLACE INTO cards_1(value, has_validity, valid_since, valid_until) VALUES('aaa', 1, 1, 2);
+REPLACE INTO cards_1(value, has_validity, valid_since, valid_until) VALUES('bbb', 1, 0, 1);
 
-on data receive
-	decrypt data by esp private key
+INSERT INTO events_1(...) VALUES(...);
 
-on data send
-	encrypt data by server public key
+=====
+
+CREATE TABLE IF NOT EXISTS cards_1 (id TEXT PRIMARY KEY, value TEXT NOT NULL UNIQUE, has_validity BOOLEAN NOT NULL DEFAULT 0, valid_since NUMERIC, valid_until NUMERIC) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS events_1 (timestamp NUMERIC NOT NULL DEFAULT (cast(strftime('%s','now') as int)), state TEXT NOT NULL, initiator TEXT NOT NULL, card_value TEXT);
+CREATE TRIGGER IF NOT EXISTS cards_1_insert_trigger BEFORE INSERT ON cards_1 BEGIN SELECT CASE WHEN (NEW.has_validity = 1 AND (NEW.valid_since ISNULL OR NEW.valid_until ISNULL OR NEW.valid_until <= NEW.valid_since)) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE TRIGGER IF NOT EXISTS events_1_insert_trigger BEFORE INSERT ON events_1 BEGIN SELECT CASE WHEN (NEW.initiator = 'READER' AND NEW.card_value ISNULL) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+
+REPLACE INTO cards_1(id, value, has_validity, valid_since, valid_until) VALUES('1', 'A4DCCC1D', NULL, NULL, NULL);
+REPLACE INTO cards_1(id, value, has_validity, valid_since, valid_until) VALUES('2', '04C2B401', NULL, NULL, NULL);
+
+DELETE FROM cards_1 WHERE id = '1' OR value = 'A4DCCC1D';
+
+
+---
+
+
+CREATE TABLE IF NOT EXISTS cards_1 (value TEXT PRIMARY KEY, has_validity BOOLEAN NOT NULL DEFAULT 0, valid_since NUMERIC, valid_until NUMERIC) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS events_1 (timestamp NUMERIC NOT NULL DEFAULT (cast(strftime('%s','now') as int)), state TEXT NOT NULL, initiator TEXT NOT NULL, card_value TEXT);
+CREATE TRIGGER IF NOT EXISTS cards_1_insert_trigger BEFORE INSERT ON cards_1 BEGIN SELECT CASE WHEN (NEW.has_validity = 1 AND (NEW.valid_since ISNULL OR NEW.valid_until ISNULL OR NEW.valid_until <= NEW.valid_since)) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE TRIGGER IF NOT EXISTS events_1_insert_trigger BEFORE INSERT ON events_1 BEGIN SELECT CASE WHEN (NEW.initiator = 'READER' AND NEW.card_value ISNULL) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+
+REPLACE INTO cards_1(value, has_validity, valid_since, valid_until) VALUES('A4DCCC1D', NULL, NULL, NULL);
+REPLACE INTO cards_1(value, has_validity, valid_since, valid_until) VALUES('04C2B401', NULL, NULL, NULL);
+
+DELETE FROM cards_1 WHERE value = 'A4DCCC1D';
+
+
+=====
+
+CREATE TABLE IF NOT EXISTS cards_1 (id TEXT PRIMARY KEY, value TEXT NOT NULL, has_validity BOOLEAN NOT NULL DEFAULT 0, valid_since NUMERIC, valid_until NUMERIC) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS events_1 (timestamp NUMERIC NOT NULL DEFAULT (cast(strftime('%s','now') as int)), state TEXT NOT NULL, initiator TEXT NOT NULL, card_value TEXT);
+CREATE TRIGGER IF NOT EXISTS cards_1_insert_trigger BEFORE INSERT ON cards_1 BEGIN SELECT CASE WHEN (NEW.has_validity = 1 AND (NEW.valid_since ISNULL OR NEW.valid_until ISNULL OR NEW.valid_until <= NEW.valid_since)) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE TRIGGER IF NOT EXISTS events_1_insert_trigger BEFORE INSERT ON events_1 BEGIN SELECT CASE WHEN (NEW.initiator = 'READER' AND NEW.card_value ISNULL) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE UNIQUE INDEX IF NOT EXISTS cards_1_value_unique ON cards_1(value);
+
+REPLACE INTO cards_1(id, value, has_validity, valid_since, valid_until) VALUES('1', 'A4DCCC1D', NULL, NULL, NULL);
+REPLACE INTO cards_1(id, value, has_validity, valid_since, valid_until) VALUES('2', '04C2B401', NULL, NULL, NULL);
+
+DELETE FROM cards_1 WHERE id = '1' OR value = 'A4DCCC1D';
 
 
 
 
-on staging esp to server
 
-on get request
-	send esp public key included in body
 
-on post request
-	decrypt data by esp private key
+
+
+
+
+
+
+// TODO - only one table set -> add lock_id column + modify constraints
+
+CREATE TABLE IF NOT EXISTS cards (id TEXT PRIMARY KEY, value TEXT NOT NULL, has_validity BOOLEAN NOT NULL DEFAULT 0, valid_since NUMERIC, valid_until NUMERIC) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS events (timestamp NUMERIC NOT NULL DEFAULT (cast(strftime('%s','now') as int)), state TEXT NOT NULL, initiator TEXT NOT NULL, card_value TEXT);
+CREATE TRIGGER IF NOT EXISTS cards_insert_trigger BEFORE INSERT ON cards BEGIN SELECT CASE WHEN (NEW.has_validity = 1 AND (NEW.valid_since ISNULL OR NEW.valid_until ISNULL OR NEW.valid_until <= NEW.valid_since)) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE TRIGGER IF NOT EXISTS events_insert_trigger BEFORE INSERT ON events BEGIN SELECT CASE WHEN (NEW.initiator = 'READER' AND NEW.card_value ISNULL) THEN RAISE(ABORT, 'Invalid or missing parameter/s') END; END;
+CREATE UNIQUE INDEX IF NOT EXISTS cards_value_unique ON cards(value);
+
+REPLACE INTO cards(id, value, has_validity, valid_since, valid_until) VALUES('1', 'A4DCCC1D', NULL, NULL, NULL);
+REPLACE INTO cards(id, value, has_validity, valid_since, valid_until) VALUES('2', '04C2B401', NULL, NULL, NULL);
+
+DELETE FROM cards WHERE id = '1' OR value = 'A4DCCC1D';

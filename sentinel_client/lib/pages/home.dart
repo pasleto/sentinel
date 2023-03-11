@@ -24,5 +24,11 @@ class _HomePageState extends State<HomePage> with PageMixin {
     return const Center(
       child: Text('Home Page'),
     );
+    // return ScaffoldPage.scrollable(
+    //   children: [
+    //     Text('Home'),
+    //     Text('Page'),
+    //   ],
+    // );
   }
 }

@@ -1,0 +1,7 @@
+barcode login
+
+barcode as medium type, alongside card
+
+generate random hash and save it as value of barcode
+
+use this the same way as card login

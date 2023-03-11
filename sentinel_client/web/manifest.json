@@ -1,6 +1,6 @@
 {
-    "name": "sentinel_client",
-    "short_name": "sentinel_client",
+    "name": "Sentinel Client",
+    "short_name": "Sentinel Client",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

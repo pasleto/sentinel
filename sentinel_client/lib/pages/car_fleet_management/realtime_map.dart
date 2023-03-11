@@ -1,5 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:sentinel_client/models/cfCar.model.dart';
+import 'package:sentinel_client/models/cfGpsPosition.model.dart';
 import 'package:sentinel_client/widgets/page.dart';
+import 'package:sentinel_client/widgets/toasts.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -20,8 +23,7 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
 
   bool _initialized = false;
   bool _fetchingFailed = false;
-  // List<CfCars> _cars = []; // TODO - list of cars
-  List<String> _cars = ['Car1', 'Car2', 'Car3']; // TODO - list of cars
+  List<CfCar> _cars = []; // TODO
   DateTime? _lastRefreshTime; // TODO
 
   final _controllerMap = MapController();
@@ -33,14 +35,37 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
 
   dynamic gpsRealtimeEventHandler(dynamic data) {
     print('SOCKET ON: car-fleet-realtime');
-    print(data);
+    // print('car: ${data['car']}');
+    print('time: ${data['time']}'); // ? - visualize -> last communcation time
+    DateTime time = DateTime.fromMillisecondsSinceEpoch(data['time']);
+    print('temp_int: ${data['temp_int']}'); // ? - visualize -> last internal tracker temperature
+    print('gps_signal: ${data['gps_signal']}'); // ? - visualize -> last state of gps signal
+    // print('gps: ${data['gps']}');
+
+    // if (data['gps_signal']) {
+    CfCar? car = _cars.where((element) => element.id == data['car']).first;
+    car.gpsPosition = CfGpsPosition.fromJson(data['gps']);
+
+    car.vinNumber = 'Time: $time'; // TODO - remove
+
+    // TODO - maybe switch logic -> have array of gpsPositions with reference to a CfCar
+
+    setState(() {});
+    // }
+  }
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
   void initState() {
     super.initState();
 
-    print('REALTIME MAP initState');
+    print('carfleet-management-realtime-map initState');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Use `MapController` as needed
@@ -59,7 +84,7 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
     // print('DISPOSE');
     // SocketService.socket.clearListeners();
 
-    print('REALTIME MAP dispose');
+    print('carfleet-management-realtime-map dispose');
 
     super.dispose();
   }
@@ -73,7 +98,33 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
           if (!_pageInScope) {
             setState(() => _pageInScope = !_pageInScope);
 
-            print('carfleet-realtime-map loading');
+            print('carfleet-management-realtime-map loading');
+
+            SocketService.socket.emitWithAck('cf-car-get-all', {}, ack: (response) {
+              if (response['status'] == 'OK') {
+                Iterable incoming = response['data']['cars'];
+                setState(() {
+                  _cars = List<CfCar>.from(incoming.map((model) => CfCar.fromJson(model)));
+                  print(incoming); // TODO
+                  _initialized = true;
+                  _fetchingFailed = false;
+                });
+              } else {
+                var msg = response['data']['message'];
+                AppToasts.errorNotification(
+                  context: context,
+                  titleText: 'Fetching Data Failed',
+                  messageText: msg ?? 'Generic Failure',
+                  duration: const Duration(seconds: 5),
+                );
+                setState(() {
+                  _initialized = true;
+                  _cars = [];
+                  _fetchingFailed = true;
+                });
+              }
+            });
+
             // WidgetsBinding.instance.addPostFrameCallback((_) {
             // Use `MapController` as needed
             SocketService.socket.on('car-fleet-status', gpsStatusEventHandler);
@@ -82,10 +133,10 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
           }
         }
         if (visibilityInfo.visibleFraction == 0) {
-          if (_pageInScope) {
+          if (_pageInScope && mounted) {
             setState(() => _pageInScope = !_pageInScope);
 
-            print('carfleet-realtime-map unloading');
+            print('carfleet-management-realtime-map unloading');
             SocketService.socket.off('car-fleet-status', gpsStatusEventHandler);
             SocketService.socket.off('car-fleet-realtime', gpsRealtimeEventHandler);
           }
@@ -93,7 +144,7 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
       },
       child: ScaffoldPage(
         header: PageHeader(
-          title: const Text('Car Fleet Realtime Map', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
+          title: const Text('Car Fleet - Realtime Map', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
           // commandBar: CommandBarCard(
           //   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
           //   child: CommandBar(
@@ -211,7 +262,7 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
                                   keyboardType: TextInputType.text,
                                   // focusNode: _focusNodeSearch,
                                   // onSubmitted: (value) => _search(),
-                                  placeholder: ' Licence Plate, Model',
+                                  placeholder: ' Licence Plate, VIN Number',
                                   placeholderStyle: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w300,
@@ -259,21 +310,81 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.all(4.0),
-                            child: ListView.builder(
-                              itemCount: _cars.length,
-                              itemBuilder: (context, index) {
-                                final car = _cars[index];
-                                return ListTile.selectable(
-                                  onPressed: null,
-                                  onSelectionChange: null,
-                                  selectionMode: ListTileSelectionMode.none,
-                                  selected: false,
-                                  title: Text(car),
-                                  subtitle: Text('[$car]'),
-                                  // trailing: ,
-                                );
-                              },
-                            ),
+                            child: _initialized
+                                ? _cars.isNotEmpty
+                                    ? ListView.builder(
+                                        itemCount: _cars.length,
+                                        itemBuilder: (context, index) {
+                                          final car = _cars[index];
+                                          return ListTile.selectable(
+                                            onPressed: () {}, // TODO
+                                            onSelectionChange: (value) {}, // TODO
+                                            selectionMode: ListTileSelectionMode.single, // TODO
+                                            selected: false,
+                                            title: Text(
+                                              car.licencePlateNumber,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            subtitle: Padding(
+                                              padding: const EdgeInsets.only(top: 4.0),
+                                              child: Text(
+                                                car.vinNumber,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, fontStyle: FontStyle.italic),
+                                              ),
+                                            ),
+                                            // trailing: ,
+                                          );
+                                        },
+                                      )
+                                    : ListView(
+                                        children: const [
+                                          ListTile.selectable(
+                                            onPressed: null,
+                                            onSelectionChange: null,
+                                            selectionMode: ListTileSelectionMode.none,
+                                            selected: false,
+                                            title: Text('No Data', maxLines: 2, overflow: TextOverflow.ellipsis),
+                                          ),
+                                        ],
+                                      )
+                                : ListView(
+                                    children: [
+                                      ListTile.selectable(
+                                        onPressed: null,
+                                        onSelectionChange: null,
+                                        selectionMode: ListTileSelectionMode.none,
+                                        selected: false,
+                                        title: () {
+                                          if (_fetchingFailed) {
+                                            return const Text('Data fetch failed!', maxLines: 2, overflow: TextOverflow.ellipsis);
+                                          } else {
+                                            return const Text('Fetching data ...', maxLines: 2, overflow: TextOverflow.ellipsis);
+                                          }
+                                        }(),
+                                        leading: () {
+                                          if (_fetchingFailed) {
+                                            return const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: Icon(FluentIcons.sync_error, size: 14, color: Colors.warningPrimaryColor),
+                                            );
+                                          } else {
+                                            return const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(4.0),
+                                                child: ProgressRing(strokeWidth: 2.0),
+                                              ),
+                                            );
+                                          }
+                                        }(),
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
                       ],
@@ -316,68 +427,82 @@ class _CarFleetManagementRealtimeMapPageState extends State<CarFleetManagementRe
                         // http://leaflet-extras.github.io/leaflet-providers/preview/
                         TileLayer(
                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          // urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          // subdomains: const ['a', 'b', 'c'],
                           userAgentPackageName: 'org.pasler.sentinel.client',
                           // tileBuilder: darkModeTileBuilder,
                           // tilesContainerBuilder: darkModeTilesContainerBuilder,
-                          tilesContainerBuilder: (context, tilesContainer, tiles) {
-                            // TODO
-                            return ColorFiltered(
-                              colorFilter: ColorFilter.matrix(
-                                FluentTheme.of(context).brightness.isDark
-                                    ? <double>[
-                                        // darker
-                                        1, 0, 0, 0, -128,
-                                        0, 1, 0, 0, -128,
-                                        0, 0, 1, 0, -128,
-                                        0, 0, 0, 1, 0,
-                                      ]
-                                    : <double>[
-                                        // identity
-                                        1, 0, 0, 0, 0,
-                                        0, 1, 0, 0, 0,
-                                        0, 0, 1, 0, 0,
-                                        0, 0, 0, 1, 0,
-                                      ],
-                              ),
-                              child: tilesContainer,
-                            );
-                          },
+                          // tilesContainerBuilder: (context, tilesContainer, tiles) {
+                          //   // TODO
+                          //   return ColorFiltered(
+                          //     colorFilter: ColorFilter.matrix(
+                          //       FluentTheme.of(context).brightness.isDark
+                          //           ? <double>[
+                          //               // darker
+                          //               1, 0, 0, 0, -128,
+                          //               0, 1, 0, 0, -128,
+                          //               0, 0, 1, 0, -128,
+                          //               0, 0, 0, 1, 0,
+                          //             ]
+                          //           : <double>[
+                          //               // identity
+                          //               1, 0, 0, 0, 0,
+                          //               0, 1, 0, 0, 0,
+                          //               0, 0, 1, 0, 0,
+                          //               0, 0, 0, 1, 0,
+                          //             ],
+                          //     ),
+                          //     child: tilesContainer,
+                          //   );
+                          // },
                           backgroundColor: Colors.transparent,
                         ),
                         MarkerLayer(
-                          markers: [
-                            Marker(
-                              point: LatLng(50.582792, 16.326170),
-                              width: 25,
-                              height: 25,
-                              // builder: (context) => FlutterLogo(),
+                          markers: List<Marker>.generate(_cars.where((element) => element.gpsPosition != null).toList().length, (index) {
+                            CfCar car = _cars.where((element) => element.gpsPosition != null).toList()[index];
+                            return Marker(
+                              point: LatLng(car.gpsPosition!.lat.toDouble(), car.gpsPosition!.lon.toDouble()),
+                              height: 10,
+                              width: 10,
                               builder: (context) {
-                                return Container(
-                                  width: double.maxFinite,
-                                  height: double.maxFinite,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: FluentTheme.of(context).menuColor,
-                                    border: Border.all(color: FluentTheme.of(context).accentColor, width: 2.0),
-                                  ),
-                                  child: Flyout(
-                                    openMode: FlyoutOpenMode.press,
-                                    content: (context) {
-                                      return const FlyoutContent(
-                                        child: Text('Flyout Here'),
-                                      );
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.only(bottom: 4.0),
-                                      child: Icon(FluentIcons.car, size: 14),
+                                return Flyout(
+                                  openMode: FlyoutOpenMode.press,
+                                  placement: FlyoutPlacement.center,
+                                  position: FlyoutPosition.below,
+                                  content: (context) {
+                                    return FlyoutContent(
+                                      // child: Text('Flyout Here'),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text('Lat: ${car.gpsPosition!.lat}'),
+                                          Text('Lon: ${car.gpsPosition!.lon}'),
+                                          Text('Alt: ${car.gpsPosition!.alt}'),
+                                          Text('Speed: ${car.gpsPosition!.speed}'),
+                                          Text('Accuracy: ${car.gpsPosition!.accuracy}'),
+                                          Text('Time: ${car.gpsPosition!.time}'),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      // color: FluentTheme.of(context).menuColor,
+                                      // border: Border.all(color: FluentTheme.of(context).accentColor, width: 2.0),
+                                      color: FluentTheme.of(context).accentColor,
                                     ),
+                                    // child: const Padding(
+                                    //   padding: EdgeInsets.only(bottom: 4.0),
+                                    //   child: Icon(FluentIcons.car, size: 14),
+                                    // ),
                                   ),
                                 );
                               },
-                              // anchorPos: AnchorPos.align(AnchorAlign.center),
-                            )
-                          ],
+                            );
+                          }),
                         ),
                       ],
                     ),

@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<meta name = "viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kblLQ0EQhz+jomg88AALiyDRKpEYIWhjEfECtUgiGLVJXi4hx+O9BAm2gq2gINp4FfoXaCtYC4KiCGInWCvaqDznJYEEMbPMzre/3Rl2Z8ESSCopvc4FqXRW8015bYvBJVvDC81000oHrpCiq3P+yQBV7fOeGjPeOs1a1c/9a82RqK5ATaPwmKJqWeFp4dm1rGryjnCXkghFhM+EHZpcUPjO1MNFfjU5XuRvk7WAbxws7cK2eAWHK1hJaClheTn2VDKnlO5jvsQaTS/4JfaJ96LjYwovNmaYYBwPQ4zK7MGJm0FZUSXfVcifJyO5iswqeTRWiZMgi0PUnFSPSoyJHpWRJG/2/29f9diwu1jd6oX6Z8N474eGbfjZMoyvI8P4OYbaJ7hMl/MzhzDyIfpWWbMfQNsGnF+VtfAuXGxCz6Ma0kIFqVbcEovB2ym0BKHzBpqWiz0r7XPyAIF1+apr2NuHATnftvILiEJn9X8wM74AAAAJcEhZcwAAHYcAAB2HAY/l8WUAAAG3SURBVCiRhdI9SNVhFMfxz//+nz+N1VDgpiXlloJIRdDQCw1R4FBE72TvcUMiTKUyK1MrJIuG1GiRsqEtMMghyBJzKDKICLEhCiJ6oaLAvA33KppGv+3wfL+H5xxOZLpUtC3C0Vx1XvvuZ38jkb038jET87AA5SjDE4xgCfpxB68whM9BnAwhwg88xwAOurp5ABzoLMIObEABZmM0ku7KYAtuat04Ou3XJybdtQmdQZzAFy3l/5cgTr4hSomTjDjJTAFq7s/6h5gRJ7+DOPmKNlXdHWjXtOZNloiuq+mZiw7c1rDie058i8eRmp5CVGAn5qAb18ThEw5hPX7iFtqdXt4PkbrePHw0OgLrsAer8A5VUqEb27ELRbKbPxyp7yvAQ6x2YvELcOrR/ByYcXJp7fh89X1H0ISSCJwduIISLFNbOnVRWWYGnuKB2tJ9KZAKZ6RCsVTYP62UZWqkQp5UOA5Zsbr4vTi0iEOj5sGVU6TmwbXicEwc6lUXf4Aw/hiHOtl7vefiywbU5RqfQyUacWkMjyZ1bnkd4wLS6EWChdiqsvDuRHSyOJbW4TJcxi9sk84f/hv5A3wVcXHcw0KKAAAAAElFTkSuQmCC" />
+<title>STL-CF Setup</title>
+<style>
+html, body { height: 100%; min-width: 320px; }
+body { margin: 0; display: flex; flex-wrap: nowrap; flex-direction: row; overflow: hidden; background-color: #0067B3; font-family: Arial, Helvetica, Sans-Serif; color: #FFFFFF; }
+.container { overflow-y: auto; display: flex; flex-wrap: nowrap; flex-direction: row; width: 100%; }
+.content { padding: 10px; margin: auto 10px; width: 100%; }
+.header { color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 36px; }
+.message { color: #FFFFFF; font-family: verdana; padding: 25px 0px; font-size: 22px; }
+.info { font-size: 16px; }
+.loader { margin: 74px auto; width: 84px; height: 84px; border-radius: 50%; position: relative; animation: rotate 1s linear infinite; }
+.loader::before { content: ""; box-sizing: border-box; position: absolute; inset: 0px; border-radius: 50%; border: 5px solid #FFF; animation: prixClipFix 2s linear infinite; }
+@keyframes rotate { 100% { transform: rotate(360deg); } }
+@-webkit-keyframes rotate { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes prixClipFix {
+0% { clip-path: polygon(50% 50%,0 0,0 0,0 0,0 0,0 0); }
+25% { clip-path: polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0); }
+50% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%); }
+75% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%); }
+100% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0); } }
+@-webkit-keyframes prixClipFix {
+0% { -webkit-clip-path: polygon(50% 50%,0 0,0 0,0 0,0 0,0 0); }
+25% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0); }
+50% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%); }
+75% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%); }
+100% { -webkit-clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0); } }
+</style>
+</head>
+<body onload="setTimeout(function() {window.top.close();},3000)">
+<center class="container">
+<div class="content">
+<h1 class="header">Saving configuration</h1>
+<div class="loader"></div>
+<h2 class="message">Device will be rebooted</h2>
+</div>
+</center>
+</body>
+</html>

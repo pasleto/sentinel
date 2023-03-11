@@ -1,5 +1,5 @@
 // import 'package:fluent_ui/fluent_ui.dart';
-import 'package:socket_io_client/socket_io_client.dart'; //  as IO
+import 'package:socket_io_client/socket_io_client.dart'; // as IO;
 // import 'package:sentinel_client/providers/constants_provider.dart';
 
 class SocketService {

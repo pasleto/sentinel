@@ -35,10 +35,6 @@ class _MainScreenState extends State<MainScreen> {
 
   String get searchValue => searchController.text;
 
-  registerGlobalSocketListeners() {
-    print('listening for global socket event');
-  }
-
   final List<NavigationPaneItem> originalItems = [
     // PaneItemSeparator(),
     // PaneItemSeparator(thickness: 0.0),
@@ -197,12 +193,18 @@ class _MainScreenState extends State<MainScreen> {
         PaneItem(
           icon: const Icon(FluentIcons.car),
           title: const Text('Cars'),
-          body: const SizedBox.shrink(),
+          body: DeferredWidget(
+            car_fleet_management.loadLibrary,
+            () => car_fleet_management.CarFleetManagementCarsPage(),
+          ),
         ),
         PaneItem(
           icon: const Icon(FluentIcons.compass_n_w),
           title: const Text('Devices'),
-          body: const SizedBox.shrink(),
+          body: DeferredWidget(
+            car_fleet_management.loadLibrary,
+            () => car_fleet_management.CarFleetManagementDevicesPage(),
+          ),
         ),
         PaneItem(
           icon: const Icon(FluentIcons.map_pin),
@@ -274,9 +276,9 @@ class _MainScreenState extends State<MainScreen> {
     DeferredWidget.preload(material_storage_management.loadLibrary);
     DeferredWidget.preload(car_fleet_management.loadLibrary);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      registerGlobalSocketListeners();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    // });
 
     searchController.addListener(() {
       setState(() {
@@ -365,10 +367,6 @@ class _MainScreenState extends State<MainScreen> {
                   i = equivalentIndex;
                 }
                 resetSearch();
-
-                // SocketService.clearAllListeners(); // TODO
-                // registerGlobalSocketListeners(); // TODO
-
                 setState(() => index = i);
               },
               header: SizedBox(

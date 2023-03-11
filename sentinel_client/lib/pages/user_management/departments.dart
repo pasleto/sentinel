@@ -694,7 +694,7 @@ class _UserManagementDepartmentsPageState extends State<UserManagementDepartment
           }
         }
         if (visibilityInfo.visibleFraction == 0) {
-          if (_pageInScope) {
+          if (_pageInScope && mounted) {
             setState(() => _pageInScope = !_pageInScope);
 
             print('user-management-departments unloading');

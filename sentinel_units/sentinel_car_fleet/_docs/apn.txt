@@ -1,0 +1,6 @@
+internet.t-mobile.cz
+gprs
+gprs
+
+
+stl-mqtt-cf@ad.pasler.org

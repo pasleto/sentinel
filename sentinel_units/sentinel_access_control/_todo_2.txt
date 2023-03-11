@@ -1,0 +1,65 @@
+single door
+=========================
+
+reader_1      lock_1      IN
+button_1      lock_1      IN
+reader_2      lock_1      OUT
+button_2      lock_1      OUT
+
+
+
+
+
+dual door
+=========================
+
+reader_1      lock_1      IN
+button_1      lock_1      OUT
+reader_2      lock_2      IN
+button_2      lock_2      OUT
+
+
+
+
+
+
+--id--        device id
+--id--_01     lock_1 id
+--id--_02     lock_2 id
+
+mqtt workflow
+=========================
+
+access-control/--id--/discovery/*                           // 
+access-control/--id--/discovery/*                           // 
+access-control/--id--/discovery/*                           // 
+access-control/--id--/discovery/*                           // 
+access-control/--id--/discovery/*                           // 
+access-control/--id--/config/*                              // 
+access-control/--id--/config/*                              // 
+access-control/--id--/config/*                              // 
+access-control/--id--/config/*                              // 
+access-control/--id--/config/*                              // 
+access-control/--id--/01/request/add                                  // {id, value, has_validity, valid_until, valid_since}
+access-control/--id--/01/request/remove                               // {id, value}
+access-control/--id--/01/request/wipe                                 // 
+access-control/--id--/01/response/add                                 // {if, value, status (success/error)}
+access-control/--id--/01/response/remove                              // {if, value, status (success/error)}
+access-control/--id--/01/response/wipe                                // {status (success/error)}
+access-control/--id--/01/*                                  // 
+access-control/--id--/02/*                                  // 
+access-control/--id--/02/*                                  // 
+access-control/--id--/02/*                                  // 
+access-control/--id--/02/*                                  // 
+access-control/--id--/02/*                                  // 
+
+
+
+
+
+access-control/--id--/01/card                               // {action, id, value, has_validity*, valid_until*, valid_since*}
+
+
+SSL FINGERPRINT SHA-1       69 46 5A 19 3A F4 6A AC 3A 25 5A 9C C1 25 23 F5 DD 6F DB 78
+SSL FINGERPRINT SHA-256     6F 04 34 55 24 6F 50 3B 35 18 4A 65 A8 2D 89 51 D5 E2 32 37 C3 E9 FE F8 C1 0C 3D 0A 2D 7C 59 10
+
