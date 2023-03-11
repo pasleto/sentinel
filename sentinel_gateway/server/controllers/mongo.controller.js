@@ -19,25 +19,23 @@ import msDeviceService from '../models/material_storage/device/msDevice.service.
 import msGroupService from '../models/material_storage/group/msGroup.service.js';
 import msSupplyService from '../models/material_storage/supply/msSupply.service.js';
 
+import cfCarService from '../models/car_fleet/car/cfCar.service.js';
+import cfDeviceService from '../models/car_fleet/device/cfDevice.service.js';
+
 import cfTestService from '../models/car_fleet/test/cfTest.service.js';
 
-import ldap from './ldap.controller.js';
-import utils from '../utils/util.js';
+async function mongoConnect() {
+  try {
+    // mongoose.set('strictQuery', true);
+    mongoose.set('strictQuery', false);
+    const result = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sentinel');
+    console.log(logSymbols.info, `[MONGODB] Connected to ${result.connection.host}:${result.connection.port}/${result.connection.name}`);
+  } catch (error) {
+    console.log(logSymbols.error, `[MongoDB] Unable to connect to database`, `\n${error}`)
+  }
+}
 
-// import mqtt from './mqtt.controller.js';
-
-function mongoConnect() {
-  // mongoose.set('strictQuery', true);
-  // mongoose.set('strictQuery', false);
-  mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sentinel')
-    .then((result) => {
-      console.log(logSymbols.info, `[MongoDB] Connected to ${result.connection.host}:${result.connection.port}/${result.connection.name}`);
-      _init();
-    })
-    .catch((err) => console.log(logSymbols.error, `[MongoDB] Unable to connect to database`, `\n${err}`));
-};
-
-async function _init() { // init database structure
+async function mongoInit() { // init database structure
   await timezoneService.init();
   await settingService.init();
   await acInitiatorService.init();
@@ -50,14 +48,10 @@ async function _init() { // init database structure
 
   // TODO
 
+  console.log(logSymbols.info, '[MONGODB]', 'Initialization done');
+
   // console.log('socketio: ');
   // console.log(global.io);
-
-  await _initServerProxy();
-  await ldap.testConnection((result) => console.log(logSymbols.info, '[Ldap]', result));
-
-
-  // mqtt.client(); // ? - mqtt connection handler
 
   // https://mongoosejs.com/docs/guide.html
   // https://mongoosejs.com/docs/api.html
@@ -65,7 +59,44 @@ async function _init() { // init database structure
   // https://mongoosejs.com/docs/documents.html
   // https://mongoosejs.com/docs/api/model.html
 
-  // ? - Testing 
+  // ? - Testing
+
+  // await cfDeviceService.create({
+  //   name: 'Test-1',
+  //   device_id: '111111111111',
+  //   mac_address: '11:11:11:11:11:11',
+  //   description: 'Test 1',
+  // });
+
+  // await cfDeviceService.create({
+  //   name: 'Test-2',
+  //   device_id: '222222222222',
+  //   mac_address: '22:22:22:22:22:22',
+  //   description: 'Test 2',
+  // });
+
+  // await cfDeviceService.create({
+  //   name: 'STL-CF-01',
+  //   device_id: '70B8F606E08C',
+  //   mac_address: '70:B8:F6:06:E0:8C',
+  //   description: 'ESP32 01',
+  // });
+
+  // await cfCarService.create({
+  //   licence_plate_number: '1H1 1111',
+  //   vin_number: '11111111111'
+  // });
+
+  // await cfCarService.create({
+  //   licence_plate_number: '2H2 2222',
+  //   vin_number: '22222222222',
+  //   brand: 'Škoda',
+  //   model: 'Octavia',
+  //   manufacture_year: 2019,
+  //   fuel_type: 'Diesel',
+  //   engine_kw: 110,
+  //   engine_ccm: 1968,
+  // });
 
   // ldap.allUserSync();
 
@@ -167,34 +198,9 @@ async function _init() { // init database structure
 
 };
 
-// async function _ldapConnectionTest() {
-//   var use_sync = await settingService.getOne({ scope: 'ldap', name: 'use_sync' });
-//   var use_auth = await settingService.getOne({ scope: 'ldap', name: 'use_auth' });
-//   if (JSON.parse(use_sync.value || false) || JSON.parse(use_auth.value || false)) {
-//     var { url, username, password } = await ldap.ldapParams();
-//     var ad = await ldap.rootBaseDn();
-//     ad.authenticate(username, password, function(err, auth) {
-//       if (err) {
-//         console.log(logSymbols.error, `LDAP Connection Failed: ${url}, Error: ${ldap.authErrCode(err)}`);
-//         return;
-//       }
-//       if (auth) console.log(logSymbols.info, `LDAP Connection Successful: ${url}`);
-//       else console.log(logSymbols.error, `LDAP Authentication Failed: ${url}`);
-//     });
-//   }
-// };
-
-async function _initServerProxy() {
-  var proxy_string = await settingService.getOne({ scope: 'proxy', name: 'url_string' });
-  if (proxy_string.value) {
-    utils.setServerProxy(true, proxy_string.value);
-  } else {
-    utils.setServerProxy(false, undefined);
-  }
-};
-
 export {
   mongoConnect,
+  mongoInit,
   timezoneService,
   settingService,
   userService,
@@ -212,5 +218,8 @@ export {
   msDeviceService,
   msGroupService,
   msSupplyService,
+  cfCarService,
+  cfDeviceService,
+
   cfTestService,
 };

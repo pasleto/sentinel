@@ -1,0 +1,4 @@
+[10-03-2023 11:25:41] 3.84.139.33 [unauthenticated] GET [404] /api/.env 114 (0.758 ms)
+[10-03-2023 11:25:42] 3.84.139.33 [unauthenticated] GET [404] /api/src/.env 122 (0.343 ms)
+[10-03-2023 17:00:32] 167.71.18.160 [unauthenticated] POST [404] /api/v0/id 116 (0.713 ms)
+[10-03-2023 19:33:09] 185.156.72.51 [unauthenticated] GET [404] /api/v2/cmdb/system/admin 146 (0.757 ms)

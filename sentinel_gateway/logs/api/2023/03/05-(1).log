@@ -1,0 +1,4 @@
+[04-03-2023 09:46:49] 64.62.197.6 [unauthenticated] GET [404] /api/v2/static/not.found 144 (1.249 ms)
+[04-03-2023 17:04:31] 185.125.131.133 [unauthenticated] GET [200] /api 135 (0.765 ms)
+[04-03-2023 17:08:20] 185.125.131.133 [unauthenticated] GET [304] /api - (0.291 ms)
+[04-03-2023 21:17:36] 3.132.215.149 [unauthenticated] GET [404] /api/.git/config 128 (1.080 ms)

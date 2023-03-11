@@ -1,14 +1,14 @@
 import express from 'express';
 import serveIndex from 'serve-index';
 import { resolve } from 'path';
-import * as morgan from '../controllers/morgan.controller.js';
+import { filesLoggerHandler } from '../controllers/logger.controller.js';
 
 const router = express.Router();
 
 const filesDirectoryHandler = serveIndex(resolve('files/web_share'), {'icons': true, 'view': 'tiles', 'hidden': true});
 const filesStaticHandler = express.static(resolve('files/web_share'));
 
-router.use(morgan.filesLoggerHandler);
+router.use(filesLoggerHandler);
 
 // Serve all existing routes
 router.use('/', filesStaticHandler, filesDirectoryHandler);

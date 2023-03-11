@@ -1,0 +1,92 @@
+185.125.131.133 [08-02-2023 18:35:56] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:35:58] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:35:59] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:35:59] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:36:00] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:39] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:41] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:48] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:50] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:52] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:54] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:39:56] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:40:19] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:42:49] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:42:51] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:42:53] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:42:55] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:42:57] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:44:53] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:44:55] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:44:57] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:44:59] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:45:01] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:50:05] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:50:07] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:50:09] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:50:11] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 18:50:13] IPv4 SUCCESS  
+107.170.237.15 [08-02-2023 18:56:14] IPv4 ERROR - Invalid NTP Package 
+49.142.212.138 [08-02-2023 19:12:51] IPv4 ERROR - Invalid NTP Package 
+185.125.131.133 [08-02-2023 19:19:27] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 19:19:29] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 19:19:31] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 19:19:33] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 19:19:35] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 19:40:20] IPv4 SUCCESS  
+107.189.11.43 [08-02-2023 19:58:19] IPv4 SUCCESS  
+107.170.246.28 [08-02-2023 20:19:16] IPv4 SUCCESS  
+185.125.131.133 [08-02-2023 20:37:23] IPv4 SUCCESS [object Object] 
+185.125.131.133 [08-02-2023 20:37:25] IPv4 SUCCESS [object Object] 
+185.125.131.133 [08-02-2023 20:37:27] IPv4 SUCCESS [object Object] 
+185.125.131.133 [08-02-2023 20:37:29] IPv4 SUCCESS [object Object] 
+185.125.131.133 [08-02-2023 20:37:31] IPv4 SUCCESS [object Object] 
+185.125.131.133 [08-02-2023 20:37:52] IPv4 SUCCESS {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885067,"originateTimestamp":3884873872,"rxTimestamp":1675885072,"txTimestamp":1675885072} 
+185.125.131.133 [08-02-2023 20:37:54] IPv4 SUCCESS {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885069,"originateTimestamp":3884873874,"rxTimestamp":1675885074,"txTimestamp":1675885074} 
+185.125.131.133 [08-02-2023 20:37:56] IPv4 SUCCESS {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885071,"originateTimestamp":3884873876,"rxTimestamp":1675885076,"txTimestamp":1675885076} 
+185.125.131.133 [08-02-2023 20:37:58] IPv4 SUCCESS {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885073,"originateTimestamp":3884873878,"rxTimestamp":1675885078,"txTimestamp":1675885078} 
+185.125.131.133 [08-02-2023 20:38:00] IPv4 SUCCESS {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885075,"originateTimestamp":3884873880,"rxTimestamp":1675885080,"txTimestamp":1675885080} 
+185.125.131.133 [08-02-2023 20:38:30] IPv4 SUCCESS {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885105,"originateTimestamp":0,"rxTimestamp":1675885110,"txTimestamp":1675885110} 
+185.125.131.133 [08-02-2023 20:39:39] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885174,"originateTimestamp":3884873979,"rxTimestamp":1675885179,"txTimestamp":1675885179} 
+185.125.131.133 [08-02-2023 20:39:41] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885176,"originateTimestamp":3884873981,"rxTimestamp":1675885181,"txTimestamp":1675885181} 
+185.125.131.133 [08-02-2023 20:39:43] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885178,"originateTimestamp":3884873983,"rxTimestamp":1675885183,"txTimestamp":1675885183} 
+185.125.131.133 [08-02-2023 20:39:45] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885180,"originateTimestamp":3884873985,"rxTimestamp":1675885185,"txTimestamp":1675885185} 
+185.125.131.133 [08-02-2023 20:39:47] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885182,"originateTimestamp":3884873987,"rxTimestamp":1675885187,"txTimestamp":1675885187} 
+185.125.131.133 [08-02-2023 20:41:46] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885301,"originateTimestamp":3884874106,"rxTimestamp":1675885306,"txTimestamp":1675885306} 
+185.125.131.133 [08-02-2023 20:41:48] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885303,"originateTimestamp":3884874108,"rxTimestamp":1675885308,"txTimestamp":1675885308} 
+185.125.131.133 [08-02-2023 20:41:50] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885305,"originateTimestamp":3884874110,"rxTimestamp":1675885310,"txTimestamp":1675885310} 
+185.125.131.133 [08-02-2023 20:41:52] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885307,"originateTimestamp":3884874112,"rxTimestamp":1675885312,"txTimestamp":1675885312} 
+185.125.131.133 [08-02-2023 20:41:54] IPv4 SUCCESS  - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885309,"originateTimestamp":3884874114,"rxTimestamp":1675885314,"txTimestamp":1675885314} 
+185.125.131.133 [08-02-2023 20:49:16] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885751,"originateTimestamp":3884874557,"rxTimestamp":1675885756,"txTimestamp":1675885756} 
+185.125.131.133 [08-02-2023 20:49:18] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885753,"originateTimestamp":3884874559,"rxTimestamp":1675885758,"txTimestamp":1675885758} 
+185.125.131.133 [08-02-2023 20:49:20] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885755,"originateTimestamp":3884874561,"rxTimestamp":1675885760,"txTimestamp":1675885760} 
+185.125.131.133 [08-02-2023 20:49:22] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885757,"originateTimestamp":3884874563,"rxTimestamp":1675885762,"txTimestamp":1675885762} 
+185.125.131.133 [08-02-2023 20:49:24] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885759,"originateTimestamp":3884874565,"rxTimestamp":1675885764,"txTimestamp":1675885764} 
+185.125.131.133 [08-02-2023 20:50:04] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885799,"originateTimestamp":3884874604,"rxTimestamp":1675885804,"txTimestamp":1675885804} 
+185.125.131.133 [08-02-2023 20:50:06] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885801,"originateTimestamp":3884874606,"rxTimestamp":1675885806,"txTimestamp":1675885806} 
+185.125.131.133 [08-02-2023 20:50:08] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885803,"originateTimestamp":3884874608,"rxTimestamp":1675885808,"txTimestamp":1675885808} 
+185.125.131.133 [08-02-2023 20:50:10] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885805,"originateTimestamp":3884874610,"rxTimestamp":1675885810,"txTimestamp":1675885810} 
+185.125.131.133 [08-02-2023 20:50:12] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675885807,"originateTimestamp":3884874612,"rxTimestamp":1675885812,"txTimestamp":1675885812} 
+205.185.116.53 [08-02-2023 21:23:08] IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675887783,"originateTimestamp":3310297931,"rxTimestamp":1675887788,"txTimestamp":1675887788} 
+185.125.131.133 [08-02-2023 21:38:30] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675888705,"originateTimestamp":0,"rxTimestamp":1675888710,"txTimestamp":1675888710} 
+185.125.131.133 [08-02-2023 21:39:02] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675888737,"originateTimestamp":3884877543,"rxTimestamp":1675888742,"txTimestamp":1675888742} 
+185.125.131.133 [08-02-2023 21:39:04] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675888739,"originateTimestamp":3884877545,"rxTimestamp":1675888744,"txTimestamp":1675888744} 
+185.125.131.133 [08-02-2023 21:39:06] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675888741,"originateTimestamp":3884877547,"rxTimestamp":1675888746,"txTimestamp":1675888746} 
+185.125.131.133 [08-02-2023 21:39:08] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675888743,"originateTimestamp":3884877549,"rxTimestamp":1675888748,"txTimestamp":1675888748} 
+185.125.131.133 [08-02-2023 21:39:11] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675888746,"originateTimestamp":3884877551,"rxTimestamp":1675888751,"txTimestamp":1675888751} 
+185.125.131.133 [08-02-2023 22:38:30] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675892305,"originateTimestamp":0,"rxTimestamp":1675892310,"txTimestamp":1675892310} 
+185.125.131.133 [08-02-2023 22:47:23] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675892838,"originateTimestamp":0,"rxTimestamp":1675892843,"txTimestamp":1675892843} 
+185.125.131.133 [08-02-2023 22:48:58] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675892933,"originateTimestamp":0,"rxTimestamp":1675892938,"txTimestamp":1675892938} 
+107.189.7.30 [08-02-2023 23:02:08] IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675893723,"originateTimestamp":0,"rxTimestamp":1675893728,"txTimestamp":1675893728} 
+143.244.50.172 [08-02-2023 23:05:00] IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+185.125.131.133 [08-02-2023 23:07:26] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675894041,"originateTimestamp":0,"rxTimestamp":1675894046,"txTimestamp":1675894046} 
+185.125.131.133 [08-02-2023 23:08:05] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675894080,"originateTimestamp":0,"rxTimestamp":1675894085,"txTimestamp":1675894085} 
+185.125.131.133 [08-02-2023 23:10:56] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675894251,"originateTimestamp":0,"rxTimestamp":1675894256,"txTimestamp":1675894256} 
+185.125.131.133 [08-02-2023 23:13:08] IPv4 SUCCESS - {"mode":3,"leap":0,"version":4,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675894383,"originateTimestamp":0,"rxTimestamp":1675894388,"txTimestamp":1675894388} 
+185.125.131.133 [08-02-2023 23:26:45] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675895200,"originateTimestamp":3884884006,"rxTimestamp":1675895205,"txTimestamp":1675895205} 
+185.125.131.133 [08-02-2023 23:26:47] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675895202,"originateTimestamp":3884884008,"rxTimestamp":1675895207,"txTimestamp":1675895207} 
+185.125.131.133 [08-02-2023 23:26:50] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675895205,"originateTimestamp":3884884010,"rxTimestamp":1675895210,"txTimestamp":1675895210} 
+185.125.131.133 [08-02-2023 23:26:52] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675895207,"originateTimestamp":3884884012,"rxTimestamp":1675895212,"txTimestamp":1675895212} 
+185.125.131.133 [08-02-2023 23:26:54] IPv4 SUCCESS - {"mode":3,"leap":0,"version":1,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1675895209,"originateTimestamp":3884884014,"rxTimestamp":1675895214,"txTimestamp":1675895214} 
+107.189.7.30 [08-02-2023 23:48:00] IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+205.185.116.53 [08-02-2023 23:53:23] IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 

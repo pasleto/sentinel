@@ -1,3 +1,7 @@
 gateway - separated socket servers -> ssl for clients | nonssl for devices
 
 cloud-relay - separated servers -> 443 ssl for tunnel between gateway and relay | 80 nonssl for outside devices
+
+
+
+test ntp server -> w32tm /stripchart /computer:sentinel.pasler.org /dataonly /samples:5

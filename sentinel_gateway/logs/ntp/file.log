@@ -1,0 +1,112 @@
+[11-03-2023 00:05:31] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 00:06:17] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 00:24:15] 45.128.232.11 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 00:25:34] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 00:26:20] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 00:45:40] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 00:46:26] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 01:05:47] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 01:06:31] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 01:07:15] 45.128.232.11 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678493230,"originateTimestamp":0,"rxTimestamp":1678493235,"txTimestamp":1678493235} 
+[11-03-2023 01:25:45] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 01:26:30] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:17:16] 64.62.197.28 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0,0,0,0,0]} 
+[11-03-2023 02:17:43] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:22:34] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:37:37] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:40:31] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:50:18] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:53:57] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 02:55:52] 198.98.62.106 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678499747,"originateTimestamp":0,"rxTimestamp":1678499752,"txTimestamp":1678499752} 
+[11-03-2023 03:05:58] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:09:01] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:10:03] 140.250.197.41 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[28,0,0,0]} 
+[11-03-2023 03:12:03] 205.185.116.53 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678500718,"originateTimestamp":3310297931,"rxTimestamp":1678500723,"txTimestamp":1678500723} 
+[11-03-2023 03:20:23] 140.119.54.167 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[28,0,0,0]} 
+[11-03-2023 03:24:42] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:24:44] 209.141.41.35 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:27:36] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:31:54] 209.141.41.35 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:32:28] 209.141.41.35 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:44:40] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 03:47:34] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:04:15] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:07:11] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:24:09] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:26:59] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:28:30] 209.141.41.35 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678505305,"originateTimestamp":0,"rxTimestamp":1678505310,"txTimestamp":1678505310} 
+[11-03-2023 04:44:55] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:47:43] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 04:56:03] 205.185.116.53 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 05:02:32] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 05:07:01] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 05:07:18] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 05:11:36] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 05:15:49] 205.210.31.25 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678508144,"originateTimestamp":3310297931,"rxTimestamp":1678508149,"txTimestamp":1678508149} 
+[11-03-2023 05:45:41] 129.250.206.86 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678509936,"originateTimestamp":0,"rxTimestamp":1678509941,"txTimestamp":1678509941} 
+[11-03-2023 05:45:41] 129.250.206.86 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[22,2,0,1,0,0,0,0,0,0,0,0]} 
+[11-03-2023 05:46:23] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 05:50:50] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:07:22] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:12:00] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:28:49] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:33:31] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:37:31] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:37:59] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:41:23] 59.110.138.30 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678513278,"originateTimestamp":3310297931,"rxTimestamp":1678513283,"txTimestamp":1678513283} 
+[11-03-2023 06:43:09] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 06:43:36] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:03:13] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:03:41] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:10:38] 167.94.138.102 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678515033,"originateTimestamp":3310297931,"rxTimestamp":1678515038,"txTimestamp":1678515038} 
+[11-03-2023 07:10:38] 167.94.138.127 IPv4 SUCCESS - {"mode":3,"leap":0,"version":3,"stratum":2,"poll":10,"precision":0,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678515033,"originateTimestamp":0,"rxTimestamp":1678515038,"txTimestamp":1678515038} 
+[11-03-2023 07:23:09] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:23:37] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:41:16] 166.88.144.159 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678516871,"originateTimestamp":3310297931,"rxTimestamp":1678516876,"txTimestamp":1678516876} 
+[11-03-2023 07:42:29] 209.141.41.35 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:43:03] 209.141.41.35 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:43:16] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 07:43:45] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:03:18] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:03:45] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:13:13] 147.185.238.72 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678518788,"originateTimestamp":0,"rxTimestamp":1678518793,"txTimestamp":1678518793} 
+[11-03-2023 08:21:33] 140.255.186.165 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[28,0,0,0]} 
+[11-03-2023 08:23:20] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:23:47] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:32:50] 205.185.116.53 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678519965,"originateTimestamp":3310297931,"rxTimestamp":1678519970,"txTimestamp":1678519970} 
+[11-03-2023 08:43:24] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:43:50] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:48:39] 216.218.206.96 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[22,2,0,1,0,0,0,0,0,0,0,0]} 
+[11-03-2023 08:56:20] 205.185.116.53 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 08:56:42] 147.185.238.72 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:03:27] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:03:55] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:19:16] 162.246.18.26 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:23:25] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:23:52] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:43:32] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 09:43:59] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:03:33] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:04:00] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:08:55] 209.141.41.35 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678525730,"originateTimestamp":0,"rxTimestamp":1678525735,"txTimestamp":1678525735} 
+[11-03-2023 10:09:27] 45.128.232.11 IPv4 SUCCESS - {"mode":7,"leap":0,"version":2,"stratum":2,"poll":3,"precision":42,"rootDelay":0,"rootDispersion":0,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678525762,"originateTimestamp":0,"rxTimestamp":1678525767,"txTimestamp":1678525767} 
+[11-03-2023 10:23:32] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:24:01] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:43:17] 205.185.116.53 IPv4 SUCCESS - {"mode":3,"leap":3,"version":4,"stratum":2,"poll":4,"precision":250,"rootDelay":1.401298464324817e-45,"rootDispersion":1.401298464324817e-45,"referenceId":{"type":"Buffer","data":[0,0,0,0]},"referenceTimestamp":1678527792,"originateTimestamp":3310297931,"rxTimestamp":1678527797,"txTimestamp":1678527797} 
+[11-03-2023 10:43:31] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:43:59] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 10:56:17] 45.11.47.54 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:00:17] 45.11.47.54 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:03:47] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:04:15] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:23:39] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:24:06] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:43:45] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 11:44:13] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 12:03:34] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 12:04:00] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 12:23:30] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 12:23:57] 208.115.243.59 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 12:26:28] 31.214.243.101 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 
+[11-03-2023 12:27:08] 140.255.236.152 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[28,0,0,0]} 
+[11-03-2023 12:33:35] 107.189.14.236 IPv4 ERROR - Invalid NTP Package - {"type":"Buffer","data":[23,0,3,42,0,0,0,0]} 

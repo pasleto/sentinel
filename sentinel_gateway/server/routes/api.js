@@ -1,10 +1,10 @@
 import express from 'express';
-import * as morgan from '../controllers/morgan.controller.js';
+import { apiLoggerHandler } from '../controllers/logger.controller.js';
 import * as middleware from '../controllers/middleware.controller.js';
 import jwt from '../controllers/jwt.controller.js';
 
 const router = express.Router();
-router.use(morgan.apiLoggerHandler);
+router.use(apiLoggerHandler);
 router.get('/', (req, res) => {
   res.status(200).send({
     application: 'Sentinel',

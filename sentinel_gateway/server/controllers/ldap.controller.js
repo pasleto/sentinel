@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import ActiveDirectory from 'activedirectory2';
+import logSymbols from 'log-symbols';
 // import ActiveDirectory from 'activedirectory2/lib/adpromise.js';
 import { settingService, userService, departmentService } from './mongo.controller.js';
 
@@ -304,7 +305,7 @@ function authErrCode(err) {
       return 'Too many security identifiers accumulated';
     case '701': // ERROR_ACCOUNT_EXPIRED
       return 'Account expired';
-    case '773': // ERROR_PASSWORD_MUST_CHANGE	
+    case '773': // ERROR_PASSWORD_MUST_CHANGE
       return 'Password must be changed';
     case '775': // ERROR_ACCOUNT_LOCKED_OUT
       return 'Account locked';
@@ -319,33 +320,57 @@ function authErrCode(err) {
   }
 }
 
+async function connectionTest() { // TODO
+  try {
+    var use_sync = await settingService.getOne({ scope: 'ldap', name: 'use_sync' });
+    var use_auth = await settingService.getOne({ scope: 'ldap', name: 'use_auth' });
+    if (JSON.parse(use_sync.value || false) || JSON.parse(use_auth.value || false)) { // TODO
+      var { url, username, password } = await ldapParams();
+      var ad = await rootBaseDn();
+      ad.authenticate(username, password, function(err, auth) {
+        if (err) {
+          console.log(logSymbols.error, `[LDAP] Connection Failed: ${url}, Error: ${authErrCode(err)}`);
+          return;
+        }
+        if (auth) console.log(logSymbols.info, `[LDAP] Connection Successful: ${url}`);
+        else console.log(logSymbols.error, `[LDAP] Authentication Failed: ${url}`);
+        return;
+      });
+    } else {
+      console.log(logSymbols.info, `[LDAP] Ldap is globally disabled`);
+    }
+  } catch (error) {
+    console.log(logSymbols.error, `[LDAP] Unable to run ldap connection test`, `\n${error}`)
+  }
+};
+
 async function testConnection(callback) {
   var { username, password } = await ldapParams();
   var ad = await rootBaseDn();
   ad.authenticate(username, password, function(err, auth) {
     if (err) {
-      return callback({ 
-        status: 'NOK', 
+      return callback({
+        status: 'NOK',
         data: {
-          message: `LDAP Connection Failed: ${authErrCode(err)}` 
+          message: `LDAP Connection Failed: ${authErrCode(err)}`
         }
       });
     }
     if (auth) {
-      callback({ 
-        status: 'OK', 
+      callback({
+        status: 'OK',
         data: {
-          message: 'LDAP Connection Successful!' 
+          message: 'LDAP Connection Successful!'
         }
       });
     } else {
-      callback({ 
-        status: 'NOK', 
+      callback({
+        status: 'NOK',
         data: {
-          message: 'LDAP Authentication failed!' 
+          message: 'LDAP Authentication failed!'
         }
       });
-    } 
+    }
   });
 }
 
@@ -358,5 +383,6 @@ export default {
   oneUserSync,
   authErrCode,
   testConnection,
+  connectionTest,
   // groupOptions,
 };

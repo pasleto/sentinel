@@ -31,6 +31,30 @@ const settingInitData = [
     'value': '6h',
     'is_protected': true
   },
+  { // Map
+    'scope': 'map',
+    'name': 'center_lat',
+    'friendly_name': 'Map Center Latitude',
+    'description': 'Map Center Point - Latitude (default: 0.0)',
+    'value': '0.0',
+    'is_protected': false
+  },
+  {
+    'scope': 'map',
+    'name': 'center_lon',
+    'friendly_name': 'Map Center Longitude',
+    'description': 'Map Center Point - Longitude (default: 0.0)',
+    'value': '0.0',
+    'is_protected': false
+  },
+  {
+    'scope': 'map',
+    'name': 'center_zoom',
+    'friendly_name': 'Map Center Zoom',
+    'description': 'Map Center Point - Zoom Level - Value between 2 and 18 (default: 15.0)',
+    'value': '15.0',
+    'is_protected': false
+  },
   { // Proxy
     'scope': 'proxy',
     'name': 'url_string',

@@ -3,6 +3,8 @@ import ldapService from './ldap.service.js';
 import userService from './user.service.js';
 import departmentService from './department.service.js';
 import materialstorageService from './materialstorage.service.js';
+import carfleetService from './carfleet.service.js';
+import settingsService from './settings.service.js';
 
 function socketConnect(socketID) { // TODO - add timestamp - logout/remove socket after some time of disconnecting - need to be handled on frontend aswell
   var socketObj = global.connectedClientApp.find(item => item.socket_id == socketID );
@@ -219,6 +221,27 @@ function socketHandler(io) {
     // socket.on('ms-group-create', materialstorageService.msGroupCreate); // TODO
     // socket.on('ms-group-edit', materialstorageService.msGroupEdit); // TODO
     // socket.on('ms-group-delete', materialstorageService.msGroupDelete); // TODO
+
+
+    socket.on('cf-car-get-one', carfleetService.cfCarGetOne); // TODO
+    socket.on('cf-car-get-all', carfleetService.cfCarGetAll); // TODO
+    socket.on('cf-car-create', carfleetService.cfCarCreate); // TODO
+    socket.on('cf-car-edit', carfleetService.cfCarEdit); // TODO
+    socket.on('cf-car-delete', carfleetService.cfCarDelete); // TODO
+
+    socket.on('cf-device-get-one', carfleetService.cfDeviceGetOne); // TODO
+    socket.on('cf-device-get-all', carfleetService.cfDeviceGetAll); // TODO
+    socket.on('cf-device-create', carfleetService.cfDeviceCreate); // TODO
+    socket.on('cf-device-edit', carfleetService.cfDeviceEdit); // TODO
+    socket.on('cf-device-delete', carfleetService.cfDeviceDelete); // TODO
+
+
+
+
+
+
+
+    socket.on('settings-get-one', settingsService.settingsGetOne); // TODO 
 
 
     // socket.on('disconnect', () => socketDisconnect(socket.id)); // TODO
