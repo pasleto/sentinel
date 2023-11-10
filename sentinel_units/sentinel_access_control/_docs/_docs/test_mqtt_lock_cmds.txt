@@ -1,0 +1,46 @@
+
+access-control/XXX/lock/command
+access-control/XXX/command/lock
+
+{
+  "action": "PASS",
+  "job_id": "xxx",
+  "reader": 2,
+  "value": "SUCCESS"
+}
+
+{
+  "action": "PASS",
+  "job_id": "xxx",
+  "reader": 1,
+  "value": "SUCCESS"
+}
+
+{
+  "action": "BLOCK",
+  "job_id": "xxx",
+  "value": "ON"
+}
+
+{
+  "action": "BLOCK",
+  "job_id": "xxx",
+  "value": "OFF"
+}
+
+{
+  "action": "BYPASS",
+  "job_id": "xxx",
+  "value": "ON"
+}
+
+{
+  "action": "BYPASS",
+  "job_id": "xxx",
+  "value": "OFF"
+}
+
+{
+  "action": "IDLE",
+  "job_id": "xxx",
+}

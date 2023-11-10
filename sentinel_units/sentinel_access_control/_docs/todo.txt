@@ -1,0 +1,25 @@
+// ! - when switching from server/standalone mode -> set default configuration, set desired mode, set config to true -> reboot
+
+// TODO - maybe connect mcp23017 reset pin
+
+// TODO -> add endpoints for manual restore state for tamper / sensors
+
+// TODO -> enclosure tamper blocking
+// TODO -> fire sensor handling
+
+// TODO -> log entering / exiting config mode
+
+// TODO -> add reason to logBoot
+
+// ? - log NTP sync
+
+// ! when replacing or deleting card -> what happen to log records saved on devices with the the replacing / deleting id / value
+
+// ? - on readers maybe add variables for expected_bits (LENGTH_ANY,4,8,26,34,...) [card bit lenght] and decode_messages (true,false) [parity bits check and remove]
+
+// ? - revert saving logic -> save events in device database first -> then try to publish with rowid -> wait for response with the rowid for delete
+//   ? - if some error happen in the process -> event is still saved on device + another table is needed on backend (to save rowids of events to delete on device)
+//   ? - on connect -> make request for events sync -> possible 
+
+// ! - mqtt notify for reboot status changing
+// ! - ws notify for reboot status changing

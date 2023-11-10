@@ -1,0 +1,61 @@
+! - current limiting resitor on PC817C on tampers at input pin (1) - 3v3 goes through 4.7k resistor
+
+! - make it work online against server
+! - enable to use ldap groups for access control | enable to use ldap assigned cards in user object attribute
+! - when card swipe make call to server, validate and return response, if access is enabled cache the card on device for offline state
+? - how to handle restrcitions
+? - how to handle delete cached cards, when removed from group
+
+! - make readers and buttons just generic ids, on backend let to choose from enum [ENTER, EXIT, PASS]
+! - make door sensor generic id - handle on backend
+
+? - mqtt send event -> first add into event table, send to mqtt with rowid, on backend process event and send response with rowid, then on device remove from event table the rowid
+
+! - make OSDP version using RS485 to TTL converter (MAX485 || auto flow version)
+
+TODO - tampers hw solution + code blocking
+
+TODO - tamper from HID is 5V when idle, GND when alarm -> pin pulled up by pull-up resistor -> trigger when pulled down by HID pin
+TODO - usually tamper is closed loop with current flow, which will trigger when disconnected -> circuit pulled to gnd -> trigger when pulled high by pull-up resistor
+TODO - basically NC or NO trigger
+? - when using HID, there is false state when cable disconnected -> no wire present act the same as tamper while idle
+? - when using HID, we need to live with possibility that if someone gets to the reader from behind (secured area), he can dissable tamper by cutting the wire
+? - also when power is down (power grid down and ups runs out of battery -> device unit go offline) -> tamper is not handled -> someone can rip the cable out of wall and cut it
+
+TODO - rfid reader with keypad + keycode per card + force to use
+TODO - mqtt communication
+TODO - wifi captive
+
+TODO - client certificate
+
+TODO - on first boot generate random string - use for hashing
+TODO - hash passwords saved inside device
+
+? - support for second DNS server
+
+TODO - case tamper switch ?
+
+TODO - EPS input
+TODO - same trigger logic as reader tamper switch
+TODO - if turnstile is used, or some two way door on boarder of the building or something
+
+? - check readers led states when changing status of reader and some state of led was set
+
+
+
+
+
+
+
+
+
+
+
+
+
+multidoor support
+
+on backend -> one entry for physical device with multiple channels -> each channel as AC device
+
+user mapping to AC device -> will grab the physical device pointer and apply commands with correct channel
+

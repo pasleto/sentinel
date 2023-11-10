@@ -1,0 +1,25 @@
+#pragma once
+
+#define mqtt_topic_status                               "/status"
+#define mqtt_payload_status_birth                       "ONLINE"
+#define mqtt_payload_status_lwt                         "OFFLINE"
+#define mqtt_topic_storage                              "/storage"
+#define mqtt_topic_boot                                 "/boot"
+#define mqtt_topic_event                                "/event"
+
+// #define mqtt_topic_xxx                              "/xxx"
+
+#define mqtt_topic_thermometer_1_status                 "/sensor/thermometer/1/status"
+#define mqtt_topic_thermometer_1_connected              "CONNECTED"
+#define mqtt_topic_thermometer_1_disconnected           "DISCONNECTED"
+#define mqtt_topic_thermometer_1_temperature            "/sensor/thermometer/1/temperature"
+#define mqtt_topic_thermometer_1_humidity               "/sensor/thermometer/1/humidity"
+#define mqtt_payload_thermometer_1_temperature_na       "null"
+#define mqtt_payload_thermometer_1_humidity_na          "null"
+#define mqtt_topic_thermometer_2_status                 "/sensor/thermometer/2/status"
+#define mqtt_topic_thermometer_2_connected              "CONNECTED"
+#define mqtt_topic_thermometer_2_disconnected           "DISCONNECTED"
+#define mqtt_topic_thermometer_2_temperature            "/sensor/thermometer/2/temperature"
+#define mqtt_topic_thermometer_2_humidity               "/sensor/thermometer/2/humidity"
+#define mqtt_payload_thermometer_2_temperature_na       "null"
+#define mqtt_payload_thermometer_2_humidity_na          "null"

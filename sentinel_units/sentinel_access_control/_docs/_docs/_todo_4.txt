@@ -1,0 +1,44 @@
+{
+  "action": "wipe",
+  "id": null,
+  "value": null,
+  "has_validty": null,
+  "valid_until": null,
+  "valid_since": null
+}
+
+{
+  "action": "remove",
+  "id": 0,
+  "value": "xxx",
+  "has_validty": null,
+  "valid_until": null,
+  "valid_since": null
+}
+
+{
+  "action": "add",
+  "id": 0,
+  "value": "xxx",
+  "has_validty": null,
+  "valid_until": null,
+  "valid_since": null
+}
+
+{
+  "action": "add",
+  "id": 0,
+  "value": "xxx",
+  "has_validty": false,
+  "valid_until": null,
+  "valid_since": null
+}
+
+{
+  "action": "add",
+  "id": 0,
+  "value": "xxx",
+  "has_validty": true,
+  "valid_until": 1,
+  "valid_since": 2
+}

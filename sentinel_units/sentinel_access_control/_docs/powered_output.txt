@@ -1,0 +1,25 @@
+no power	->	no power
+boot		->		no power
+after boot	->	based on settings - off
+app		->	off
+sw reset	->	keep current state
+boot 		->	keep current state
+after boot	->	based on settings - off
+app		->	off
+
+app		->	change settings from off to on
+app		->	on
+sw reset	->	keep current state
+boot		->	keep current state
+after boot	->	based on settings - on
+app		->	on
+
+no power	->	no power
+boot		->		no power
+after boot	->	based on settings - on
+app		->	on
+
+
+=> get mcp init pin voltage on power on -> vcc or gnd -> vcc ??
+=> when this init state (vcc ??) -> output device pin should not be active -> no power to device
+=> if init == vcc => gnd activated gate to pass power

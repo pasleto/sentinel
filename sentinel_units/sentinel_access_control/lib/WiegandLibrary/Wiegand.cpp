@@ -177,8 +177,7 @@ void Wiegand::flushData() {
             }
 
         //26 or 34-bits: First and last bits are used for parity
-        // } else if ((bits == 26) || (bits == 34) || (bits == 42) || (bits == 58)) { // TODO
-        } else if ((bits == 26) || (bits == 34)) {
+        } else if ((bits == 26) || (bits == 34) /*|| (bits == 42) || (bits == 58)*/) { // TODO
             //FIXME: The parity check doesn't seem to work for a 34-bit reader I have, but I suspect that the reader is non-complaint
 
             boolean left_parity = false;
@@ -202,15 +201,11 @@ void Wiegand::flushData() {
                 }
             }
 
-        // } else if ((bits == 32) || (bits == 40)  || (bits == 56) || (bits == 64)) { // TODO
-        } else if ((bits == 32) || (bits == 56) || (bits == 64)) {
-            // TODO
-            
+        } else if ((bits == 32) /*|| (bits == 40)*/ || (bits == 56) || (bits == 64)) { // TODO
             if (func_data) {
                 bits = align_data(data, 0, bits);
                 func_data(data, bits, func_data_param);
             }
-
         } else {
             if (func_data_error) {
                 bits = align_data(data, 0, bits);

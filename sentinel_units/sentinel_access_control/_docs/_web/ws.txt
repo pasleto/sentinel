@@ -1,0 +1,60 @@
+STORAGE-USAGE-REQ
+
+CONFIG-GET-REQ
+CONFIG-SET-REQ
+
+LOG-COUNT-REQ
+LOG-DATA-REQ
+LOG-REMOVE-REQ
+// TODO -> wrong order
+[WS] Received Message: LOG-COUNT-REQ
+[WS] Received Message: STORAGE-USAGE-REQ
+[WS] Received Message: LOG-REMOVE-REQ
+[DB] DELETE FROM events WHERE rowid = 28;
+[WS] Received Message: LOG-DATA-REQ
+
+DB-COUNT-REQ
+DB-DATA-REQ
+DB-ADD-REQ
+DB-REMOVE-REQ
+
+
+
+
+!!!
+
+esp.emac: no mem for receive buffer
+
+!!!
+
+
+
+STORAGE-USAGE-RES
+{"topic":"STORAGE-USAGE-RES","data":{"percentage":0.83,"used":16384,"free":1949696,"total":1966080}}
+
+CONFIG-GET-RES
+{"topic":"CONFIG-GET-RES","data":{"config_mode":false,"was_configured":true,"module_type":"STL-AC","firmware":"1.4.6","hardware":"3","unit_id":"90380C8DE29C","mac_address":"90:38:0C:8D:E2:9C","hostname":"STL-AC-90380C8DE29C","keep_webserver":true,"mqtt_server":"sentinel.pasler.org","mqtt_port":8883,"mqtt_credentials":true,"mqtt_user":"stl-mqtt-ac@ad.pasler.org","mqtt_pass_set":true,"ssl_use":true,"ssl_root_ca":"-----BEGIN CERTIFICATE-----\nMIIFUDCCAzigAwIBAgIQPLfBcwPiq0J2dNR3NkoeuDANBgkqhkiG9w0BAQsFADAb\nMRkwFwYDVQQDExBTZW50aW5lbCBSb290IENBMCAXDTIzMDIyNTE3NDUwN1oYDzk5\nOTkxMjMxMTIwMDAwWjAbMRkwFwYDVQQDExBTZW50aW5lbCBSb290IENBMIICIjAN\nBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAwXp89GHyTX68lmWGXGtPy/zDPC8p\nbgYyPdPSUDgGBYArcQkzi+ki7cmp+Qz1/LyzBqAdKfPGy97WCRa7PnOu/svmKq5c\nU3FFUw6ztriJqZ1zcpP7IC9V/RUJ9iCtODpXGXjlEa46J/TgS0U9vu8YzjZdg/bx\nQWg0gOUTm1/ULDQryMDkkryelSd9gHZoJA7NofWk6JpDTXXxs9F7ge/Yw1KKUuXC\nFpj/cYBx84zN9lJM7ceNKt8g0MgFDzmqtqidv/BjYJ4rFpKz6vQe4AmNPlavXxqB\nUoj4yToFJXaG/eS7xq9g6GK4GANmlCSLSNsVTEdwrMnp7qFGfCXo5Rz0hyQ3rg0z\nrczdM2PGa/0aYH74hrldPqULvGG8wqGztpWWnMXDiaz5kPtD9d3Jaokj2fvt/xV/\npafRWwfldHzF6AZZpG8DUnymosBMs4+u6YdqODn560H5RcCZDzDNv17plvSmB/i2\nvOduWzVMaL3YME+Jk5TuPTA0CFpUre9heJPMms0wFYelNGDn2JtvV3z53zERsVvf\nAXGODXzbKp+yqsULo3QmURIFjXmdVftJemMfb4bqyV1jEBk56Ny67/PmqCl5nSGE\nv+I+WBKBvTtqElU7Y9QVqW+YiA1Sqyh+zTWXuFcy1oT4nSeDNS802TURfoD2paNa\n0ZbWWRe3VKY/mbECAwEAAaOBjTCBijAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIC\n9DA7BgNVHSUENDAyBggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMDBggrBgEF\nBQcDBAYIKwYBBQUHAwgwEQYJYIZIAYb4QgEBBAQDAgD3MB0GA1UdDgQWBBSFAIcw\nxpLUcKHehs8i6SWrHxe3bzANBgkqhkiG9w0BAQsFAAOCAgEApsMubeIXteaxX4cR\nPxCyG2qQeb2iIPIwlyxF6Vl+D/hVwFM/SBPpXpJqo07TrYvJDYxKO56JApoWYMdj\naNlD8OGNCbIGt4cbGTpbxHqDZELuyccNTBYXEFbVR2k//DHucmeB+0pLb60gDBDf\nm+KP1bqXNljNlAdtdWWrjPykM3l1r5RkfNaySxxsBe1RcVEZAFugxmJ+88q2ks3T\nCpy4crtOLEytfWt4LtRKiyZqahw+c4hdM1xqBrYIo0pzi/iM/WE2zstYwwc6eKKJ\nZXzdnZcSEUUeqI2KNlaJyOxmQMoKXOeSZS70LODU5sfWkL2Fw4gGOU0LsAXfxdeU\nnQvfyFEh6hEEsLktlqnnYoLaII1t2AsrseK05r7cT503Sb/SrZcNqaRERrPAdP9x\nNGAUa+0TR7EFxiNNB/mX/9B3LCDnHs3OtEHa6QwCSCr/TgaLyUAEjx0VogxaqhXn\nOqf2U9LVa/d/3P84OqD2ujBvlsSQEWq5o7lvGU0c0CMcqgtVWpcUqtIKQwr4tsfp\nvyPiGEuoy28fNQ3r/mZrKAvAlkQw6lqkIOIg25IudYHO9BctwYKvGM+RyZgySVfn\nYP/ZFgWmrWQs/Zv7nIkIkStPfFSQ3JU509v7Cx60F5FPP8EXHHeQJYww5tOkRDzo\nLBj+VCjimisg9aSNzAsC9vbgEWo=\n-----END CERTIFICATE-----","ssl_validate_client":false,"ssl_client_certificate":"","ssl_client_private_key":"","ntp":"sentinel.pasler.org","ip_static":false,"ip_static_ip":"","ip_static_mask":"","ip_static_gw":"","ip_static_dns":"","button_1_timeout":5000,"button_2_timeout":5000,"door_sensor":false,"reader_1_buzzer_timeout":150,"reader_2_buzzer_timeout":150,"reader_1_timeout":3000,"reader_1_reverse":false,"reader_1_silent":false,"reader_1_tamper_sensor":false,"reader_1_tamper_invert":false,"reader_1_tamper_restore":false,"reader_1_tamper_alarm":false,"reader_2_timeout":3000,"reader_2_reverse":false,"reader_2_silent":false,"reader_2_tamper_sensor":false,"reader_2_tamper_invert":false,"reader_2_tamper_restore":false,"reader_2_tamper_alarm":false,"enclosure_tamper_sensor":false,"enclosure_tamper_invert":false,"enclosure_tamper_restore":false,"enclosure_tamper_alarm":false,"fire_sensor":false,"fire_sensor_invert":false,"fire_sensor_restore":false,"fire_sensor_alarm":false,"storage_usage":0.83,"rtc_battery_warning":false}}
+
+CONFIG-SET-RES
+?
+
+LOG-COUNT-RES
+{"topic":"LOG-COUNT-RES","data":{"error":false,"count":109,"init":true}}
+
+LOG-DATA-RES
+{"topic":"LOG-DATA-RES","data":[{"id":1,"timestamp":1687107373,"state":"BOOT","initiator":"POWER","card_value":null,"status":null},{"id":2,"timestamp":1687107478,"state":"CHANGE","initiator":"CONFIG","card_value":null,"status":"SUCCESS"},{"id":3,"timestamp":1687107478,"state":"REBOOT","initiator":"POWER","card_value":null,"status":null},{"id":4,"timestamp":1687107482,"state":"BOOT","initiator":"POWER","card_value":null,"status":null},{"id":6,"timestamp":1687107902,"state":"BOOT","initiator":"POWER","card_value":null,"status":null}]}
+
+LOG-REMOVE-RES
+{"topic":"LOG-REMOVE-RES","data":{"error":false,"message":"Event removed from database"}}
+
+DB-COUNT-RES
+{"topic":"DB-COUNT-RES","data":{"error":false,"count":4,"init":true}}
+
+DB-DATA-RES
+{"topic":"DB-DATA-RES","data":[{"id":"04C2B401","value":"04C2B401","has_validity":0,"valid_since":946684800,"valid_until":946684800},{"id":"94C3D01D","value":"94C3D01D","has_validity":1,"valid_since":1735689600,"valid_until":1767225600},{"id":"A4DCCC1D","value":"A4DCCC1D","has_validity":1,"valid_since":946684800,"valid_until":1735689600},{"id":"F4EE851D","value":"F4EE851D","has_validity":1,"valid_since":946684800,"valid_until":1672531200}]}
+
+DB-ADD-RES
+{"topic":"DB-ADD-RES","data":{"error":false,"message":"Card added to database"}}
+
+DB-REMOVE-RES
+{"topic":"DB-REMOVE-RES","data":{"error":false,"message":"Card removed from database"}}

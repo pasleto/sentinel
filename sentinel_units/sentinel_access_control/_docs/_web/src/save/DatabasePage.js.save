@@ -1,0 +1,543 @@
+import React, { useState, useEffect, Fragment } from 'react';
+import Axios from 'axios';
+
+const minValidityDate = 946684800; // 00:00 01/01/2000 UTC
+const itemsPerPage = 5;
+
+function DatabasePage(props) {
+  const padTo2Digits = (num) => {
+    return num.toString().padStart(2, '0');
+  }
+
+  const timestampToDate = (timestamp) => {
+    var date = new Date(timestamp * 1000);
+    return (
+      [
+        date.getFullYear(),
+        padTo2Digits(date.getMonth() + 1),
+        padTo2Digits(date.getDate()),
+      ].join('-') +
+      ' ' +
+      [
+        padTo2Digits(date.getHours()),
+        padTo2Digits(date.getMinutes()),
+        // padTo2Digits(date.getSeconds()),
+      ].join(':')
+    );
+  }
+
+  const dateToTimestamp = (date) => {
+    var out = new Date(date);
+    const unixTimestamp = Math.floor(out.getTime() / 1000);
+    return unixTimestamp;
+  }
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pages, setPages] = useState(0);
+  const [count, setCount] = useState(0);
+  const [data, setData] = useState([]);
+  const [newRecordId, setNewRecordId] = useState('');
+  const [newRecordValue, setNewRecordValue] = useState('');
+  const [newRecordValidity, setNewRecordValidity] = useState(false);
+  const [newRecordValidSince, setNewRecordValidSince] = useState(minValidityDate);
+  const [newRecordValidUntil, setNewRecordValidUntil] = useState(minValidityDate);
+
+  const setNewRecordDefaults = () => {
+    setNewRecordId('');
+    setNewRecordValue('');
+    setNewRecordValidity(false);
+    setNewRecordValidSince(minValidityDate);
+    setNewRecordValidUntil(minValidityDate);
+  }
+
+  const addToDatabase = async () => {
+    let payload = {
+      id: newRecordId,
+      value: newRecordValue,
+      has_validity: newRecordValidity,
+      valid_since: newRecordValidity ? newRecordValidSince : null,  // data to timestamp
+      valid_until: newRecordValidity ? newRecordValidUntil : null   // data to timestamp
+    }
+    try {
+      await Axios.post('/db/add', payload);
+      await handleCountFetch(true);
+      await handleStorageUsageFetch();
+      setNewRecordDefaults();
+    } catch (error) {
+      setNewRecordDefaults();
+      console.error(error); // ?
+    }
+  }
+
+  const removeFromDatabase = async (index) => {
+    let payload = {
+      id: data[index].id,
+      value: data[index].value
+    }
+    try {
+      await Axios.post('/db/remove', payload);
+      await handleCountFetch(true);
+      await handleStorageUsageFetch();
+    } catch (error) {
+      console.error(error); // ?
+    }
+  }
+
+  const updateInDatabase = async (index) => { // ? - what is non changing value ?? -> if changing id and value together -> new card instead -> how to solve ??
+    let payload = {
+      id: data[index].id,
+      value: data[index].value,
+      has_validity: data[index].has_validity,
+      valid_since: data[index].has_validity ? data[index].valid_since : null,
+      valid_until: data[index].has_validity ? data[index].valid_until : null
+    }
+    try {
+      await Axios.post('/db/add', payload);
+      await handleCountFetch(true);
+      await handleStorageUsageFetch();
+    } catch (error) {
+      console.error(error); // ?
+    }
+  }
+
+  const handleCountFetch = async (dataFetch) => {
+    if (dataFetch) setIsLoading(true);
+    try {
+      const { data, status } = await Axios.get('/db/count');
+      // const { data, status } = await Axios.get('https://sentinel.pasler.org/api');
+      if (status === 200) {
+        setCount(data.count);
+        if (data.count > 0) {
+          var pagesCount = Math.ceil(data.count/itemsPerPage);
+          setPages(pagesCount);
+          if (dataFetch) {
+            var page = pageNumber <= pagesCount ? pageNumber : pagesCount;
+            setPageNumber(page);
+            await handleDataFetch(page);
+          }
+        } else {
+          setData([]);
+          setPages(0);
+          setPageNumber(1);
+          if (dataFetch) setIsLoading(false);
+        }
+      } else {
+        setCount(0);
+        setData([]);
+        setPages(0);
+        setPageNumber(1);
+        if (dataFetch) setIsLoading(false);
+      }
+    } catch (error) {
+      setCount(0);
+        setData([]);
+        setPages(0);
+        setPageNumber(0);
+      if (dataFetch) setIsLoading(false);
+    }
+  }
+
+  const handleDataFetch = async (page) => {
+    setIsLoading(true);
+    try {
+      const { data, status } = await Axios.get(`/db/data?page=${page}`);
+      // const { data, status } = await Axios.get('https://sentinel.pasler.org/api');
+      if (status === 200) {
+        setData(data.data);
+        setIsLoading(false);
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      setIsLoading(false);
+    }
+  }
+
+  const handleStorageUsageFetch = async () => {
+    try {
+      const { data, status } = await Axios.get(`/storage`);
+      if (status === 200) {
+        props.setConfig((prevState) => ({...prevState, storage_usage: data.percentage}));
+      }
+    } catch (error) {
+      console.error(error); // ?
+    }
+  }
+
+  const wasRecordModified = (index) => {
+    if (data[index].was_modified !== null && data[index].was_modified !== undefined && data[index].was_modified) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const updateRecordId = (index, value) => {
+    if (data[index].id_modified !== null && data[index].id_modified !== undefined && data[index].id_modified) {
+      const tempData = [...data];
+      tempData[index].id = value;
+      setData(tempData);
+    } else {
+      const tempData = [...data];
+      tempData[index].id_original = tempData[index].id;
+      tempData[index].id = value;
+      tempData[index].id_modified = true;
+      tempData[index].was_modified = true;
+      setData(tempData);
+    }
+  }
+
+  const updateRecordValue = (index, value) => {
+    if (data[index].value_modified !== null && data[index].value_modified !== undefined && data[index].value_modified) {
+      const tempData = [...data];
+      tempData[index].value = value;
+      setData(tempData);
+    } else {
+      const tempData = [...data];
+      tempData[index].value_original = tempData[index].value;
+      tempData[index].value = value;
+      tempData[index].value_modified = true;
+      tempData[index].was_modified = true;
+      setData(tempData);
+    }
+  }
+
+  const updateRecordValidity = (index, value) => {
+    if (data[index].has_validity_modified !== null && data[index].has_validity_modified !== undefined && data[index].has_validity_modified) {
+      const tempData = [...data];
+      tempData[index].has_validity = value;
+      setData(tempData);
+    } else {
+      const tempData = [...data];
+      tempData[index].has_validity_original = tempData[index].has_validity;
+      tempData[index].has_validity = value;
+      tempData[index].has_validity_modified = true;
+      tempData[index].was_modified = true;
+      setData(tempData);
+    }
+  }
+
+  const updateRecordValiditySince = (index, value) => {
+    if (data[index].valid_since_modified !== null && data[index].valid_since_modified !== undefined && data[index].valid_since_modified) {
+      const tempData = [...data];
+      tempData[index].valid_since = value;
+      setData(tempData);
+    } else {
+      const tempData = [...data];
+      tempData[index].valid_since_original = tempData[index].valid_since;
+      tempData[index].valid_since = value;
+      tempData[index].valid_since_modified = true;
+      tempData[index].was_modified = true;
+      setData(tempData);
+    }
+  }
+
+  const updateRecordValidityUntil = (index, value) => {
+    if (data[index].valid_until_modified !== null && data[index].valid_until_modified !== undefined && data[index].valid_until_modified) {
+      const tempData = [...data];
+      tempData[index].valid_until = value;
+      setData(tempData);
+    } else {
+      const tempData = [...data];
+      tempData[index].valid_until_original = tempData[index].valid_until;
+      tempData[index].valid_until = value;
+      tempData[index].valid_until_modified = true;
+      tempData[index].was_modified = true;
+      setData(tempData);
+    }
+  }
+
+  const canAddToDatabase = () => {
+    if (newRecordId.length > 0 && newRecordValue.length > 0) {
+      if (newRecordValidity) {
+        if (newRecordValidSince >= minValidityDate && newRecordValidUntil >= minValidityDate) {
+          if (newRecordValidSince < newRecordValidUntil) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  const canUpdateRecordInDatabase = (index) => {
+    if (wasRecordModified(index)) {
+      if (data[index].id.length > 0 && data[index].value.length > 0) {
+        if (data[index].has_validity) {
+          if (data[index].valid_since >= minValidityDate && data[index].valid_until >= minValidityDate) {
+            if (data[index].valid_since < data[index].valid_until) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      } else {
+        return false;
+      }
+    }
+  }
+
+  const returnModifiedRecord = (index) => {
+    const tempData = [...data];
+    if (tempData[index].id_modified) {
+      tempData[index].id = tempData[index].id_original;
+      delete tempData[index].id_original;
+      delete tempData[index].id_modified;
+    }
+    if (tempData[index].value_modified) {
+      tempData[index].value = tempData[index].value_original;
+      delete tempData[index].value_original;
+      delete tempData[index].value_modified;
+    }
+    if (tempData[index].has_validity_modified) {
+      tempData[index].has_validity = tempData[index].has_validity_original;
+      delete tempData[index].has_validity_original;
+      delete tempData[index].has_validity_modified;
+    }
+    if (tempData[index].valid_since_modified) {
+      tempData[index].valid_since = tempData[index].valid_since_original;
+      delete tempData[index].valid_since_original;
+      delete tempData[index].valid_since_modified;
+    }
+    if (tempData[index].valid_until_modified) {
+      tempData[index].valid_until = tempData[index].valid_until_original;
+      delete tempData[index].valid_until_original;
+      delete tempData[index].valid_until_modified;
+    }
+    if (tempData[index].was_modified) {
+      delete tempData[index].was_modified;
+    }
+    setData(tempData);
+  }
+
+  const handleRecordRemoveAction = (index) => {
+    if (wasRecordModified(index)) {
+      returnModifiedRecord(index);
+    } else {
+      removeFromDatabase(index);
+    }
+  }
+
+  useEffect(() => {
+    handleCountFetch(true);
+  }, []);
+
+  const changePage = async (page) => {
+    setPageNumber(page);
+    await handleDataFetch(page);
+  }
+
+  const paginationPagesList = () => {
+    var options = [];
+    for (let i = 1; i <= pages; i++) {
+      options.push(<option value={i}>{i}</option>);
+    }
+    return options;
+  }
+
+  const pagination = () => {
+    if (pages > 0) {
+      return (
+        <td align='center' colSpan='20'>
+          <input type='button' className='pagination-button' disabled={!(pageNumber > 1)} value='<<' onClick={() => changePage(1)} />
+          <input type='button' className='pagination-button' disabled={!(pageNumber > 1)} value='<' onClick={() => changePage(pageNumber-1)} />
+          <select style={{width: '65px', margin: '4px 8px'}} value={pageNumber} onChange={(e) => changePage(+e.target.value)}>
+            { paginationPagesList() }
+          </select>
+          <input type='button' className='pagination-button' disabled={!(pageNumber < pages)} value='>' onClick={() => changePage(pageNumber+1)} />
+          <input type='button' className='pagination-button' disabled={!(pageNumber < pages)} value='>>' onClick={() => changePage(pages)} />
+        </td>
+      );
+    } else {
+      return null;
+    }
+  }
+
+  const content = () => {
+    return (
+      <Fragment>
+        <table className='info-table'>
+          <thead>
+            <tr>
+              <td width='50%'></td>
+              <td width='50%'></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align='left' colSpan='1'>Number of records:</td>
+              <td align='right' colSpan='1'><span id='count'>{count}</span></td>
+            </tr>
+            <tr>
+              <td align='left' colSpan='1'>Storage Usage:</td>
+              <td align='right' colSpan='1'><span id='storage'>{props.config.storage_usage} % <meter align='left' className='storage-meter' min={0} low={69} high={80} max={100} value={props.config.storage_usage} ></meter></span></td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='2'>&nbsp;</td>
+            </tr>
+            <tr>
+              <td align='left' colSpan='1'>Status Page:</td>
+              <td align='right' colSpan='1'><input type='button' className='link-button' value='➔' /*value='➤'*/ onClick={() => props.setComponentRender('status')} /></td>
+            </tr>
+            <tr>
+              <td align='left' colSpan='1'>Configuration Page:</td>
+              <td align='right' colSpan='1'><input type='button' className='link-button' value='➔' /*value='➤'*/ onClick={() => props.setComponentRender('config')} /></td>
+            </tr>
+            <tr>
+              <td align='left' colSpan='1'>Logs Page:</td>
+              <td align='right' colSpan='1'><input type='button' className='link-button' value='➔' /*value='➤'*/ onClick={() => props.setComponentRender('logs')} /></td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='2'>&nbsp;</td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='2'>ID and VALUE columns have UNIQUE constraint! If either of them is reused, the old record containing one of the duplicate value will be replaced by the new one.</td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <thead>
+            <tr>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+              <td width='5%'></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align='center' colSpan='7'>&nbsp;</td>
+              <td align='center' colSpan='7'>&nbsp;</td>
+              <td align='center' colSpan='3'>&nbsp;</td>
+              <td align='center' colSpan='3'>&nbsp;</td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='20'><hr/></td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='20'>Add new record:</td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='7'>
+                <div>
+                  <input style={{textAlign: 'center'}} placeholder='ID / LABEL' required={true} value={newRecordId} type='text' onChange={(e) => setNewRecordId(e.target.value)} />
+                  <input type='datetime-local' disabled={!newRecordValidity} value={timestampToDate(newRecordValidSince)} min={timestampToDate(minValidityDate)} onChange={(e) => setNewRecordValidSince(dateToTimestamp(e.target.value))} />
+                </div>
+              </td>
+              <td align='center' colSpan='7'>
+                <div>
+                  <input style={{textAlign: 'center'}} placeholder='VALUE' required={true} value={newRecordValue} type='text' onChange={(e) => setNewRecordValue(e.target.value)} />
+                  <input type='datetime-local' disabled={!newRecordValidity} value={timestampToDate(newRecordValidUntil)} min={timestampToDate(minValidityDate)} onChange={(e) => setNewRecordValidUntil(dateToTimestamp(e.target.value))} />
+                </div>
+              </td>
+              <td align='center' colSpan='3'>
+                <label className='switch'>
+                  <input type='checkbox' checked={newRecordValidity} onChange={(e) => setNewRecordValidity(e.target.checked)} />
+                  <span className='slider'></span>
+                </label>
+              </td>
+              <td align='center' colSpan='3'>
+                <div>
+                  <input type='button' value='✔️' disabled={!canAddToDatabase()} onClick={() => addToDatabase()} />
+                  <input type='button' value='✖️' onClick={() => setNewRecordDefaults()} />
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td align='center' colSpan='20'><hr/></td>
+            </tr>
+            {
+              isLoading ?
+              <tr>
+                <td align='center' colSpan='20'><div className='loader'></div></td>
+              </tr>
+              :
+              data.length > 0 ? data.map((record, index) => {
+                return (
+                  <tr key={index}>
+                    <td align='center' colSpan='7'>
+                      <div>
+                        <input style={{textAlign: 'center'}} type='text' required={true} value={record.id} onChange={(e) => updateRecordId(index, e.target.value)} />
+                        <input type='datetime-local' disabled={!record.has_validity} min={timestampToDate(minValidityDate)} value={record.valid_since != null ? timestampToDate(record.valid_since) : timestampToDate(minValidityDate)} onChange={(e) => updateRecordValiditySince(index, dateToTimestamp(e.target.value))} />
+                      </div>
+                    </td>
+                    <td align='center' colSpan='7'>
+                      <div>
+                        <input style={{textAlign: 'center'}} type='text' required={true} value={record.value} onChange={(e) => updateRecordValue(index, e.target.value)} />
+                        <input type='datetime-local' disabled={!record.has_validity} min={timestampToDate(minValidityDate)} value={record.valid_until != null ? timestampToDate(record.valid_until) : timestampToDate(minValidityDate)} onChange={(e) => updateRecordValidityUntil(index, dateToTimestamp(e.target.value))} />
+                      </div>
+                    </td>
+                    <td align='center' colSpan='3'>
+                      <label className='switch'>
+                        <input type='checkbox' checked={record.has_validity} onChange={(e) => updateRecordValidity(index, e.target.checked)} />
+                        <span className='slider'></span>
+                      </label>
+                    </td>
+                    <td align='center' colSpan='3'>
+                      <div>
+                        <input type='button' value='✔️' disabled={!canUpdateRecordInDatabase(index)} onClick={() => updateInDatabase(index)} />
+                        <input type='button' value={wasRecordModified(index) ? '✖️' : '❌'} onClick={() => handleRecordRemoveAction(index)} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+              :
+              <tr>
+                <td align='center' colSpan='20'><div className='database-no-data'>No Data</div></td>
+              </tr>
+            }
+            <tr>
+              <td align='center' colSpan='20'><hr/></td>
+            </tr>
+            <tr>
+              { pagination() }
+            </tr>
+            <tr>
+              <td align='center' colSpan='20'><hr/></td>
+            </tr>
+          </tbody>
+        </table>
+        <h2 className='info'>&nbsp;</h2>
+      </Fragment>
+    );
+  }
+
+  return (
+    <div className='content'>
+      <h1 className='header'>Database</h1>
+      { props.isLoading ? props.loadingContent() : props.isError ? props.errorContent() : content() }
+    </div>
+  );
+}
+
+export default DatabasePage;
