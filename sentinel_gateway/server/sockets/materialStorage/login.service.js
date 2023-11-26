@@ -6,10 +6,10 @@ import auth from '../../controllers/auth.controller.js';
 async function loginPassword(payload, callback) {
   var socketObj = materialStorage.getSocket(this.id);
   if (socketObj && socketObj.is_logged) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: 'Already logged in!' 
+        message: 'Already logged in!'
       }
     });
   } else {
@@ -27,10 +27,10 @@ async function loginPassword(payload, callback) {
 async function loginCard(payload, callback) {
   var socketObj = materialStorage.getSocket(this.id);
   if (socketObj && socketObj.is_logged) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: 'Already logged in!' 
+        message: 'Already logged in!'
       }
     });
   } else {
@@ -48,10 +48,10 @@ async function loginCard(payload, callback) {
 async function loginBarcode(payload, callback) {
   var socketObj = materialStorage.getSocket(this.id);
   if (socketObj && socketObj.is_logged) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: 'Already logged in!' 
+        message: 'Already logged in!'
       }
     });
   } else {

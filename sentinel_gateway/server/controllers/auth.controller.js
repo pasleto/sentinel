@@ -197,43 +197,43 @@ async function materialStoragePasswordAuthenticate(user_username, user_password,
           var ad = await ldap.userBaseDn();
           ad.findUser({ filter: `objectSid=${user.ldap_sid}`, attributes: ['userPrincipalName'] }, '*', async function(err, ldap_user) {  // find user based on objectSid and authenticate using real username - if ever username change in AD and not synced to DB yet -< login using old not synced username yet
             if (err) {
-              return callback({ 
-                status: 'NOK', 
+              return callback({
+                status: 'NOK',
                 data: {
-                  message: ldap.authErrCode(err) 
+                  message: ldap.authErrCode(err)
                 }
               });
             }
             if (!ldap_user) {
-              return callback({ 
-                status: 'NOK', 
+              return callback({
+                status: 'NOK',
                 data: {
-                  message: 'User found in database but not in LDAP!' 
+                  message: 'User found in database but not in LDAP!'
                 }
               });
             } else {
               ad.authenticate(ldap_user.userPrincipalName, user_password, function(err, auth) {
                 if (err) {
-                  return callback({ 
-                    status: 'NOK', 
+                  return callback({
+                    status: 'NOK',
                     data: {
-                      message: ldap.authErrCode(err) 
+                      message: ldap.authErrCode(err)
                     }
                   });
                 }
                 if (auth) {
-                  callback({ 
-                    status: 'OK', 
+                  callback({
+                    status: 'OK',
                     data: {
                       user: _.omit(user.toObject(), 'password', 'createdAt', 'updatedAt', '__v'),
                       groups: device.groups.toObject()
                     }
                   }); // ? - check what else omit
                 } else {
-                  callback({ 
-                    status: 'NOK', 
+                  callback({
+                    status: 'NOK',
                     data: {
-                      message: 'LDAP Authentication failed!' 
+                      message: 'LDAP Authentication failed!'
                     }
                   });
                 }
@@ -246,8 +246,8 @@ async function materialStoragePasswordAuthenticate(user_username, user_password,
       } else {
         if (user.password) {
           if (utils.comparePasswordHash(user_password, user.password)) {
-            callback({ 
-              status: 'OK', 
+            callback({
+              status: 'OK',
               data: {
                 user: _.omit(user.toObject(), 'password', 'createdAt', 'updatedAt', '__v'),
                 groups: device.groups.toObject()
@@ -264,10 +264,10 @@ async function materialStoragePasswordAuthenticate(user_username, user_password,
       throw new Error('No groups assigned to this device!');
     }
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }
@@ -289,9 +289,9 @@ async function materialStorageCardAuthenticate(card, deviceID, callback) { // TO
       // TODO - return array of groups which user has permissions to access
       // TODO - if no permissions return error
       // TODO - check for for admin aswell
-      
-      callback({ 
-        status: 'OK', 
+
+      callback({
+        status: 'OK',
         data: {
           user: _.omit(user.toObject(), 'password', 'createdAt', 'updatedAt', '__v'),
           groups: device.groups.toObject()
@@ -301,10 +301,10 @@ async function materialStorageCardAuthenticate(card, deviceID, callback) { // TO
       throw new Error('No groups assigned to this device!');
     }
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }
@@ -328,8 +328,8 @@ async function materialStorageCardBarcodeAuthenticate(cryptedCard, deviceID, cal
       // TODO - if no permissions return error
       // TODO - check for for admin aswell
 
-      callback({ 
-        status: 'OK', 
+      callback({
+        status: 'OK',
         data: {
           user: _.omit(user.toObject(), 'password', 'createdAt', 'updatedAt', '__v'),
           groups: device.groups.toObject()
@@ -339,10 +339,10 @@ async function materialStorageCardBarcodeAuthenticate(cryptedCard, deviceID, cal
       throw new Error('No groups assigned to this device!');
     }
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }

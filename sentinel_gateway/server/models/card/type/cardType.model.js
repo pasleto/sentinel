@@ -33,9 +33,9 @@ const cardTypeSchema = new mongoose.Schema({ // TODO
     trim: true,
     required: true,
     // enum: ['LF (125 KHz)', 'HF (13.56 MHz)'],
-    enum: { 
-      values: ['LF (125 KHz)', 'HF (13.56 MHz)'], 
-      message: '{VALUE} is not supported' 
+    enum: {
+      values: ['LF (125 KHz)', 'HF (13.56 MHz)'],
+      message: '{VALUE} is not supported'
     },
     set: function(frequency) {
       this._frequency = this.frequency;

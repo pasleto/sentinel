@@ -15,9 +15,9 @@ const acInitiatorSchema = new mongoose.Schema({
     trim: true,
     required: true,
     // enum: ['RTC', 'Door Sensor', 'Reader', 'Button'],
-    enum: { 
-      values: ['RTC', 'Door Sensor', 'Reader', 'Button'], 
-      message: '{VALUE} is not supported' 
+    enum: {
+      values: ['RTC', 'Door Sensor', 'Reader', 'Button'],
+      message: '{VALUE} is not supported'
     },
     set: function(initiator_type) {
       this._initiator_type = this.initiator_type;
@@ -46,9 +46,9 @@ const acInitiatorSchema = new mongoose.Schema({
     type: String,
     trim: true,
     // enum: ['Entry', 'Exit'],
-    enum: { 
-      values: ['Entry', 'Exit'], 
-      message: '{VALUE} is not supported' 
+    enum: {
+      values: ['Entry', 'Exit'],
+      message: '{VALUE} is not supported'
     },
     required: function() { return this.has_direction },
     set: function(direction) {

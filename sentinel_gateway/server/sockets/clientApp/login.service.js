@@ -14,28 +14,28 @@ async function getUserData(payload, callback) { // TODO
           console.log('joining admin room'); // TODO
           this.join('admin');
         }
-        callback(result); 
+        callback(result);
       } else {
         callback(result);
       }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
 // async function loginPassword(payload, callback) {
 //   var socketObj = clientApp.getSocket(this.id);
 //     if (socketObj && socketObj.is_logged) {
-//       callback({ 
-//         status: 'NOK', 
+//       callback({
+//         status: 'NOK',
 //         data: {
-//           message: 'Already logged in!' 
+//           message: 'Already logged in!'
 //         }
 //       });
 //     } else {
@@ -45,7 +45,7 @@ async function getUserData(payload, callback) { // TODO
 //           if (result.data.user.is_admin) {
 //             this.join('admin');
 //           }
-//           callback(result); 
+//           callback(result);
 //         } else {
 //           callback(result);
 //         }

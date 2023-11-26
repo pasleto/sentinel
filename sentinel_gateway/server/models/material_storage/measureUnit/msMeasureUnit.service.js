@@ -5,8 +5,8 @@ import _ from 'underscore';
 async function init() {
   _.each(msMeasureUnitInitData, async (data) => {
     var itemExist = await MsMeasureUnitModel.exists({ code: data.code });
-    if (!itemExist) { 
-      var newItem = new MsMeasureUnitModel({ 
+    if (!itemExist) {
+      var newItem = new MsMeasureUnitModel({
         name: data.name,
         code: data.code
       });

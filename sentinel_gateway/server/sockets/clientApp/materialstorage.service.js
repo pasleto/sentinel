@@ -6,19 +6,19 @@ import { msDeviceService } from '../../controllers/mongo.controller.js';
 async function msDeviceGetAll(payload, callback) { // TODO - maybe load everything from groups, instead of ids
   try {
     var deviceList = await msDeviceService.get({}, '-createdAt -updatedAt -__v');
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         devices: deviceList
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -29,19 +29,19 @@ async function msDeviceGetOne(payload, callback) {
       path: 'groups',
       select: '-supplies -devices -createdAt -updatedAt -__v'
     });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         device: deviceExist
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -55,19 +55,19 @@ async function msDeviceCreate(payload, callback) {
       ...(payload.description && payload.description != null && payload.description != undefined && payload.description != "") && { description: payload.description },
       ...(payload.ip_address && payload.ip_address != null && payload.ip_address != undefined && payload.ip_address != "") && { ip_address: payload.ip_address }
     });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Device Created'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -75,39 +75,39 @@ async function msDeviceEdit(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
 async function msDeviceDelete(payload, callback) { // TODO - if device has group assigned, on delete remove reference from the group -> remove hook
   try {
     await msDeviceService.remove(payload.id);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Device Deleted'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 

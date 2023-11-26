@@ -18,7 +18,7 @@ const timezoneSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
-  linux_value: {
+  linux_value: { // ? unix_value
     type: String,
     trim: true,
     required: true,

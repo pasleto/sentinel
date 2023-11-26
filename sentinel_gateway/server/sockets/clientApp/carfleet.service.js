@@ -6,19 +6,19 @@ import { cfDeviceService, cfCarService } from '../../controllers/mongo.controlle
 async function cfCarGetAll(payload, callback) { // TODO
   try {
     var carList = await cfCarService.get(false, false, {}, '-createdAt -updatedAt -__v'); // TODO - populate device ?
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         cars: carList
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -29,19 +29,19 @@ async function cfCarGetOne(payload, callback) { // TODO
     //   path: 'groups',
     //   select: '-supplies -devices -createdAt -updatedAt -__v'
     // });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         car: carExist
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -57,19 +57,19 @@ async function cfCarCreate(payload, callback) { // TODO
     //   ...(payload.description && payload.description != null && payload.description != undefined && payload.description != "") && { description: payload.description },
     //   ...(payload.ip_address && payload.ip_address != null && payload.ip_address != undefined && payload.ip_address != "") && { ip_address: payload.ip_address }
     // });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Car Created'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -77,58 +77,58 @@ async function cfCarEdit(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
 async function cfCarDelete(payload, callback) { // TODO - !!!
   try {
     await cfCarService.remove(payload.id);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Car Deleted'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
 async function cfDeviceGetAll(payload, callback) { // TODO
   try {
     var deviceList = await cfDeviceService.get(false, false, {}, '-createdAt -updatedAt -__v'); // TODO - populate car ?
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         devices: deviceList
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -139,19 +139,19 @@ async function cfDeviceGetOne(payload, callback) { // TODO
     //   path: 'groups',
     //   select: '-supplies -devices -createdAt -updatedAt -__v'
     // });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         device: deviceExist
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -167,19 +167,19 @@ async function cfDeviceCreate(payload, callback) { // TODO
     //   ...(payload.description && payload.description != null && payload.description != undefined && payload.description != "") && { description: payload.description },
     //   ...(payload.ip_address && payload.ip_address != null && payload.ip_address != undefined && payload.ip_address != "") && { ip_address: payload.ip_address }
     // });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Device Created'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -187,39 +187,39 @@ async function cfDeviceEdit(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
 async function cfDeviceDelete(payload, callback) { // TODO - if device has car assigned
   try {
     await cfDeviceService.remove(payload.id);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Device Deleted'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 

@@ -30,7 +30,7 @@ async function getOne(lean, populateParams, findParams) {
 //   return result;
 // };
 
-async function modify(id, params) { 
+async function modify(id, params) {
   var result = await CfCarModel.findOne({_id: id});
   if (!result) throw new Error('Car not found in database!');
   Object.assign(result, params);

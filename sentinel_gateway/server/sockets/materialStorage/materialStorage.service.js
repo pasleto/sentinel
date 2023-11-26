@@ -3,7 +3,7 @@ function xxx(xxx) {
 };
 
 function loginPasswordListener(data) {
-  
+
 };
 
 function loginCardListener(data) {

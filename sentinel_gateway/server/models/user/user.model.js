@@ -84,7 +84,7 @@ const userSchema = new mongoose.Schema({ // TODO
       return department;
     },
   },
-  manager: { // ? 
+  manager: { // ?
     type: mongoose.Types.ObjectId,
     ref: 'user',
     set: function(manager) {

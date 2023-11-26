@@ -3,11 +3,11 @@ import loginService from "./login.service.js";
 function socketConnect(socketID) { // TODO - add timestamp - remove socket after some time of disconnecting - need to be handled on frontend aswell
   var socketObj = global.connectedMaterialStorage.find(item => item.socket_id == socketID );
   if(!socketObj) {
-    global.connectedMaterialStorage.push({ 
-      socket_id: socketID, 
-      username: null, 
+    global.connectedMaterialStorage.push({
+      socket_id: socketID,
+      username: null,
       user_id: null,
-      is_logged: false, 
+      is_logged: false,
       is_connected: true
     });
   } else {
@@ -51,11 +51,11 @@ function socketLogout(socket, callback) {
       item.username = null;
       item.user_id = null;
       item.is_logged = false;
-      callback({ 
-        status: 'OK', 
+      callback({
+        status: 'OK',
         data: {
           message: 'Logged out!'
-        } 
+        }
       });
       break;
     }
@@ -88,7 +88,7 @@ function socketHandler(io) {
 
   materialStorageNamespace.on('connection', (socket) => {
                     console.log(`MaterialStorage - Client Connected! - ID: ${socket.id}, IP: ${socket.handshake.address.split('::ffff:')[1]}`);
-  
+
 
 
     socket.on('login-password', loginService.loginPassword);

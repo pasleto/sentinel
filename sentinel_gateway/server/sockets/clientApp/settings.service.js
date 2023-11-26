@@ -9,19 +9,19 @@ async function settingsGetOne(payload, callback) { // TODO
     //   path: 'groups',
     //   select: '-supplies -devices -createdAt -updatedAt -__v'
     // });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         device: settingExist
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 

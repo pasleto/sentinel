@@ -15,9 +15,9 @@ const acEventSchema = new mongoose.Schema({
     trim: true,
     required: true,
     // enum: ['RTC', 'Door Sensor', 'Reader', 'Button'],
-    enum: { 
-      values: ['RTC', 'Door Sensor', 'Reader', 'Button'], 
-      message: '{VALUE} is not supported' 
+    enum: {
+      values: ['RTC', 'Door Sensor', 'Reader', 'Button'],
+      message: '{VALUE} is not supported'
     },
     set: function(initiator_type) {
       this._initiator_type = this.initiator_type;
@@ -39,9 +39,9 @@ const acEventSchema = new mongoose.Schema({
     trim: true,
     required: true,
     // enum: ['success', 'info', 'warning', 'error'],
-    enum: { 
-      values: ['success', 'info', 'warning', 'error'], 
-      message: '{VALUE} is not supported' 
+    enum: {
+      values: ['success', 'info', 'warning', 'error'],
+      message: '{VALUE} is not supported'
     },
     set: function(status) {
       this._status = this.status;

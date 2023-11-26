@@ -15,42 +15,42 @@ async function clientAppPasswordAuthenticate(user_username, user_password , call
           var ad = await ldap.userBaseDn();
           ad.findUser({ filter: `objectSid=${user.ldap_sid}`, attributes: ['userPrincipalName'] }, '*', async function(err, ldap_user) {  // find user based on objectSid and authenticate using real username - if ever username change in AD and not synced to DB yet -< login using old not synced username yet
             if (err) {
-              return callback({ 
-                status: 'NOK', 
+              return callback({
+                status: 'NOK',
                 data: {
-                  message: ldap.authErrCode(err) 
+                  message: ldap.authErrCode(err)
                 }
               });
             }
             if (!ldap_user) {
-              return callback({ 
-                status: 'NOK', 
+              return callback({
+                status: 'NOK',
                 data: {
-                  message: 'User found in database but not in LDAP!' 
+                  message: 'User found in database but not in LDAP!'
                 }
               });
             } else {
               ad.authenticate(ldap_user.userPrincipalName, user_password, function(err, auth) {
                 if (err) {
-                  return callback({ 
-                    status: 'NOK', 
+                  return callback({
+                    status: 'NOK',
                     data: {
-                      message: ldap.authErrCode(err) 
+                      message: ldap.authErrCode(err)
                     }
                   });
                 }
                 if (auth) {
-                  callback({ 
-                    status: 'OK', 
+                  callback({
+                    status: 'OK',
                     data: {
                       token: jwt.sign({ user_id: user.id}, hash_jwt.value, { expiresIn: expiration_jwt.value }),
                     }
                   });
                 } else {
-                  callback({ 
-                    status: 'NOK', 
+                  callback({
+                    status: 'NOK',
                     data: {
-                      message: 'LDAP Authentication failed!' 
+                      message: 'LDAP Authentication failed!'
                     }
                   });
                 }
@@ -62,8 +62,8 @@ async function clientAppPasswordAuthenticate(user_username, user_password , call
         }
       } else {
         if (utils.comparePasswordHash(user_password, user.password)) {
-          callback({ 
-            status: 'OK', 
+          callback({
+            status: 'OK',
             data: {
               token: jwt.sign({ user_id: user.id}, hash_jwt.value, { expiresIn: expiration_jwt.value }),
             }
@@ -76,10 +76,10 @@ async function clientAppPasswordAuthenticate(user_username, user_password , call
       throw new Error('Your are not allowed to login to this application!');
     }
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }

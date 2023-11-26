@@ -1,4 +1,5 @@
 import Aedes from 'aedes';
+import * as os from 'os';
 import utils from '../utils/util.js';
 import auth from './auth.controller.js';
 import { cfTestService, settingService, cfDeviceService } from './mongo.controller.js';
@@ -6,6 +7,21 @@ import { cfTestService, settingService, cfDeviceService } from './mongo.controll
 function handle() {
   const aedesServer = new Aedes();
   aedesServer.id = "sentinel-gateway-server";
+
+  var currDate = new Date();
+  aedesServer.publish({topic: 'sentinel-gateway/info/boot/unix', qos: 0, dup: false, retain: true, payload: Buffer.from(Math.floor(currDate.getTime()/1000).toString())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/boot/timestamp', qos: 0, dup: false, retain: true, payload: Buffer.from(currDate.toISOString())});
+
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/hostname', qos: 0, dup: false, retain: true, payload: Buffer.from(os.hostname())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/arch', qos: 0, dup: false, retain: true, payload: Buffer.from(os.arch())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/platform', qos: 0, dup: false, retain: true, payload: Buffer.from(os.platform())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/type', qos: 0, dup: false, retain: true, payload: Buffer.from(os.type())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/version', qos: 0, dup: false, retain: true, payload: Buffer.from(os.version())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/release', qos: 0, dup: false, retain: true, payload: Buffer.from(os.release())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/user', qos: 0, dup: false, retain: true, payload: Buffer.from(os.userInfo().username)});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/uptime', qos: 0, dup: false, retain: true, payload: Buffer.from(os.uptime().toFixed())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/boot/unix', qos: 0, dup: false, retain: true, payload: Buffer.from(Math.floor(new Date((currDate.getTime()-(os.uptime()*1000))).getTime()/1000).toString())});
+  aedesServer.publish({topic: 'sentinel-gateway/info/os/boot/timestamp', qos: 0, dup: false, retain: true, payload: Buffer.from(new Date((currDate.getTime()-(os.uptime()*1000))).toISOString())});
 
   aedesServer.authenticate = async (client, username, password, callback)  =>  { // TODO
     // if (client.id === 'sentinel-gateway-client') {
@@ -40,14 +56,14 @@ function handle() {
             return callback(null, true); // allow
 
           }
-          return callback(null, false); // deny 
-        } 
+          return callback(null, false); // deny
+        }
         if (password && password.length > 0) {
           return await auth.authenticateMqttAccount(username, password.toString(), callback);
         }
-        return callback(null, false); // deny 
+        return callback(null, false); // deny
       }
-      return callback(null, false); // deny 
+      return callback(null, false); // deny
 
     // }
   };
@@ -178,11 +194,11 @@ function handle() {
                     };
     
                     if (json.gps_signal) {
-                      await cfTestService.create(with_gps);
+                      // await cfTestService.create(with_gps);
 
                       global.io.of('client-app').emit('car-fleet-realtime', temp);
                     } else {
-                      await cfTestService.create(without_gps);
+                      // await cfTestService.create(without_gps);
 
                       global.io.of('client-app').emit('car-fleet-realtime', temp);
                     }

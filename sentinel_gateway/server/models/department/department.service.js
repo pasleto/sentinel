@@ -5,8 +5,8 @@ import _ from 'underscore';
 async function init() {
   _.each(departmentInitData, async (data) => {
     var itemExist = await DepartmentModel.exists({ department_number: data.department_number });
-    if (!itemExist) { 
-      var newItem = new DepartmentModel({ 
+    if (!itemExist) {
+      var newItem = new DepartmentModel({
         department_number: data.department_number,
         name: data.name,
         is_root: data.is_root,

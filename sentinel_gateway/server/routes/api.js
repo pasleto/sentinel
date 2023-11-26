@@ -19,21 +19,21 @@ router.get('/', (req, res) => {
 
 router.get('/test', (req, res) => {
   res.status(200).send({
-    status: 'OK', 
+    status: 'OK',
     data: {
       message: 'TEST GET'
     }
   });
-}); 
+});
 
 router.post('/test', (req, res) => {
   res.status(200).send({
-    status: 'OK', 
+    status: 'OK',
     data: {
       message: 'TEST POST'
     }
   });
-}); 
+});
 
 router.post('/client-app/login-password', async (req, res) => {
   if (req.body.username && req.body.password) {
@@ -46,19 +46,19 @@ router.post('/client-app/login-password', async (req, res) => {
     });
   } else {
     return res.status(403).send({
-      status: 'NOK', 
+      status: 'NOK',
       data: {
         message: 'No credentials passed!'
       }
     });
   }
-}); 
+});
 
 router.post('/material-storage/login-password', async (req, res) => { // TODO
   var authheader = req.headers.authorization;
   if (!authheader) {
     return res.status(403).send({
-      status: 'NOK', 
+      status: 'NOK',
       data: {
         message: 'No authorization passed!'
       }
@@ -82,7 +82,7 @@ router.post('/material-storage/login-card', async (req, res) => { // TODO
   var authheader = req.headers.authorization;
   if (!authheader) {
     return res.status(403).send({
-      status: 'NOK', 
+      status: 'NOK',
       data: {
         message: 'No authorization passed!'
       }
@@ -108,7 +108,7 @@ router.post('/material-storage/login-barcode', async (req, res) => { // TODO
   var authheader = req.headers.authorization;
   if (!authheader) {
     return res.status(403).send({
-      status: 'NOK', 
+      status: 'NOK',
       data: {
         message: 'No authorization passed!'
       }

@@ -5,8 +5,8 @@ import _ from 'underscore';
 async function init() {
   _.each(msCurrencyInitData, async (data) => {
     var itemExist = await MsCurrencyModel.exists({ code: data.code });
-    if (!itemExist) { 
-      var newItem = new MsCurrencyModel({ 
+    if (!itemExist) {
+      var newItem = new MsCurrencyModel({
         name: data.name,
         code: data.code,
         symbol: data.symbol

@@ -30,7 +30,7 @@ async function getOne(lean, populateParams, ...findParams) { // TODO ...findPara
 //   return result;
 // };
 
-async function modify(id, params) { 
+async function modify(id, params) {
   var result = await CfDeviceModel.findOne({_id: id});
   if (!result) throw new Error('Device not found in database!');
   Object.assign(result, params);

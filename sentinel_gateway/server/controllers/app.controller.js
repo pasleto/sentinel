@@ -63,11 +63,11 @@ async function _getGeneratedCertificate() {
 async function _init() {
   var server_tls = {};
   var mqtt_tls = {};
-  const files_cert = _getCertificateFiles();
   const generated_cert = await _getGeneratedCertificate();
+  const files_cert = _getCertificateFiles();
 
-        var root_ca = await utils.getRootCertificate(); // ? - test
-        console.log(root_ca); // ? - test
+        // var root_ca = await utils.getRootCertificate(); // ? - test
+        // console.log(root_ca); // ? - test
 
   if (files_cert) { // if certificate files provided, use them for server
     server_tls = files_cert;
@@ -107,7 +107,7 @@ async function _init() {
   socket.socketHandler(io);
 
   appServer.on('error', _onError);
-  appServer.on('listening', () => console.log(logSymbols.info, `[SERVER] Listening on: ${appServer.address().address}:${appServer.address().port}`));
+  appServer.on('listening', () => console.log(logSymbols.info, `[HTTPS] Listening on: ${appServer.address().address}:${appServer.address().port}`));
   appServer.listen(443, process.env.APP_IP || '0.0.0.0');
 
         mqttServer.on('error', _onError); // TODO - remove

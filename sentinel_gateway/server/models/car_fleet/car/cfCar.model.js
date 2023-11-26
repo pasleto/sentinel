@@ -52,9 +52,9 @@ const cfCarSchema = new mongoose.Schema({
   },
   fuel_type: {
     type: String,
-    enum: { 
-      values: ['Diesel', 'Petrol', 'Electric', 'LPG', 'CNG', 'Hybrid'], 
-      message: '{VALUE} is not supported' 
+    enum: {
+      values: ['Diesel', 'Petrol', 'Electric', 'LPG', 'CNG', 'Hybrid'], // ? separate file or table -> to be able to fetch in frontend
+      message: '{VALUE} is not supported'
     },
     trim: true,
     set: function(fuel_type) {

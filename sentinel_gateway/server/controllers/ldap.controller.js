@@ -111,13 +111,13 @@ async function userOptions() {
       attributes.telephonenumber,
       attributes.title,
       attributes.manager
-    ], 
+    ],
     paged:true
   };
 }
 
 function _isUserDisabled(accountcontrol) {
-  
+
   // const DISABLED_MASK = 0x2;
   // let value = parseInt(accountcontrol);
   // let disabled = (value & DISABLED_MASK) === 0;

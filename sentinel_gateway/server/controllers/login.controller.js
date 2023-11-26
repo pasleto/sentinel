@@ -14,7 +14,7 @@ async function clientAppGetUserData(jwtToken, callback) {
 
     var user = await userService.getOne(false, {
       path: 'cards',
-      select: '-user -createdAt -updatedAt -__v', 
+      select: '-user -createdAt -updatedAt -__v',
       populate: [
         {
           path: 'type',
@@ -28,17 +28,17 @@ async function clientAppGetUserData(jwtToken, callback) {
     }, { _id: decodedToken.user_id });
     console.log(user); // TODO
 
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         user: _.omit(user.toObject(), 'password', 'createdAt', 'updatedAt', '__v')  // ? - check what else omit
       }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }

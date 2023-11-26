@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 // import autopopulatePlugin from 'mongoose-autopopulate';
 
 const departmentSchema = new mongoose.Schema({ // TODO - add users array
-  department_number: { // TODO - maybe possible to add more departments into one 
+  department_number: { // TODO - maybe possible to add more departments into one
     type: String,
     reguired: true,
     trim: true,

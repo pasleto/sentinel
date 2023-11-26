@@ -119,7 +119,7 @@ cardSchema.post('save', { document: true, query: false }, async function(doc, ne
       userObj.save();
     } else { // existing document
       if (doc._user != doc.user) { // user has been changed
-        var oldUser = await userService.exists({ _id: doc._user }); 
+        var oldUser = await userService.exists({ _id: doc._user });
         if (oldUser) {
           oldUser.cards.pull(doc._id);
           await oldUser.save()

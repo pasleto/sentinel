@@ -9,9 +9,9 @@ import settingsService from './settings.service.js';
 function socketConnect(socketID) { // TODO - add timestamp - logout/remove socket after some time of disconnecting - need to be handled on frontend aswell
   var socketObj = global.connectedClientApp.find(item => item.socket_id == socketID );
   if(!socketObj) {
-    global.connectedClientApp.push({ 
-      socket_id: socketID, 
-      username: null, 
+    global.connectedClientApp.push({
+      socket_id: socketID,
+      username: null,
       user_id: null,
       is_logged: false,
       is_connected: true
@@ -57,11 +57,11 @@ function getSocket(socketID) {
 //       item.username = null;
 //       item.user_id = null;
 //       item.is_logged = false;
-//       callback({ 
-//         status: 'OK', 
+//       callback({
+//         status: 'OK',
 //         data: {
 //           message: 'Logged out!'
-//         } 
+//         }
 //       });
 //       break;
 //     }
@@ -83,8 +83,8 @@ function getAllClientAppSockets(payload, callback) {
     var disconnected_logged_array = global.connectedClientApp.filter(item => item.is_connected == false && item.is_logged == true);
     var connected_array = global.connectedClientApp.filter(item => item.is_connected == true && item.is_logged == false);
     var connected_logged_array = global.connectedClientApp.filter(item => item.is_connected == true && item.is_logged == true);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         disconnected: disconnected_array,
         disconnected_logged: disconnected_logged_array,
@@ -93,10 +93,10 @@ function getAllClientAppSockets(payload, callback) {
       }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }
@@ -108,8 +108,8 @@ function getAllMaterialStorageSockets(payload, callback) {
     var disconnected_logged_array = global.connectedMaterialStorage.filter(item => item.is_connected == false && item.is_logged == true);
     var connected_array = global.connectedMaterialStorage.filter(item => item.is_connected == true && item.is_logged == false);
     var connected_logged_array = global.connectedMaterialStorage.filter(item => item.is_connected == true && item.is_logged == true);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         disconnected: disconnected_array,
         disconnected_logged: disconnected_logged_array,
@@ -118,10 +118,10 @@ function getAllMaterialStorageSockets(payload, callback) {
       }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }
@@ -131,18 +131,18 @@ function getAllAccessControlSockets(payload, callback) {
   try {
     var disconnected_array = global.connectedAccessControl.filter(item => item.is_connected == false && item.is_logged == false);
     var connected_array = global.connectedAccessControl.filter(item => item.is_connected == true && item.is_logged == false);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         disconnected: disconnected_array,
         connected: connected_array,
       }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
-        message: error.message 
+        message: error.message
       }
     });
   }
@@ -157,7 +157,7 @@ function socketHandler(io) {
 
   clientAppNamespace.use((socket, next) => { // ensure the socket has access to the 'client-app' namespace, and then
     // socketConnect(socket.id); // TODO - on connection maybe check if exist and if is logged, and return logged user to frontend | problem with logged on frontend and lost connection - user will be logged in frontend but not in backend
-    
+
     // console.log(socket.handshake.auth.token);
     // next();
 
@@ -168,11 +168,11 @@ function socketHandler(io) {
       next();
     } else {
       next(); // TODO - for postman dev only
-      // next(Error({ 
+      // next(Error({
       //   status: 'NOK',
       //   data: {
       //     type: 'authorization_error',
-      //     message: `No authorization token passed` 
+      //     message: `No authorization token passed`
       //   }
       // }));
     }
@@ -241,7 +241,7 @@ function socketHandler(io) {
 
 
 
-    socket.on('settings-get-one', settingsService.settingsGetOne); // TODO 
+    socket.on('settings-get-one', settingsService.settingsGetOne); // TODO
 
 
     // socket.on('disconnect', () => socketDisconnect(socket.id)); // TODO

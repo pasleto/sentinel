@@ -18,7 +18,7 @@ async function getOne(...params) {
   return result;
 };
 
-async function modify(id, params) { 
+async function modify(id, params) {
   var result = await MsGroupModel.findOne({_id: id});
   if (!result) throw new Error('Group not found in database!');
   Object.assign(result, params);

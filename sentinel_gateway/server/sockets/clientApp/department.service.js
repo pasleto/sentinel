@@ -5,7 +5,7 @@ import { userService, departmentService, cardService } from '../../controllers/m
 
 // ? graphlookup instead of recursive recursion
 
-// async function _getRecursiveParent(id, array) { 
+// async function _getRecursiveParent(id, array) {
 //   // array.push(id); // including self
 //   var dep = await departmentService.getOne({ _id: id }, 'parent'); // var dep = await departmentService.getOne({ _id: id }, '-createdAt -updatedAt -__v');
 //   if (dep.parent) {
@@ -15,7 +15,7 @@ import { userService, departmentService, cardService } from '../../controllers/m
 //   return array;
 // }
 
-// async function _getRecursiveUsers(array) { 
+// async function _getRecursiveUsers(array) {
 //   return await Promise.all(array.map(async item => {
 //     // item.parents = await _getRecursiveParent(item.department, []); // exluding self
 //     item.parents = await _getRecursiveParent(item.department, [item.department]); // including self
@@ -40,20 +40,20 @@ async function getFullList(payload, callback) {
   try {
     var rootDepartments = await departmentService.getLean({ is_root: true }, '-createdAt -updatedAt -__v');
     var output = await _getRecursiveData(rootDepartments);
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         list: output
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 

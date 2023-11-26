@@ -16,7 +16,7 @@ const generator = (time, index) => {
   return `${year}/${month}/${day}-(${index}).log`; // 2023/02/08-(1).log
   // return `${year}_${month}_${day}-(${index}).log`; // 2023_02_08-(1).log
 };
-  
+
 morgan.token('apiUser', (req, res) => { // ?
   var authheader = req.headers.authorization;
   if (authheader) {

@@ -9,20 +9,20 @@ async function userCardSearch(payload, callback) {
   try {
     var cardExist = await cardService.getOne({ value: payload.value });
     var existingUser = await userService.getOne(false, false, { _id: cardExist.user }, { user_number: 1, name: 1, surname: 1, username: 1 });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         card: cardExist,
         user: existingUser
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -44,22 +44,22 @@ async function userCardCreate(payload, callback) {
           ...(payload.user != null && payload.user != undefined) && { user: newUser._id },
           last_changed_by: socketObj.user_id
         });
-        callback({ 
-          status: 'OK', 
+        callback({
+          status: 'OK',
           data: {
             message: 'Card Reassigned',
             old_user: existingUser,
             new_user: newUser
-          } 
+          }
         });
       } else {
-        callback({ 
-          status: 'NOK', 
+        callback({
+          status: 'NOK',
           data: {
             message: 'This card already exist',
             card: cardExist,
             user: existingUser
-          } 
+          }
         });
       }
     } else {
@@ -74,25 +74,25 @@ async function userCardCreate(payload, callback) {
         ...(payload.valid_until != null && payload.valid_until != undefined) && { valid_until: payload.valid_until },
         ...(payload.description != null && payload.description != undefined) && { description: payload.description }
       });
-      callback({ 
-        status: 'OK', 
+      callback({
+        status: 'OK',
         data: {
           message: 'Card Created',
-        } 
+        }
       });
     }
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 
 };
 
-async function userCardEdit(payload, callback) { 
+async function userCardEdit(payload, callback) {
   try {
     var socketObj = clientApp.getSocket(this.id);
     await cardService.modify(payload.card_id, {
@@ -106,38 +106,38 @@ async function userCardEdit(payload, callback) {
       ...(payload.user != null && payload.user != undefined) && { user: payload.user },
       last_changed_by: socketObj.user_id
     });
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Card Modified'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
 async function userCardDelete(payload, callback) {
   try {
     await cardService.remove(payload.id);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         message: 'Card Deleted'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -146,20 +146,20 @@ async function userCardBarcodeGenerate(payload, callback) {
     var cardExist = await cardService.getOne({ _id: payload.card_id });
     var cryptedCard = await utils.cryptCard(cardExist.value);
     var barcodeImage = await QRCode.toDataURL(cryptedCard);
-    callback({ 
-      status: 'OK', 
+    callback({
+      status: 'OK',
       data: {
         crypted: cryptedCard,
         barcode: barcodeImage.split(',')[1]
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -167,20 +167,20 @@ async function userGet(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -188,20 +188,20 @@ async function userCreate(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -209,20 +209,20 @@ async function userEdit(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 
@@ -230,20 +230,20 @@ async function userDelete(payload, callback) { // TODO
   try {
 
     // TODO
-    
-    callback({ 
-      status: 'OK', 
+
+    callback({
+      status: 'OK',
       data: {
         message: 'TODO'
-      } 
+      }
     });
   } catch (error) {
-    callback({ 
-      status: 'NOK', 
+    callback({
+      status: 'NOK',
       data: {
         message: error.message
-      } 
-    }); 
+      }
+    });
   }
 };
 

@@ -8,8 +8,8 @@ import { cardService } from '../../controllers/mongo.controller.js';
 async function init() {
   _.each(userInitData, async (data) => {
     var itemExist = await UserModel.exists({ user_number: data.user_number });
-    if (!itemExist) { 
-      var newItem = new UserModel({ 
+    if (!itemExist) {
+      var newItem = new UserModel({
         user_number: data.user_number,
         name: data.name,
         surname: data.surname,
